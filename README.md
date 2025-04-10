@@ -2,6 +2,8 @@
 
 A sleek macOS menu bar app that automatically updates your desktop wallpaper using images from [Wallhaven](https://wallhaven.cc/).
 
+Inspired by [A Wallhaven background plugin for KDE Plasma 5](https://github.com/subpop/wallhaven-wallpaper-plasma).
+
 ## Features
 
 - 🖼️ Automatic wallpaper updates at customizable intervals
