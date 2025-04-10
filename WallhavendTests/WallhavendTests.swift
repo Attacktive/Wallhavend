@@ -1,8 +1,8 @@
 //
-//  WallhavendTests.swift
-//  WallhavendTests
+// WallhavendTests.swift
+// WallhavendTests
 //
-//  Created by Pantera on 2025-04-08.
+// Created by Pantera on 2025-04-08.
 //
 
 import XCTest
