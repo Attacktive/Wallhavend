@@ -53,90 +53,126 @@ class WallpaperManager: ObservableObject {
 		isRunning = false
 	}
 
+	private enum WallpaperError: LocalizedError {
+		case invalidURL
+		case invalidResponse
+		case noContentType
+		case unsupportedImageType(String)
+		case invalidImage
+
+		var errorDescription: String? {
+			switch self {
+			case .invalidURL:
+				return "Invalid wallpaper URL"
+			case .invalidResponse:
+				return "Invalid response type"
+			case .noContentType:
+				return "No content type in response"
+			case .unsupportedImageType(let type):
+				return "Unsupported image type: \(type)"
+			case .invalidImage:
+				return "Failed to load downloaded image"
+			}
+		}
+	}
+
 	func updateWallpaper() async {
 		do {
 			error = nil
-
-			print("Fetching random wallpaper...")
-			let wallpaper = try await WallhavenService.shared.fetchRandomWallpaper()
-			print("Got wallpaper: \(wallpaper.path)")
-
-			guard let wallpaperURL = URL(string: wallpaper.path) else {
-				error = "Invalid wallpaper URL"
-				return
-			}
-
-			print("Downloading image from \(wallpaperURL)")
-			let (data, response) = try await URLSession(configuration: .ephemeral)
-				.data(from: wallpaperURL)
-
-			guard let httpResponse = response as? HTTPURLResponse else {
-				error = "Invalid response type"
-				return
-			}
-
-			print("Download complete. Status: \(httpResponse.statusCode), Size: \(data.count) bytes")
-
-			guard let mimeType = httpResponse.mimeType else {
-				error = "No content type in response"
-				return
-			}
-
-			print("Content-Type: \(mimeType)")
-
-			// Get the correct file extension from the response
-			let fileExtension: String
-			if mimeType.contains("jpeg") || mimeType.contains("jpg") {
-				fileExtension = "jpg"
-			} else if mimeType.contains("png") {
-				fileExtension = "png"
-			} else {
-				error = "Unsupported image type: \(mimeType)"
-				return
-			}
-
-			// Create wallpapers directory in Application Support
-			let appSupportURL = try FileManager.default.url(
-				for: .applicationSupportDirectory,
-				in: .userDomainMask,
-				appropriateFor: nil,
-				create: true
-			)
-			.appendingPathComponent("Wallhavend", isDirectory: true)
-
-			try? FileManager.default.createDirectory(at: appSupportURL, withIntermediateDirectories: true)
-
-			// Save the wallpaper with its ID as filename
-			let wallpaperPath = appSupportURL.appendingPathComponent("\(wallpaper.id).\(fileExtension)")
-			print("Saving wallpaper to: \(wallpaperPath.path)")
-
-			try data.write(to: wallpaperPath)
-
-			// Clean up previous wallpaper file after interval
-			if let oldURL = currentWallpaperFileURL {
-				previousWallpaperFileURL = oldURL
-				scheduleWallpaperDeletion(fileURL: oldURL, delay: timer?.timeInterval ?? 60)
-			}
-
-			currentWallpaperFileURL = wallpaperPath
-
-			// Verify the image can be loaded
-			guard let image = NSImage(contentsOf: wallpaperPath) else {
-				error = "Failed to load downloaded image"
-				try? FileManager.default.removeItem(at: wallpaperPath)
-				return
-			}
-
-			print("Setting wallpaper for all screens and spaces...")
-			try setWallpaperForAllScreensAndSpaces(url: wallpaperPath, image: image)
-			print("Wallpaper set successfully")
-
-			currentWallpaperURL = wallpaperURL
-			lastUpdated = Date()
+			let wallpaper = try await fetchRandomWallpaper()
+			let (data, fileExtension) = try await downloadWallpaper(from: wallpaper.path)
+			let wallpaperPath = try await saveAndProcessWallpaper(data: data, id: wallpaper.id, fileExtension: fileExtension)
+			try await setWallpaperAndUpdateState(wallpaperPath: wallpaperPath, originalURL: wallpaper.path)
 		} catch {
 			self.error = error.localizedDescription
 			print("Failed to update wallpaper: \(error)")
 		}
+	}
+
+	private func fetchRandomWallpaper() async throws -> Wallpaper {
+		print("Fetching random wallpaper...")
+		let wallpaper = try await WallhavenService.shared.fetchRandomWallpaper()
+		print("Got wallpaper: \(wallpaper.path)")
+
+		return wallpaper
+	}
+
+	private func downloadWallpaper(from path: String) async throws -> (Data, String) {
+		guard let wallpaperURL = URL(string: path) else {
+			throw WallpaperError.invalidURL
+		}
+
+		print("Downloading image from \(wallpaperURL)")
+		let (data, response) = try await URLSession(configuration: .ephemeral)
+			.data(from: wallpaperURL)
+
+		guard let httpResponse = response as? HTTPURLResponse else {
+			throw WallpaperError.invalidResponse
+		}
+
+		print("Download complete. Status: \(httpResponse.statusCode), Size: \(data.count) bytes")
+
+		guard let mimeType = httpResponse.mimeType else {
+			throw WallpaperError.noContentType
+		}
+
+		print("Content-Type: \(mimeType)")
+		let fileExtension = try getFileExtension(from: mimeType)
+
+		return (data, fileExtension)
+	}
+
+	private func getFileExtension(from mimeType: String) throws -> String {
+		if mimeType.contains("jpeg") || mimeType.contains("jpg") {
+			return "jpg"
+		} else if mimeType.contains("png") {
+			return "png"
+		}
+
+		throw WallpaperError.unsupportedImageType(mimeType)
+	}
+
+	private func saveAndProcessWallpaper(data: Data, id: String, fileExtension: String) async throws -> URL {
+		let appSupportURL = try FileManager.default.url(
+			for: .applicationSupportDirectory,
+			in: .userDomainMask,
+			appropriateFor: nil,
+			create: true
+		)
+		.appendingPathComponent("Wallhavend", isDirectory: true)
+
+		try? FileManager.default.createDirectory(at: appSupportURL, withIntermediateDirectories: true)
+
+		let wallpaperPath = appSupportURL.appendingPathComponent("\(id).\(fileExtension)")
+		print("Saving wallpaper to: \(wallpaperPath.path)")
+		try data.write(to: wallpaperPath)
+
+		guard let image = NSImage(contentsOf: wallpaperPath) else {
+			try? FileManager.default.removeItem(at: wallpaperPath)
+			throw WallpaperError.invalidImage
+		}
+
+		return wallpaperPath
+	}
+
+	private func setWallpaperAndUpdateState(wallpaperPath: URL, originalURL: String) async throws {
+		if let oldURL = currentWallpaperFileURL {
+			previousWallpaperFileURL = oldURL
+			scheduleWallpaperDeletion(fileURL: oldURL, delay: timer?.timeInterval ?? 60)
+		}
+
+		currentWallpaperFileURL = wallpaperPath
+
+		guard let image = NSImage(contentsOf: wallpaperPath) else {
+			throw WallpaperError.invalidImage
+		}
+
+		print("Setting wallpaper for all screens and spaces...")
+		try setWallpaperForAllScreensAndSpaces(url: wallpaperPath, image: image)
+		print("Wallpaper set successfully")
+
+		currentWallpaperURL = URL(string: originalURL)
+		lastUpdated = Date()
 	}
 
 	private func setWallpaperForAllScreensAndSpaces(url: URL, image: NSImage) throws {

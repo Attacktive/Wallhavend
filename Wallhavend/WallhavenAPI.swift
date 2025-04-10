@@ -120,7 +120,8 @@ class WallhavenService: ObservableObject {
 				let frame = screen.frame
 				return "\(Int(frame.width))x\(Int(frame.height))"
 			}
-			return "1920x1080" // Fallback if no screen is available
+
+			return "1920x1080"
 		}
 
 		let aspectRatio = parts[0] / parts[1]
@@ -138,17 +139,16 @@ class WallhavenService: ObservableObject {
 		}
 
 		// Use screen resolution as the base, maintaining the user's desired aspect ratio
+		let (width, height): (Double, Double)
 		if aspectRatio > 1 {
-			// Landscape: fix height to screen height and calculate width
-			let height = screenHeight
-			let width = height * aspectRatio
-			return "\(Int(width))x\(Int(height))"
+			width = screenHeight * aspectRatio
+			height = screenHeight
 		} else {
-			// Portrait: fix width to screen width and calculate height
-			let width = screenWidth
-			let height = width / aspectRatio
-			return "\(Int(width))x\(Int(height))"
+			width = screenWidth
+			height = screenWidth / aspectRatio
 		}
+
+		return "\(Int(width))x\(Int(height))"
 	}
 
 	private var cachedWallpapers: [Wallpaper] = []
@@ -182,82 +182,73 @@ class WallhavenService: ObservableObject {
 	func fetchRandomWallpaper() async throws -> Wallpaper {
 		// Check if we need to invalidate cache due to parameter changes
 		if shouldInvalidateCache() {
-			cachedWallpapers.removeAll()
-			print("Cache invalidated due to search parameter changes")
+				cachedWallpapers.removeAll()
+				print("Cache invalidated due to search parameter changes")
 		}
 
 		// If we have cached wallpapers, take one from it
 		if !cachedWallpapers.isEmpty {
-			let wallpaper = cachedWallpapers.removeFirst()
-			print("Using cached wallpaper: ID=\(wallpaper.id), Resolution=\(wallpaper.resolution), Category=\(wallpaper.category), Type=\(wallpaper.fileType)")
-			return wallpaper
+				return getNextCachedWallpaper()
 		}
 
-		// If we've used all cached wallpapers or have none, fetch new ones
+		return try await fetchNewWallpapers()
+	}
+
+	private func getNextCachedWallpaper() -> Wallpaper {
+		let wallpaper = cachedWallpapers.removeFirst()
+		print("Using cached wallpaper: ID=\(wallpaper.id), Resolution=\(wallpaper.resolution), Category=\(wallpaper.category), Type=\(wallpaper.fileType)")
+		return wallpaper
+	}
+
+	private func fetchNewWallpapers() async throws -> Wallpaper {
 		let categories = selectedCategories.isEmpty ? [.general] : selectedCategories
-		let categoriesString = WallhavenCategory.allCases.map {
-				categories.contains($0) ? "1" : "0"
-			}
-			.joined()
-
-		let fullUUID = UUID().uuidString
-		let seed = String(fullUUID.prefix(6))
-
-		let keywords = searchQuery.split(separator: ",")
-		let tagname = String(keywords[Int.random(in: 0..<keywords.count)])
-
-		var queryItems = [
-			"q": tagname.trimmingCharacters(in: .whitespacesAndNewlines),
-			"categories": categoriesString,
-			"purity": purityString,
-			"sorting": "random",
-			"seed": seed,
-			"atleast": ratioResolution
-		]
-
-		if !ratios.isEmpty {
-			queryItems["ratios"] = ratios
-		}
-
-		if !apiKey.isEmpty {
-			queryItems["apikey"] = apiKey
-		}
+		let categoriesString = buildCategoriesString(categories)
 
 		var components = URLComponents(string: "\(baseURL)/search")!
-		components.queryItems = queryItems.map {
-			URLQueryItem(name: $0.key, value: $0.value)
+		components.queryItems = buildQueryItems(categoriesString)
+
+		guard let url = components.url else {
+				throw URLError(.badURL)
 		}
 
-		print("Requesting URL: \(components.url!.absoluteString)")
-		let (data, urlResponse) = try await URLSession(configuration: .ephemeral)
-			.data(from: components.url!)
-
-		guard let httpResponse = urlResponse as? HTTPURLResponse else {
-			throw NSError(domain: "WallhavenService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid response type"])
+		var request = URLRequest(url: url)
+		if !apiKey.isEmpty {
+				request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
 		}
 
-		guard httpResponse.statusCode == 200 else {
-			throw NSError(
-				domain: "WallhavenService",
-				code: httpResponse.statusCode,
-				userInfo: [
-					NSLocalizedDescriptionKey: "API request failed with status code \(httpResponse.statusCode)"
-				]
-			)
-		}
-
+		let (data, _) = try await URLSession.shared.data(for: request)
 		let apiResponse = try JSONDecoder().decode(WallhavenResponse.self, from: data)
-		print("Got \(apiResponse.data.count) wallpapers")
 
-		guard !apiResponse.data.isEmpty else {
-			throw NSError(domain: "WallhavenService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No wallpapers found"])
+		if apiResponse.data.isEmpty {
+				throw URLError(.zeroByteResource)
 		}
 
-		// Cache the new wallpapers
 		cachedWallpapers = apiResponse.data
+		return getNextCachedWallpaper()
+	}
 
-		let wallpaper = cachedWallpapers.removeFirst()
-		print("Selected wallpaper: ID=\(wallpaper.id), Resolution=\(wallpaper.resolution), Category=\(wallpaper.category), Type=\(wallpaper.fileType)")
-		return wallpaper
+	private func buildCategoriesString(_ categories: Set<WallhavenCategory>) -> String {
+		WallhavenCategory.allCases.map {
+				categories.contains($0) ? "1" : "0"
+		}
+		.joined()
+	}
+
+	private func buildQueryItems(_ categoriesString: String) -> [URLQueryItem] {
+		var items = [
+			URLQueryItem(name: "q", value: searchQuery),
+			URLQueryItem(name: "categories", value: categoriesString),
+			URLQueryItem(name: "purity", value: purityString),
+			URLQueryItem(name: "ratios", value: ratios),
+			URLQueryItem(name: "sorting", value: "random"),
+			URLQueryItem(name: "seed", value: UUID().uuidString),
+			URLQueryItem(name: "atleast", value: ratioResolution)
+		]
+
+		if !apiKey.isEmpty {
+			items.append(URLQueryItem(name: "apikey", value: apiKey))
+		}
+
+		return items
 	}
 }
