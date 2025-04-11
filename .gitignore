@@ -95,5 +95,6 @@ iOSInjectionProject/
 
 # Build directory
 build/
+.build/
 
 .idea/
