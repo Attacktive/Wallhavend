@@ -34,6 +34,10 @@ class WallpaperManager: ObservableObject {
 	func startAutoUpdate(interval: TimeInterval = 60) {
 		stopAutoUpdate()
 		isRunning = true
+
+		// Clean up old wallpapers on start
+		cleanupOldWallpapers()
+
 		timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
 			guard let self = self else {
 				return
@@ -41,6 +45,7 @@ class WallpaperManager: ObservableObject {
 
 			Task { @MainActor in
 				await self.updateWallpaper()
+				self.cleanupOldWallpapers()
 			}
 		}
 
@@ -79,6 +84,7 @@ class WallpaperManager: ObservableObject {
 	func updateWallpaper() async {
 		do {
 			error = nil
+
 			let wallpaper = try await fetchRandomWallpaper()
 			let (data, fileExtension) = try await downloadWallpaper(from: wallpaper.path)
 			let wallpaperPath = try await saveAndProcessWallpaper(data: data, id: wallpaper.id, fileExtension: fileExtension)
@@ -87,6 +93,12 @@ class WallpaperManager: ObservableObject {
 			self.error = error.localizedDescription
 			print("Failed to update wallpaper: \(error)")
 		}
+	}
+
+	func revealCurrentWallpaperInFinder() {
+		guard let url = currentWallpaperFileURL else { return }
+
+		NSWorkspace.shared.selectFile(url.path, inFileViewerRootedAtPath: url.deletingLastPathComponent().path)
 	}
 
 	private func fetchRandomWallpaper() async throws -> Wallpaper {
@@ -196,32 +208,49 @@ class WallpaperManager: ObservableObject {
 		}
 	}
 
-	func revealCurrentWallpaperInFinder() {
-		guard let url = currentWallpaperFileURL else { return }
+	private func cleanupOldWallpapers() {
+		do {
+			let appSupportURL = try FileManager.default.url(
+				for: .applicationSupportDirectory,
+				in: .userDomainMask,
+				appropriateFor: nil,
+				create: true
+			)
+			.appendingPathComponent("Wallhavend", isDirectory: true)
 
-		NSWorkspace.shared.selectFile(url.path, inFileViewerRootedAtPath: url.deletingLastPathComponent().path)
+			let fileManager = FileManager.default
+			let files = try fileManager.contentsOfDirectory(at: appSupportURL, includingPropertiesForKeys: [.creationDateKey])
+
+			// Keep current and previous wallpapers
+			let wallpapersToKeep = Set([currentWallpaperFileURL, previousWallpaperFileURL].compactMap { $0 })
+
+			for file in files {
+				guard !wallpapersToKeep.contains(file) else { continue }
+
+				try? fileManager.removeItem(at: file)
+				print("Cleaned up old wallpaper: \(file.lastPathComponent)")
+			}
+		} catch {
+			print("Failed to cleanup old wallpapers: \(error)")
+		}
 	}
 
 	private func scheduleWallpaperDeletion(fileURL: URL, delay: TimeInterval) {
 		// Cancel any pending deletion
 		deletionWorkItem?.cancel()
 
-		// Create new deletion work item
+		// Schedule new deletion
 		let workItem = DispatchWorkItem { [weak self] in
 			guard let self = self else { return }
 
-			do {
-				if fileURL == self.previousWallpaperFileURL {
-					try FileManager.default.removeItem(at: fileURL)
-					self.previousWallpaperFileURL = nil
-				}
-			} catch {
-				print("Failed to delete old wallpaper: \(error)")
+			// Only delete if this URL is not the current or previous wallpaper
+			if fileURL != self.currentWallpaperFileURL && fileURL != self.previousWallpaperFileURL {
+				try? FileManager.default.removeItem(at: fileURL)
+				print("Deleted old wallpaper: \(fileURL.lastPathComponent)")
 			}
 		}
 
-		// Store the work item and schedule it
 		deletionWorkItem = workItem
-		DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + delay, execute: workItem)
+		DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
 	}
 }
