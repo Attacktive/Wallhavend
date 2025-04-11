@@ -14,8 +14,9 @@
 		D00D707A2DA4FE2B0027B3E6 /* WallhavendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00D70792DA4FE2B0027B3E6 /* WallhavendTests.swift */; };
 		D00D70842DA4FE2C0027B3E6 /* WallhavendUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00D70832DA4FE2C0027B3E6 /* WallhavendUITests.swift */; };
 		D00D70862DA4FE2C0027B3E6 /* WallhavendUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00D70852DA4FE2C0027B3E6 /* WallhavendUITestsLaunchTests.swift */; };
+		D0845786FC8CCE2F351033B6 /* WallpaperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D084531AC8A278C3B6A9294B /* WallpaperManager.swift */; };
+		D08459AE95089671050F7656 /* WallpaperError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0845261E375FA247E68B3D4 /* WallpaperError.swift */; };
 		D0845F9928CE20A2FD47B9B5 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = D08450C1167D7D56F3CBFEB2 /* .gitignore */; };
-		D0B86B3E2DA503AD005B1AC5 /* WallpaperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B86B3C2DA503AC005B1AC5 /* WallpaperManager.swift */; };
 		D0B86B3F2DA503AD005B1AC5 /* WallhavenAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B86B3D2DA503AD005B1AC5 /* WallhavenAPI.swift */; };
 /* End PBXBuildFile section */
 
@@ -46,9 +47,11 @@
 		D00D70832DA4FE2C0027B3E6 /* WallhavendUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendUITests.swift; sourceTree = "<group>"; };
 		D00D70852DA4FE2C0027B3E6 /* WallhavendUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		D08450C1167D7D56F3CBFEB2 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = file.gitignore; path = .gitignore; sourceTree = "<group>"; };
+		D0845261E375FA247E68B3D4 /* WallpaperError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallpaperError.swift; sourceTree = "<group>"; };
+		D084531AC8A278C3B6A9294B /* WallpaperManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallpaperManager.swift; sourceTree = "<group>"; };
 		D0845B42D74F5090BF6787DB /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
-		D0B86B3C2DA503AC005B1AC5 /* WallpaperManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallpaperManager.swift; sourceTree = "<group>"; };
 		D0B86B3D2DA503AD005B1AC5 /* WallhavenAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallhavenAPI.swift; sourceTree = "<group>"; };
+		D0CFDA822DA8D2230008E30D /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,12 +94,14 @@
 			isa = PBXGroup;
 			children = (
 				D0B86B3D2DA503AD005B1AC5 /* WallhavenAPI.swift */,
-				D0B86B3C2DA503AC005B1AC5 /* WallpaperManager.swift */,
 				D00D70672DA4FE280027B3E6 /* WallhavendApp.swift */,
+				D0CFDA822DA8D2230008E30D /* TestPlan.xctestplan */,
 				D00D70692DA4FE280027B3E6 /* ContentView.swift */,
 				D00D706B2DA4FE2B0027B3E6 /* Assets.xcassets */,
 				D00D70702DA4FE2B0027B3E6 /* Wallhavend.entitlements */,
 				D00D706D2DA4FE2B0027B3E6 /* Preview Content */,
+				D084531AC8A278C3B6A9294B /* WallpaperManager.swift */,
+				D0845261E375FA247E68B3D4 /* WallpaperError.swift */,
 			);
 			path = Wallhavend;
 			sourceTree = "<group>";
@@ -255,8 +260,9 @@
 			files = (
 				D00D706A2DA4FE280027B3E6 /* ContentView.swift in Sources */,
 				D0B86B3F2DA503AD005B1AC5 /* WallhavenAPI.swift in Sources */,
-				D0B86B3E2DA503AD005B1AC5 /* WallpaperManager.swift in Sources */,
 				D00D70682DA4FE280027B3E6 /* WallhavendApp.swift in Sources */,
+				D0845786FC8CCE2F351033B6 /* WallpaperManager.swift in Sources */,
+				D08459AE95089671050F7656 /* WallpaperError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -428,7 +434,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.Wallhavend;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -456,7 +462,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.Wallhavend;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -474,7 +480,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.7;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.WallhavendTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;

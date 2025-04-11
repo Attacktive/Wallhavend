@@ -10,22 +10,20 @@ on:
 jobs:
   build-and-test:
     name: 'Build and test'
+    strategy:
+      matrix:
+        swift-version: ['5.7']
     runs-on: 'macos-13'
-
     steps:
+      - name: 'Setup Swift'
+        uses: 'swift-actions/setup-swift@65540b95f51493d65f5e59e97dcef9629ddf11bf'
+        with:
+          swift-version: "${{ matrix.swift-version }}"
       - name: 'Checkout'
         uses: 'actions/checkout@v4'
-      - name: 'Select Xcode'
-        run: sudo xcode-select -s '/Applications/Xcode.app'
-      - name: 'Build and test'
-        run: |
-          xcodebuild \
-          -project Wallhavend.xcodeproj \
-          -scheme Wallhavend \
-          -target WallhavendTests \
-          -target WallhavendUITests \
-          -configuration Debug \
-          -destination 'platform=macOS' \
-          test \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO
+      - name: 'Initialize a new package'
+        run: 'swift package init --type executable'
+      - name: 'Build'
+        run: 'swift build'
+      - name: 'Run tests'
+        run: 'swift test'
