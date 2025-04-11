@@ -208,7 +208,7 @@ class WallhavenService: ObservableObject {
 		components.queryItems = buildQueryItems(categoriesString)
 
 		guard let url = components.url else {
-			throw URLError(.badURL)
+			throw WallpaperError.invalidURL
 		}
 
 		var request = URLRequest(url: url)
@@ -220,7 +220,7 @@ class WallhavenService: ObservableObject {
 		let apiResponse = try JSONDecoder().decode(WallhavenResponse.self, from: data)
 
 		if apiResponse.data.isEmpty {
-			throw URLError(.zeroByteResource)
+			throw WallpaperError.zeroByteResource
 		}
 
 		cachedWallpapers = apiResponse.data

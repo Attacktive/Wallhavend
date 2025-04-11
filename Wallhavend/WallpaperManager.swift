@@ -68,29 +68,6 @@ class WallpaperManager: ObservableObject {
 		isRunning = false
 	}
 
-	private enum WallpaperError: LocalizedError {
-		case invalidURL
-		case invalidResponse
-		case noContentType
-		case unsupportedImageType(String)
-		case invalidImage
-
-		var errorDescription: String? {
-			switch self {
-			case .invalidURL:
-				return "Invalid wallpaper URL"
-			case .invalidResponse:
-				return "Invalid response type"
-			case .noContentType:
-				return "No content type in response"
-			case .unsupportedImageType(let type):
-				return "Unsupported image type: \(type)"
-			case .invalidImage:
-				return "Failed to load downloaded image"
-			}
-		}
-	}
-
 	func updateWallpaper() async {
 		do {
 			error = nil
@@ -169,7 +146,7 @@ class WallpaperManager: ObservableObject {
 		print("Saving wallpaper to: \(wallpaperPath.path)")
 		try data.write(to: wallpaperPath)
 
-		guard let image = NSImage(contentsOf: wallpaperPath) else {
+		guard NSImage(contentsOf: wallpaperPath) != nil else {
 			try? FileManager.default.removeItem(at: wallpaperPath)
 			throw WallpaperError.invalidImage
 		}
