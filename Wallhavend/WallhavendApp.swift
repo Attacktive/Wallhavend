@@ -65,15 +65,8 @@ struct WallhavendApp: App {
 	var appDelegate
 
 	var body: some Scene {
-		WindowGroup {
-			ContentView()
-				.environmentObject(wallpaperManager)
-				.environmentObject(wallhavenService)
-				.frame(width: 500, height: 600)
-				.fixedSize()
-		}
-		.commands {
-			TextEditingCommands()
+		Settings {
+			EmptyView()
 		}
 	}
 }
@@ -86,6 +79,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 	@AppStorage("startAutoUpdateOnLaunch")
 	private var startAutoUpdateOnLaunch: Bool = false
 
+	@AppStorage("updateInterval")
+	private var updateInterval: TimeInterval = 60
+
 	func applicationDidFinishLaunching(_ notification: Notification) {
 		statusBarController = StatusBarController(appDelegate: self)
 
@@ -93,13 +89,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 		NSApp.setActivationPolicy(.accessory)
 
 		if startAutoUpdateOnLaunch {
-			wallpaperManager.startAutoUpdate()
+			wallpaperManager.startAutoUpdate(interval: updateInterval)
 		}
 	}
 
-	func application(_ application: NSApplication, open urls: [URL]) {
-		showSettings()
-	}
+	func application(_ application: NSApplication, open urls: [URL]) {}
 
 	func showSettings() {
 		if let windowController = settingsWindowController {
