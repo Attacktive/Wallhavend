@@ -20,14 +20,19 @@ jobs:
       - name: 'Build'
         run: |
           xcodebuild build \
+          -project Wallhavend.xcodeproj \
           -scheme Wallhavend \
+          -configuration Debug \
           -destination 'platform=macOS' \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO
       - name: 'Run tests'
         run: |
           xcodebuild test \
+          -project Wallhavend.xcodeproj \
           -scheme Wallhavend \
+          -configuration Debug \
           -destination 'platform=macOS' \
+          -testPlan Wallhavend \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO
