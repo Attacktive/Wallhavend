@@ -182,13 +182,13 @@ class WallhavenService: ObservableObject {
 	func fetchRandomWallpaper() async throws -> Wallpaper {
 		// Check if we need to invalidate cache due to parameter changes
 		if shouldInvalidateCache() {
-				cachedWallpapers.removeAll()
-				print("Cache invalidated due to search parameter changes")
+			cachedWallpapers.removeAll()
+			print("Cache invalidated due to search parameter changes")
 		}
 
 		// If we have cached wallpapers, take one from it
 		if !cachedWallpapers.isEmpty {
-				return getNextCachedWallpaper()
+			return getNextCachedWallpaper()
 		}
 
 		return try await fetchNewWallpapers()
@@ -208,22 +208,23 @@ class WallhavenService: ObservableObject {
 		components.queryItems = buildQueryItems(categoriesString)
 
 		guard let url = components.url else {
-				throw URLError(.badURL)
+			throw URLError(.badURL)
 		}
 
 		var request = URLRequest(url: url)
 		if !apiKey.isEmpty {
-				request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
+			request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
 		}
 
 		let (data, _) = try await URLSession.shared.data(for: request)
 		let apiResponse = try JSONDecoder().decode(WallhavenResponse.self, from: data)
 
 		if apiResponse.data.isEmpty {
-				throw URLError(.zeroByteResource)
+			throw URLError(.zeroByteResource)
 		}
 
 		cachedWallpapers = apiResponse.data
+
 		return getNextCachedWallpaper()
 	}
 

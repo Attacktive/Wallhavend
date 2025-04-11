@@ -1,12 +1,4 @@
-//
-// WallhavendTests.swift
-// WallhavendTests
-//
-// Created by Pantera on 2025-04-08.
-//
-
 import XCTest
-
 @testable import Wallhavend
 final class WallhavendTests: XCTestCase {
 	override func setUpWithError() throws {

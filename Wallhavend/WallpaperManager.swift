@@ -4,14 +4,24 @@ import AppKit
 @MainActor
 class WallpaperManager: ObservableObject {
 	static let shared = WallpaperManager()
+
 	private var timer: Timer?
 	private var currentWallpaperFileURL: URL?
 	private var previousWallpaperFileURL: URL?
 	private var deletionWorkItem: DispatchWorkItem?
-	@Published var isRunning = false
-	@Published var lastUpdated: Date?
-	@Published var currentWallpaperURL: URL?
-	@Published var error: String?
+
+	@Published
+	var isRunning = false
+
+	@Published
+	var lastUpdated: Date?
+
+	@Published
+	var currentWallpaperURL: URL?
+
+	@Published
+	var error: String?
+
 	private let wallhavenService = WallhavenService.shared
 	private let dateFormatter: DateFormatter = {
 		let formatter = DateFormatter()
