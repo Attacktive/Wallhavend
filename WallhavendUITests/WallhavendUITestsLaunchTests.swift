@@ -1,10 +1,3 @@
-//
-// WallhavendUITestsLaunchTests.swift
-// WallhavendUITests
-//
-// Created by Pantera on 2025-04-08.
-//
-
 import XCTest
 
 final class WallhavendUITestsLaunchTests: XCTestCase {
