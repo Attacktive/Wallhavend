@@ -17,13 +17,21 @@ jobs:
         uses: 'actions/checkout@v4'
       - name: 'Select Xcode'
         run: sudo xcode-select -s '/Applications/Xcode.app'
-      - name: 'Test'
+      - name: 'Build'
         run: |
-          xcodebuild clean test \
+          xcodebuild build-for-testing \
           -project Wallhavend.xcodeproj \
           -scheme Wallhavend \
           -configuration Debug \
           -destination 'platform=macOS' \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO
-
+      - name: 'Test'
+        run: |
+          xcodebuild test-without-building \
+          -project Wallhavend.xcodeproj \
+          -scheme Wallhavend \
+          -configuration Debug \
+          -destination 'platform=macOS' \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO
