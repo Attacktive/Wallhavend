@@ -1,17 +1,89 @@
 import XCTest
 
 final class WallhavendUITests: XCTestCase {
+	var app: XCUIApplication!
+
 	override func setUpWithError() throws {
-		// Put setup code here. This method is called before the invocation of each test method in the class.
-
-		// In UI tests it is usually best to stop immediately when a failure occurs.
 		continueAfterFailure = false
-
-		// In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
+		app = XCUIApplication()
+		app.launch()
 	}
 
 	override func tearDownWithError() throws {
-		// Put teardown code here. This method is called after the invocation of each test method in the class.
+		app = nil
+	}
+
+	func testBasicUIElements() throws {
+		// Check title
+		XCTAssertTrue(app.staticTexts["Wallhavend"].exists)
+
+		// Check search field
+		XCTAssertTrue(app.textFields["Search Query"].exists)
+
+		// Check content filter toggles
+		XCTAssertTrue(app.checkBoxes["SFW"].exists)
+		XCTAssertTrue(app.checkBoxes["Sketchy"].exists)
+		XCTAssertTrue(app.checkBoxes["NSFW"].exists)
+
+		// Check category toggles
+		XCTAssertTrue(app.checkBoxes["General"].exists)
+		XCTAssertTrue(app.checkBoxes["Anime"].exists)
+		XCTAssertTrue(app.checkBoxes["People"].exists)
+
+		// Check advanced options
+		XCTAssertTrue(app.textFields["Aspect Ratio (e.g. 16x9)"].exists)
+		XCTAssertTrue(app.secureTextFields["API Key (optional)"].exists)
+
+		// Check buttons
+		XCTAssertTrue(app.buttons["Update Now"].exists)
+		XCTAssertTrue(app.buttons["Start"].exists)
+	}
+
+	func testUpdateInterval() throws {
+		// Open update interval picker
+		let picker = app.popUpButtons.firstMatch
+		XCTAssertTrue(picker.exists)
+		picker.click()
+
+		// Check interval options exist
+		XCTAssertTrue(app.menuItems["1 minute"].exists)
+		XCTAssertTrue(app.menuItems["5 minutes"].exists)
+		XCTAssertTrue(app.menuItems["15 minutes"].exists)
+		XCTAssertTrue(app.menuItems["30 minutes"].exists)
+		XCTAssertTrue(app.menuItems["1 hour"].exists)
+
+		// Select an interval
+		app.menuItems["5 minutes"].click()
+	}
+
+	func testStartStopAutoUpdate() throws {
+		// Start auto-update
+		let startButton = app.buttons["Start"]
+		XCTAssertTrue(startButton.exists)
+		startButton.click()
+
+		// Button should change to "Stop"
+		let stopButton = app.buttons["Stop"]
+		XCTAssertTrue(stopButton.exists)
+
+		// Stop auto-update
+		stopButton.click()
+
+		// Button should change back to "Start"
+		XCTAssertTrue(app.buttons["Start"].exists)
+	}
+
+	func testSearchQuery() throws {
+		// Find search field
+		let searchField = app.textFields["Search Query"]
+		XCTAssertTrue(searchField.exists)
+
+		// Type a search query
+		searchField.click()
+		searchField.typeText("nature landscape")
+
+		// Update wallpaper
+		app.buttons["Update Now"].click()
 	}
 
 	func testExample() throws {
