@@ -7,69 +7,68 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D00D70682DA4FE280027B3E6 /* WallhavendApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00D70672DA4FE280027B3E6 /* WallhavendApp.swift */; };
-		D00D706A2DA4FE280027B3E6 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00D70692DA4FE280027B3E6 /* ContentView.swift */; };
-		D00D706C2DA4FE2B0027B3E6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D00D706B2DA4FE2B0027B3E6 /* Assets.xcassets */; };
-		D00D706F2DA4FE2B0027B3E6 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D00D706E2DA4FE2B0027B3E6 /* Preview Assets.xcassets */; };
-		D00D707A2DA4FE2B0027B3E6 /* WallhavendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00D70792DA4FE2B0027B3E6 /* WallhavendTests.swift */; };
-		D00D70842DA4FE2C0027B3E6 /* WallhavendUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00D70832DA4FE2C0027B3E6 /* WallhavendUITests.swift */; };
-		D00D70862DA4FE2C0027B3E6 /* WallhavendUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00D70852DA4FE2C0027B3E6 /* WallhavendUITestsLaunchTests.swift */; };
-		D0845786FC8CCE2F351033B6 /* WallpaperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D084531AC8A278C3B6A9294B /* WallpaperManager.swift */; };
-		D08459AE95089671050F7656 /* WallpaperError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0845261E375FA247E68B3D4 /* WallpaperError.swift */; };
-		D0845F9928CE20A2FD47B9B5 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = D08450C1167D7D56F3CBFEB2 /* .gitignore */; };
-		D0B86B3F2DA503AD005B1AC5 /* WallhavenAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B86B3D2DA503AD005B1AC5 /* WallhavenAPI.swift */; };
+		D01707E62DCC4F3E00158EDD /* WallhavenAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01707E32DCC4F3E00158EDD /* WallhavenAPI.swift */; };
+		D01707E72DCC4F3E00158EDD /* WallpaperError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01707E42DCC4F3E00158EDD /* WallpaperError.swift */; };
+		D01707E82DCC4F3E00158EDD /* WallpaperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01707E52DCC4F3E00158EDD /* WallpaperManager.swift */; };
+		D0ED74982DCB72EE0008C397 /* WallhavendApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74972DCB72EE0008C397 /* WallhavendApp.swift */; };
+		D0ED749A2DCB72EE0008C397 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74992DCB72EE0008C397 /* ContentView.swift */; };
+		D0ED749C2DCB72F70008C397 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0ED749B2DCB72F70008C397 /* Assets.xcassets */; };
+		D0ED749F2DCB72F70008C397 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0ED749E2DCB72F70008C397 /* Preview Assets.xcassets */; };
+		D0ED74AA2DCB72F90008C397 /* WallhavendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74A92DCB72F90008C397 /* WallhavendTests.swift */; };
+		D0ED74B42DCB72F90008C397 /* WallhavendUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74B32DCB72F90008C397 /* WallhavendUITests.swift */; };
+		D0ED74B62DCB72F90008C397 /* WallhavendUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74B52DCB72F90008C397 /* WallhavendUITestsLaunchTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		D00D70762DA4FE2B0027B3E6 /* PBXContainerItemProxy */ = {
+		D0ED74A62DCB72F90008C397 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = D00D705C2DA4FE270027B3E6 /* Project object */;
+			containerPortal = D0ED748C2DCB72EE0008C397 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D00D70632DA4FE280027B3E6;
+			remoteGlobalIDString = D0ED74932DCB72EE0008C397;
 			remoteInfo = Wallhavend;
 		};
-		D00D70802DA4FE2C0027B3E6 /* PBXContainerItemProxy */ = {
+		D0ED74B02DCB72F90008C397 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = D00D705C2DA4FE270027B3E6 /* Project object */;
+			containerPortal = D0ED748C2DCB72EE0008C397 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D00D70632DA4FE280027B3E6;
+			remoteGlobalIDString = D0ED74932DCB72EE0008C397;
 			remoteInfo = Wallhavend;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		D00D70672DA4FE280027B3E6 /* WallhavendApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendApp.swift; sourceTree = "<group>"; };
-		D00D70692DA4FE280027B3E6 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		D00D706B2DA4FE2B0027B3E6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		D00D706E2DA4FE2B0027B3E6 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		D00D70702DA4FE2B0027B3E6 /* Wallhavend.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Wallhavend.entitlements; sourceTree = "<group>"; };
-		D00D70792DA4FE2B0027B3E6 /* WallhavendTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendTests.swift; sourceTree = "<group>"; };
-		D00D70832DA4FE2C0027B3E6 /* WallhavendUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendUITests.swift; sourceTree = "<group>"; };
-		D00D70852DA4FE2C0027B3E6 /* WallhavendUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		D08450C1167D7D56F3CBFEB2 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = file.gitignore; path = .gitignore; sourceTree = "<group>"; };
-		D0845261E375FA247E68B3D4 /* WallpaperError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallpaperError.swift; sourceTree = "<group>"; };
-		D084531AC8A278C3B6A9294B /* WallpaperManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallpaperManager.swift; sourceTree = "<group>"; };
-		D0845B42D74F5090BF6787DB /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
-		D0B86B3D2DA503AD005B1AC5 /* WallhavenAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallhavenAPI.swift; sourceTree = "<group>"; };
-		D0CFDA822DA8D2230008E30D /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
+		D01707E32DCC4F3E00158EDD /* WallhavenAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallhavenAPI.swift; sourceTree = "<group>"; };
+		D01707E42DCC4F3E00158EDD /* WallpaperError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallpaperError.swift; sourceTree = "<group>"; };
+		D01707E52DCC4F3E00158EDD /* WallpaperManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallpaperManager.swift; sourceTree = "<group>"; };
+		D0ED74942DCB72EE0008C397 /* Wallhavend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wallhavend.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D0ED74972DCB72EE0008C397 /* WallhavendApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendApp.swift; sourceTree = "<group>"; };
+		D0ED74992DCB72EE0008C397 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		D0ED749B2DCB72F70008C397 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D0ED749E2DCB72F70008C397 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		D0ED74A02DCB72F70008C397 /* Wallhavend.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Wallhavend.entitlements; sourceTree = "<group>"; };
+		D0ED74A52DCB72F90008C397 /* WallhavendTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WallhavendTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D0ED74A92DCB72F90008C397 /* WallhavendTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendTests.swift; sourceTree = "<group>"; };
+		D0ED74AF2DCB72F90008C397 /* WallhavendUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WallhavendUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D0ED74B32DCB72F90008C397 /* WallhavendUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendUITests.swift; sourceTree = "<group>"; };
+		D0ED74B52DCB72F90008C397 /* WallhavendUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendUITestsLaunchTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		D00D70612DA4FE280027B3E6 /* Frameworks */ = {
+		D0ED74912DCB72EE0008C397 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D00D70722DA4FE2B0027B3E6 /* Frameworks */ = {
+		D0ED74A22DCB72F90008C397 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D00D707C2DA4FE2C0027B3E6 /* Frameworks */ = {
+		D0ED74AC2DCB72F90008C397 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -79,54 +78,62 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		D00D705B2DA4FE270027B3E6 = {
+		D0ED748B2DCB72EE0008C397 = {
 			isa = PBXGroup;
 			children = (
-				D00D70662DA4FE280027B3E6 /* Wallhavend */,
-				D00D70782DA4FE2B0027B3E6 /* WallhavendTests */,
-				D00D70822DA4FE2C0027B3E6 /* WallhavendUITests */,
-				D08450C1167D7D56F3CBFEB2 /* .gitignore */,
-				D0845B42D74F5090BF6787DB /* LICENSE */,
+				D0ED74962DCB72EE0008C397 /* Wallhavend */,
+				D0ED74A82DCB72F90008C397 /* WallhavendTests */,
+				D0ED74B22DCB72F90008C397 /* WallhavendUITests */,
+				D0ED74952DCB72EE0008C397 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		D00D70662DA4FE280027B3E6 /* Wallhavend */ = {
+		D0ED74952DCB72EE0008C397 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D0B86B3D2DA503AD005B1AC5 /* WallhavenAPI.swift */,
-				D00D70672DA4FE280027B3E6 /* WallhavendApp.swift */,
-				D0CFDA822DA8D2230008E30D /* TestPlan.xctestplan */,
-				D00D70692DA4FE280027B3E6 /* ContentView.swift */,
-				D00D706B2DA4FE2B0027B3E6 /* Assets.xcassets */,
-				D00D70702DA4FE2B0027B3E6 /* Wallhavend.entitlements */,
-				D00D706D2DA4FE2B0027B3E6 /* Preview Content */,
-				D084531AC8A278C3B6A9294B /* WallpaperManager.swift */,
-				D0845261E375FA247E68B3D4 /* WallpaperError.swift */,
+				D0ED74942DCB72EE0008C397 /* Wallhavend.app */,
+				D0ED74A52DCB72F90008C397 /* WallhavendTests.xctest */,
+				D0ED74AF2DCB72F90008C397 /* WallhavendUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D0ED74962DCB72EE0008C397 /* Wallhavend */ = {
+			isa = PBXGroup;
+			children = (
+				D01707E32DCC4F3E00158EDD /* WallhavenAPI.swift */,
+				D01707E42DCC4F3E00158EDD /* WallpaperError.swift */,
+				D01707E52DCC4F3E00158EDD /* WallpaperManager.swift */,
+				D0ED74972DCB72EE0008C397 /* WallhavendApp.swift */,
+				D0ED74992DCB72EE0008C397 /* ContentView.swift */,
+				D0ED749B2DCB72F70008C397 /* Assets.xcassets */,
+				D0ED74A02DCB72F70008C397 /* Wallhavend.entitlements */,
+				D0ED749D2DCB72F70008C397 /* Preview Content */,
 			);
 			path = Wallhavend;
 			sourceTree = "<group>";
 		};
-		D00D706D2DA4FE2B0027B3E6 /* Preview Content */ = {
+		D0ED749D2DCB72F70008C397 /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
-				D00D706E2DA4FE2B0027B3E6 /* Preview Assets.xcassets */,
+				D0ED749E2DCB72F70008C397 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		D00D70782DA4FE2B0027B3E6 /* WallhavendTests */ = {
+		D0ED74A82DCB72F90008C397 /* WallhavendTests */ = {
 			isa = PBXGroup;
 			children = (
-				D00D70792DA4FE2B0027B3E6 /* WallhavendTests.swift */,
+				D0ED74A92DCB72F90008C397 /* WallhavendTests.swift */,
 			);
 			path = WallhavendTests;
 			sourceTree = "<group>";
 		};
-		D00D70822DA4FE2C0027B3E6 /* WallhavendUITests */ = {
+		D0ED74B22DCB72F90008C397 /* WallhavendUITests */ = {
 			isa = PBXGroup;
 			children = (
-				D00D70832DA4FE2C0027B3E6 /* WallhavendUITests.swift */,
-				D00D70852DA4FE2C0027B3E6 /* WallhavendUITestsLaunchTests.swift */,
+				D0ED74B32DCB72F90008C397 /* WallhavendUITests.swift */,
+				D0ED74B52DCB72F90008C397 /* WallhavendUITestsLaunchTests.swift */,
 			);
 			path = WallhavendUITests;
 			sourceTree = "<group>";
@@ -134,13 +141,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D00D70632DA4FE280027B3E6 /* Wallhavend */ = {
+		D0ED74932DCB72EE0008C397 /* Wallhavend */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D00D70892DA4FE2C0027B3E6 /* Build configuration list for PBXNativeTarget "Wallhavend" */;
+			buildConfigurationList = D0ED74B92DCB72F90008C397 /* Build configuration list for PBXNativeTarget "Wallhavend" */;
 			buildPhases = (
-				D00D70602DA4FE280027B3E6 /* Sources */,
-				D00D70612DA4FE280027B3E6 /* Frameworks */,
-				D00D70622DA4FE280027B3E6 /* Resources */,
+				D0ED74902DCB72EE0008C397 /* Sources */,
+				D0ED74912DCB72EE0008C397 /* Frameworks */,
+				D0ED74922DCB72EE0008C397 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -148,66 +155,69 @@
 			);
 			name = Wallhavend;
 			productName = Wallhavend;
+			productReference = D0ED74942DCB72EE0008C397 /* Wallhavend.app */;
 			productType = "com.apple.product-type.application";
 		};
-		D00D70742DA4FE2B0027B3E6 /* WallhavendTests */ = {
+		D0ED74A42DCB72F90008C397 /* WallhavendTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D00D708C2DA4FE2C0027B3E6 /* Build configuration list for PBXNativeTarget "WallhavendTests" */;
+			buildConfigurationList = D0ED74BC2DCB72F90008C397 /* Build configuration list for PBXNativeTarget "WallhavendTests" */;
 			buildPhases = (
-				D00D70712DA4FE2B0027B3E6 /* Sources */,
-				D00D70722DA4FE2B0027B3E6 /* Frameworks */,
-				D00D70732DA4FE2B0027B3E6 /* Resources */,
+				D0ED74A12DCB72F90008C397 /* Sources */,
+				D0ED74A22DCB72F90008C397 /* Frameworks */,
+				D0ED74A32DCB72F90008C397 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				D00D70772DA4FE2B0027B3E6 /* PBXTargetDependency */,
+				D0ED74A72DCB72F90008C397 /* PBXTargetDependency */,
 			);
 			name = WallhavendTests;
 			productName = WallhavendTests;
+			productReference = D0ED74A52DCB72F90008C397 /* WallhavendTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		D00D707E2DA4FE2C0027B3E6 /* WallhavendUITests */ = {
+		D0ED74AE2DCB72F90008C397 /* WallhavendUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D00D708F2DA4FE2C0027B3E6 /* Build configuration list for PBXNativeTarget "WallhavendUITests" */;
+			buildConfigurationList = D0ED74BF2DCB72F90008C397 /* Build configuration list for PBXNativeTarget "WallhavendUITests" */;
 			buildPhases = (
-				D00D707B2DA4FE2C0027B3E6 /* Sources */,
-				D00D707C2DA4FE2C0027B3E6 /* Frameworks */,
-				D00D707D2DA4FE2C0027B3E6 /* Resources */,
+				D0ED74AB2DCB72F90008C397 /* Sources */,
+				D0ED74AC2DCB72F90008C397 /* Frameworks */,
+				D0ED74AD2DCB72F90008C397 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				D00D70812DA4FE2C0027B3E6 /* PBXTargetDependency */,
+				D0ED74B12DCB72F90008C397 /* PBXTargetDependency */,
 			);
 			name = WallhavendUITests;
 			productName = WallhavendUITests;
+			productReference = D0ED74AF2DCB72F90008C397 /* WallhavendUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		D00D705C2DA4FE270027B3E6 /* Project object */ = {
+		D0ED748C2DCB72EE0008C397 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1420;
 				LastUpgradeCheck = 1420;
 				TargetAttributes = {
-					D00D70632DA4FE280027B3E6 = {
+					D0ED74932DCB72EE0008C397 = {
 						CreatedOnToolsVersion = 14.2;
 					};
-					D00D70742DA4FE2B0027B3E6 = {
+					D0ED74A42DCB72F90008C397 = {
 						CreatedOnToolsVersion = 14.2;
-						TestTargetID = D00D70632DA4FE280027B3E6;
+						TestTargetID = D0ED74932DCB72EE0008C397;
 					};
-					D00D707E2DA4FE2C0027B3E6 = {
+					D0ED74AE2DCB72F90008C397 = {
 						CreatedOnToolsVersion = 14.2;
-						TestTargetID = D00D70632DA4FE280027B3E6;
+						TestTargetID = D0ED74932DCB72EE0008C397;
 					};
 				};
 			};
-			buildConfigurationList = D00D705F2DA4FE270027B3E6 /* Build configuration list for PBXProject "Wallhavend" */;
+			buildConfigurationList = D0ED748F2DCB72EE0008C397 /* Build configuration list for PBXProject "Wallhavend" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -215,36 +225,36 @@
 				en,
 				Base,
 			);
-			mainGroup = D00D705B2DA4FE270027B3E6;
+			mainGroup = D0ED748B2DCB72EE0008C397;
+			productRefGroup = D0ED74952DCB72EE0008C397 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D00D70632DA4FE280027B3E6 /* Wallhavend */,
-				D00D70742DA4FE2B0027B3E6 /* WallhavendTests */,
-				D00D707E2DA4FE2C0027B3E6 /* WallhavendUITests */,
+				D0ED74932DCB72EE0008C397 /* Wallhavend */,
+				D0ED74A42DCB72F90008C397 /* WallhavendTests */,
+				D0ED74AE2DCB72F90008C397 /* WallhavendUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		D00D70622DA4FE280027B3E6 /* Resources */ = {
+		D0ED74922DCB72EE0008C397 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D00D706F2DA4FE2B0027B3E6 /* Preview Assets.xcassets in Resources */,
-				D00D706C2DA4FE2B0027B3E6 /* Assets.xcassets in Resources */,
-				D0845F9928CE20A2FD47B9B5 /* .gitignore in Resources */,
+				D0ED749F2DCB72F70008C397 /* Preview Assets.xcassets in Resources */,
+				D0ED749C2DCB72F70008C397 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D00D70732DA4FE2B0027B3E6 /* Resources */ = {
+		D0ED74A32DCB72F90008C397 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D00D707D2DA4FE2C0027B3E6 /* Resources */ = {
+		D0ED74AD2DCB72F90008C397 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -254,52 +264,52 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		D00D70602DA4FE280027B3E6 /* Sources */ = {
+		D0ED74902DCB72EE0008C397 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D00D706A2DA4FE280027B3E6 /* ContentView.swift in Sources */,
-				D0B86B3F2DA503AD005B1AC5 /* WallhavenAPI.swift in Sources */,
-				D00D70682DA4FE280027B3E6 /* WallhavendApp.swift in Sources */,
-				D0845786FC8CCE2F351033B6 /* WallpaperManager.swift in Sources */,
-				D08459AE95089671050F7656 /* WallpaperError.swift in Sources */,
+				D0ED749A2DCB72EE0008C397 /* ContentView.swift in Sources */,
+				D01707E72DCC4F3E00158EDD /* WallpaperError.swift in Sources */,
+				D01707E62DCC4F3E00158EDD /* WallhavenAPI.swift in Sources */,
+				D0ED74982DCB72EE0008C397 /* WallhavendApp.swift in Sources */,
+				D01707E82DCC4F3E00158EDD /* WallpaperManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D00D70712DA4FE2B0027B3E6 /* Sources */ = {
+		D0ED74A12DCB72F90008C397 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D00D707A2DA4FE2B0027B3E6 /* WallhavendTests.swift in Sources */,
+				D0ED74AA2DCB72F90008C397 /* WallhavendTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D00D707B2DA4FE2C0027B3E6 /* Sources */ = {
+		D0ED74AB2DCB72F90008C397 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D00D70862DA4FE2C0027B3E6 /* WallhavendUITestsLaunchTests.swift in Sources */,
-				D00D70842DA4FE2C0027B3E6 /* WallhavendUITests.swift in Sources */,
+				D0ED74B62DCB72F90008C397 /* WallhavendUITestsLaunchTests.swift in Sources */,
+				D0ED74B42DCB72F90008C397 /* WallhavendUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		D00D70772DA4FE2B0027B3E6 /* PBXTargetDependency */ = {
+		D0ED74A72DCB72F90008C397 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D00D70632DA4FE280027B3E6 /* Wallhavend */;
-			targetProxy = D00D70762DA4FE2B0027B3E6 /* PBXContainerItemProxy */;
+			target = D0ED74932DCB72EE0008C397 /* Wallhavend */;
+			targetProxy = D0ED74A62DCB72F90008C397 /* PBXContainerItemProxy */;
 		};
-		D00D70812DA4FE2C0027B3E6 /* PBXTargetDependency */ = {
+		D0ED74B12DCB72F90008C397 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D00D70632DA4FE280027B3E6 /* Wallhavend */;
-			targetProxy = D00D70802DA4FE2C0027B3E6 /* PBXContainerItemProxy */;
+			target = D0ED74932DCB72EE0008C397 /* Wallhavend */;
+			targetProxy = D0ED74B02DCB72F90008C397 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		D00D70872DA4FE2C0027B3E6 /* Debug */ = {
+		D0ED74B72DCB72F90008C397 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -332,7 +342,6 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -360,7 +369,7 @@
 			};
 			name = Debug;
 		};
-		D00D70882DA4FE2C0027B3E6 /* Release */ = {
+		D0ED74B82DCB72F90008C397 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -393,7 +402,6 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -414,27 +422,24 @@
 			};
 			name = Release;
 		};
-		D00D708A2DA4FE2C0027B3E6 /* Debug */ = {
+		D0ED74BA2DCB72F90008C397 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Wallhavend/Wallhavend.entitlements;
-				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Wallhavend/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.Wallhavend;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -442,27 +447,24 @@
 			};
 			name = Debug;
 		};
-		D00D708B2DA4FE2C0027B3E6 /* Release */ = {
+		D0ED74BB2DCB72F90008C397 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Wallhavend/Wallhavend.entitlements;
-				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Wallhavend/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.Wallhavend;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -470,17 +472,16 @@
 			};
 			name = Release;
 		};
-		D00D708D2DA4FE2C0027B3E6 /* Debug */ = {
+		D0ED74BD2DCB72F90008C397 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.7;
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.WallhavendTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -489,14 +490,13 @@
 			};
 			name = Debug;
 		};
-		D00D708E2DA4FE2C0027B3E6 /* Release */ = {
+		D0ED74BE2DCB72F90008C397 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.7;
 				MARKETING_VERSION = 1.0;
@@ -508,13 +508,12 @@
 			};
 			name = Release;
 		};
-		D00D70902DA4FE2C0027B3E6 /* Debug */ = {
+		D0ED74C02DCB72F90008C397 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.WallhavendUITests;
@@ -525,13 +524,12 @@
 			};
 			name = Debug;
 		};
-		D00D70912DA4FE2C0027B3E6 /* Release */ = {
+		D0ED74C12DCB72F90008C397 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.WallhavendUITests;
@@ -545,43 +543,43 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D00D705F2DA4FE270027B3E6 /* Build configuration list for PBXProject "Wallhavend" */ = {
+		D0ED748F2DCB72EE0008C397 /* Build configuration list for PBXProject "Wallhavend" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D00D70872DA4FE2C0027B3E6 /* Debug */,
-				D00D70882DA4FE2C0027B3E6 /* Release */,
+				D0ED74B72DCB72F90008C397 /* Debug */,
+				D0ED74B82DCB72F90008C397 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D00D70892DA4FE2C0027B3E6 /* Build configuration list for PBXNativeTarget "Wallhavend" */ = {
+		D0ED74B92DCB72F90008C397 /* Build configuration list for PBXNativeTarget "Wallhavend" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D00D708A2DA4FE2C0027B3E6 /* Debug */,
-				D00D708B2DA4FE2C0027B3E6 /* Release */,
+				D0ED74BA2DCB72F90008C397 /* Debug */,
+				D0ED74BB2DCB72F90008C397 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D00D708C2DA4FE2C0027B3E6 /* Build configuration list for PBXNativeTarget "WallhavendTests" */ = {
+		D0ED74BC2DCB72F90008C397 /* Build configuration list for PBXNativeTarget "WallhavendTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D00D708D2DA4FE2C0027B3E6 /* Debug */,
-				D00D708E2DA4FE2C0027B3E6 /* Release */,
+				D0ED74BD2DCB72F90008C397 /* Debug */,
+				D0ED74BE2DCB72F90008C397 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D00D708F2DA4FE2C0027B3E6 /* Build configuration list for PBXNativeTarget "WallhavendUITests" */ = {
+		D0ED74BF2DCB72F90008C397 /* Build configuration list for PBXNativeTarget "WallhavendUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D00D70902DA4FE2C0027B3E6 /* Debug */,
-				D00D70912DA4FE2C0027B3E6 /* Release */,
+				D0ED74C02DCB72F90008C397 /* Debug */,
+				D0ED74C12DCB72F90008C397 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = D00D705C2DA4FE270027B3E6 /* Project object */;
+	rootObject = D0ED748C2DCB72EE0008C397 /* Project object */;
 }
