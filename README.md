@@ -16,3 +16,7 @@ The code is primarily written by 🤖.
 
 - macOS Monterey (12.0) or later
 - [Wallhaven API key](https://wallhaven.cc/settings/account) (optionally required to get NSFW wallpapers)
+
+## Known Issues ☠️☠️☠️
+
+- **[Doesn't Work at All on Sonoma (M1)](https://github.com/Attacktive/Wallhavend/issues/9)**
