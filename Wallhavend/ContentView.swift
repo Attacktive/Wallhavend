@@ -1,6 +1,12 @@
 import SwiftUI
 
 struct ContentView: View {
+	private var autoScalingBinding: Binding<Bool> {
+		Binding(
+			get: { wallpaperManager.autoScaling },
+			set: { wallpaperManager.autoScaling = $0 }
+		)
+	}
 	@EnvironmentObject
 	var wallpaperManager: WallpaperManager
 
@@ -20,7 +26,7 @@ struct ContentView: View {
 				.padding()
 
 			ScrollView {
-				VStack(spacing: 16) {
+				VStack(alignment: .leading, spacing: 16) {
 					GroupBox("Search") {
 						TextField("Search query (optional; delimit with a comma)", text: searchQueryBinding)
 							.textFieldStyle(.roundedBorder)
@@ -55,6 +61,22 @@ struct ContentView: View {
 
 					GroupBox("Settings") {
 						VStack(alignment: .leading, spacing: 12) {
+							Text("Wallpaper Scaling")
+								.font(.headline)
+
+							VStack(alignment: .leading, spacing: 8) {
+								Toggle("Automatic", isOn: autoScalingBinding)
+								if !wallpaperManager.autoScaling {
+									Picker("Scaling Mode", selection: $wallpaperManager.manualScaling) {
+										Text("Fill Screen").tag(NSImageScaling.scaleAxesIndependently)
+										Text("Fit to Screen").tag(NSImageScaling.scaleProportionallyUpOrDown)
+									}
+									.pickerStyle(.radioGroup)
+									.padding(.leading)
+								}
+							}
+							.padding(.bottom, 8)
+
 							TextField(
 								"Aspect Ratio (e.g. 16x9)",
 								text: ratiosBinding

@@ -5,6 +5,12 @@ import AppKit
 class WallpaperManager: ObservableObject {
 	static let shared = WallpaperManager()
 
+	@Published
+	var autoScaling = true
+
+	@Published
+	var manualScaling: NSImageScaling = .scaleProportionallyUpOrDown
+
 	private var timer: Timer?
 	private var currentWallpaperFileURL: URL?
 	private var previousWallpaperFileURL: URL?
@@ -167,31 +173,45 @@ class WallpaperManager: ObservableObject {
 		}
 
 		print("Setting wallpaper for all screens and spaces...")
-		try setWallpaperForAllScreensAndSpaces(url: wallpaperPath, image: image)
+		try setWallpaperForAllScreens(url: wallpaperPath, image: image)
 		print("Wallpaper set successfully")
 
 		currentWallpaperURL = URL(string: originalURL)
 		lastUpdated = Date()
 	}
 
-	private func setWallpaperForAllScreensAndSpaces(url: URL, image: NSImage) throws {
-		// Set some nice scaling options
-		let options: [NSWorkspace.DesktopImageOptionKey: Any] = [
-			.imageScaling: NSImageScaling.scaleProportionallyUpOrDown.rawValue,
-			.allowClipping: false,
-			.fillColor: NSColor.black
-		]
-
+	private func setWallpaperForAllScreens(url: URL, image: NSImage) throws {
 		let workspace = NSWorkspace.shared
-
-		// Get all screens
 		let screens = NSScreen.screens
 		print("Found \(screens.count) screen(s)")
 
-		// Set wallpaper for each screen
 		for (index, screen) in screens.enumerated() {
+			let imageScaling = self.autoScaling
+				? determineImageScaling(for: image, on: screen)
+				: manualScaling
+
+			let options: [NSWorkspace.DesktopImageOptionKey: Any] = [
+				.imageScaling: imageScaling.rawValue,
+				.allowClipping: false,
+				.fillColor: NSColor.black
+			]
+
 			print("Setting wallpaper for screen \(index + 1)")
 			try workspace.setDesktopImageURL(url, for: screen, options: options)
+		}
+	}
+
+	private func determineImageScaling(for image: NSImage, on screen: NSScreen) -> NSImageScaling {
+		let imageAspectRatio = image.size.width / image.size.height
+		let screenAspectRatio = screen.frame.width / screen.frame.height
+
+		let threshold: CGFloat = 0.2
+		let difference = abs(imageAspectRatio - screenAspectRatio)
+
+		if difference > threshold {
+			return .scaleAxesIndependently
+		} else {
+			return .scaleProportionallyUpOrDown
 		}
 	}
 

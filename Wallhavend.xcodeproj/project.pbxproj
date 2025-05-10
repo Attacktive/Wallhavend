@@ -10,6 +10,8 @@
 		D01707E62DCC4F3E00158EDD /* WallhavenAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01707E32DCC4F3E00158EDD /* WallhavenAPI.swift */; };
 		D01707E72DCC4F3E00158EDD /* WallpaperError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01707E42DCC4F3E00158EDD /* WallpaperError.swift */; };
 		D01707E82DCC4F3E00158EDD /* WallpaperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01707E52DCC4F3E00158EDD /* WallpaperManager.swift */; };
+		D0C2AED12DCDD1E700B5E4EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C2AECF2DCDD1E700B5E4EA /* AppDelegate.swift */; };
+		D0C2AED22DCDD1E700B5E4EA /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C2AED02DCDD1E700B5E4EA /* StatusBarController.swift */; };
 		D0ED74982DCB72EE0008C397 /* WallhavendApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74972DCB72EE0008C397 /* WallhavendApp.swift */; };
 		D0ED749A2DCB72EE0008C397 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74992DCB72EE0008C397 /* ContentView.swift */; };
 		D0ED749C2DCB72F70008C397 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0ED749B2DCB72F70008C397 /* Assets.xcassets */; };
@@ -40,6 +42,8 @@
 		D01707E32DCC4F3E00158EDD /* WallhavenAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallhavenAPI.swift; sourceTree = "<group>"; };
 		D01707E42DCC4F3E00158EDD /* WallpaperError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallpaperError.swift; sourceTree = "<group>"; };
 		D01707E52DCC4F3E00158EDD /* WallpaperManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallpaperManager.swift; sourceTree = "<group>"; };
+		D0C2AECF2DCDD1E700B5E4EA /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		D0C2AED02DCDD1E700B5E4EA /* StatusBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
 		D0ED74942DCB72EE0008C397 /* Wallhavend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wallhavend.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0ED74972DCB72EE0008C397 /* WallhavendApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendApp.swift; sourceTree = "<group>"; };
 		D0ED74992DCB72EE0008C397 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -101,6 +105,8 @@
 		D0ED74962DCB72EE0008C397 /* Wallhavend */ = {
 			isa = PBXGroup;
 			children = (
+				D0C2AECF2DCDD1E700B5E4EA /* AppDelegate.swift */,
+				D0C2AED02DCDD1E700B5E4EA /* StatusBarController.swift */,
 				D01707E32DCC4F3E00158EDD /* WallhavenAPI.swift */,
 				D01707E42DCC4F3E00158EDD /* WallpaperError.swift */,
 				D01707E52DCC4F3E00158EDD /* WallpaperManager.swift */,
@@ -268,6 +274,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0C2AED12DCDD1E700B5E4EA /* AppDelegate.swift in Sources */,
+				D0C2AED22DCDD1E700B5E4EA /* StatusBarController.swift in Sources */,
 				D0ED749A2DCB72EE0008C397 /* ContentView.swift in Sources */,
 				D01707E72DCC4F3E00158EDD /* WallpaperError.swift in Sources */,
 				D01707E62DCC4F3E00158EDD /* WallhavenAPI.swift in Sources */,
