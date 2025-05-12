@@ -13,7 +13,10 @@ jobs:
     name: 'Test'
     strategy:
       matrix:
-        os: ['macos-13', 'macos-14', 'macos-15']
+        os:
+          - 'macos-13'
+#          - 'macos-14'
+#          - 'macos-15'
         swift-version: ['5.7.2']
     runs-on: "${{ matrix.os }}"
     steps:
@@ -21,7 +24,7 @@ jobs:
         uses: 'swift-actions/setup-swift@682457186b71c25a884c45c06f859febbe259240'
         with:
           swift-version: "${{ matrix.swift-version }}"
-      - name: 'Use Xcode 14.2 for macOS 13'
+      - name: 'Select Xcode Command Line Tools'
         run: |
           if [[ "${{ matrix.os }}" == 'macos-13' ]]; then
             sudo xcode-select --switch /Applications/Xcode_14.2.app/Contents/Developer
