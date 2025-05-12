@@ -13,8 +13,9 @@ jobs:
     name: 'Test'
     strategy:
       matrix:
+        os: ['macos-13', 'macos-latest']
         swift-version: ['5.7.2']
-    runs-on: ['macos-13', 'macos-latest']
+    runs-on: "${{ matrix.os }}"
     steps:
       - name: 'Setup Swift'
         uses: 'swift-actions/setup-swift@682457186b71c25a884c45c06f859febbe259240'
