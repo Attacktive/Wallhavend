@@ -45,8 +45,19 @@ class StatusBarController {
 	}
 
 	private func showPopover() {
-		if let button = statusItem.button {
-			popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
+		DispatchQueue.main.async { [weak self] in
+			guard let self = self else { return }
+			guard let button = self.statusItem.button else {
+				print("🛑 statusItem.button is nil. Not showing popover.")
+				return
+			}
+
+			guard self.popover.contentViewController != nil else {
+				print("🛑 popover.contentViewController is nil. Not showing popover.")
+				return
+			}
+
+			self.popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
 		}
 	}
 
