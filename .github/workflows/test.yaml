@@ -32,7 +32,7 @@ jobs:
             echo 'Choosing the default Xcode Command Line Tools'
           fi
       - name: 'Checkout'
-        uses: 'actions/checkout@v4'
+        uses: 'actions/checkout@v5'
       - name: 'Initialize a new package'
         run: 'swift package init --type executable'
       - name: 'Run tests'
