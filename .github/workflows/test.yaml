@@ -14,16 +14,16 @@ jobs:
     strategy:
       matrix:
         os:
-          - 'macos-13'
-#          - 'macos-14'
-#          - 'macos-15'
+          - 'macos-14'
+          - 'macos-15'
+          - 'macos-26'
         swift-version: ['5.7.2']
-    runs-on: "${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
     steps:
       - name: 'Setup Swift'
         uses: 'swift-actions/setup-swift@364295d9c23900ce04d4e5cc708387921b4e50f9'
         with:
-          swift-version: "${{ matrix.swift-version }}"
+          swift-version: ${{ matrix.swift-version }}
       - name: 'Select Xcode Command Line Tools'
         run: |
           if [[ "${{ matrix.os }}" == 'macos-13' ]]; then
