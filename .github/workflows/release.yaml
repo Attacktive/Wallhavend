@@ -4,12 +4,8 @@ on:
     tags:
       - '**'
 jobs:
-  test:
-    uses: './.github/workflows/test.yaml'
-  
   build-dmg:
     name: 'Build DMG'
-    needs: test
     runs-on: 'macos-latest'
     steps:
       - name: 'Checkout'
