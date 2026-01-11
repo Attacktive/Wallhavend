@@ -26,7 +26,7 @@ struct Wallpaper: Codable {
 struct Meta: Codable {
 	let currentPage: Int
 	let lastPage: Int
-	let perPage: String
+	let perPage: Int
 	let total: Int
 	let query: String?
 
@@ -35,10 +35,6 @@ struct Meta: Codable {
 		case lastPage = "last_page"
 		case perPage = "per_page"
 		case total, query
-	}
-
-	var perPageInt: Int {
-		Int(perPage) ?? 1
 	}
 }
 

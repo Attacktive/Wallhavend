@@ -137,18 +137,24 @@ class WallpaperManager: ObservableObject {
 		throw WallpaperError.unsupportedImageType(mimeType)
 	}
 
-	private func saveAndProcessWallpaper(data: Data, id: String, fileExtension: String) async throws -> URL {
-		let appSupportURL = try FileManager.default.url(
-			for: .applicationSupportDirectory,
+	private func getWallpaperStorageDirectory() throws -> URL {
+		let libraryURL = try FileManager.default.url(
+			for: .libraryDirectory,
 			in: .userDomainMask,
 			appropriateFor: nil,
 			create: true
 		)
-		.appendingPathComponent("Wallhavend", isDirectory: true)
+		let desktopPicturesURL = libraryURL
+			.appendingPathComponent("Desktop Pictures", isDirectory: true)
+			.appendingPathComponent("Wallhavend", isDirectory: true)
 
-		try? FileManager.default.createDirectory(at: appSupportURL, withIntermediateDirectories: true)
+		try? FileManager.default.createDirectory(at: desktopPicturesURL, withIntermediateDirectories: true)
+		return desktopPicturesURL
+	}
 
-		let wallpaperPath = appSupportURL.appendingPathComponent("\(id).\(fileExtension)")
+	private func saveAndProcessWallpaper(data: Data, id: String, fileExtension: String) async throws -> URL {
+		let storageURL = try getWallpaperStorageDirectory()
+		let wallpaperPath = storageURL.appendingPathComponent("\(id).\(fileExtension)")
 		print("Saving wallpaper to: \(wallpaperPath.path)")
 		try data.write(to: wallpaperPath)
 
@@ -217,16 +223,10 @@ class WallpaperManager: ObservableObject {
 
 	private func cleanupOldWallpapers() {
 		do {
-			let appSupportURL = try FileManager.default.url(
-				for: .applicationSupportDirectory,
-				in: .userDomainMask,
-				appropriateFor: nil,
-				create: true
-			)
-			.appendingPathComponent("Wallhavend", isDirectory: true)
+			let storageURL = try getWallpaperStorageDirectory()
 
 			let fileManager = FileManager.default
-			let files = try fileManager.contentsOfDirectory(at: appSupportURL, includingPropertiesForKeys: [.creationDateKey])
+			let files = try fileManager.contentsOfDirectory(at: storageURL, includingPropertiesForKeys: [.creationDateKey])
 
 			// Keep current and previous wallpapers
 			let wallpapersToKeep = Set([currentWallpaperFileURL, previousWallpaperFileURL].compactMap { $0 })
