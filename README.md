@@ -14,7 +14,7 @@ The code is primarily written by 🤖.
 
 ## Requirements
 
-- macOS Monterey (12.0) or later
+- macOS Sonoma (14.0) or later
 - [Wallhaven API key](https://wallhaven.cc/settings/account) (optionally required to get NSFW wallpapers)
 
 ## Known Issues ☠️☠️☠️
