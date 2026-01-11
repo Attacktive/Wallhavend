@@ -14,16 +14,12 @@ jobs:
     strategy:
       matrix:
         os:
-#          - 'macos-14'
-#          - 'macos-15'
+          - 'macos-14'
+          - 'macos-15'
           - 'macos-26'
     runs-on: ${{ matrix.os }}
     steps:
-      - name: 'Setup Swift'
-        uses: 'swift-actions/setup-swift@364295d9c23900ce04d4e5cc708387921b4e50f9'
       - name: 'Checkout'
         uses: 'actions/checkout@v6'
-      - name: 'Initialize a new package'
-        run: 'swift package init --type executable'
-      - name: 'Run tests'
-        run: 'swift test'
+      - name: 'Build and Test'
+        run: 'xcodebuild test -project Wallhavend.xcodeproj -scheme Wallhavend -destination "platform=macOS"'
