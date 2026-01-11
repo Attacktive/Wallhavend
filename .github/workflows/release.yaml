@@ -1,0 +1,50 @@
+name: 'Release'
+on:
+  push:
+    tags:
+      - '**'
+jobs:
+  test:
+    uses: './.github/workflows/test.yaml'
+  
+  build-dmg:
+    name: 'Build DMG'
+    needs: test
+    runs-on: 'macos-latest'
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@v6'
+      
+      - name: 'Build App'
+        run: |
+          xcodebuild archive \
+            -project Wallhavend.xcodeproj \
+            -scheme Wallhavend \
+            -archivePath ./build/Wallhavend.xcarchive \
+            -destination "platform=macOS" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+      
+      - name: 'Export App'
+        run: |
+          mkdir -p ./build/export
+          cp -R ./build/Wallhavend.xcarchive/Products/Applications/Wallhavend.app ./build/export/
+      
+      - name: 'Create DMG'
+        run: |
+          brew install create-dmg
+          create-dmg \
+            --volname "Wallhavend" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 450 185 \
+            "./build/Wallhavend.dmg" \
+            "./build/export/Wallhavend.app"
+      
+      - name: 'Upload DMG to Release'
+        uses: 'softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8'
+        with:
+          files: './build/Wallhavend.dmg'
+          generate_release_notes: true
