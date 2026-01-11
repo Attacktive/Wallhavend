@@ -18,7 +18,7 @@ final class WallhavendUITests: XCTestCase {
 		XCTAssertTrue(app.staticTexts["Wallhavend"].exists)
 
 		// Check search field
-		XCTAssertTrue(app.textFields["Search Query"].exists)
+		XCTAssertTrue(app.textFields["Search query (optional; delimit with a comma)"].exists)
 
 		// Check content filter toggles
 		XCTAssertTrue(app.checkBoxes["SFW"].exists)
@@ -36,7 +36,7 @@ final class WallhavendUITests: XCTestCase {
 
 		// Check buttons
 		XCTAssertTrue(app.buttons["Update Now"].exists)
-		XCTAssertTrue(app.buttons["Start"].exists)
+		XCTAssertTrue(app.buttons["Start  Auto Update"].exists)
 	}
 
 	func testUpdateInterval() throws {
@@ -58,24 +58,24 @@ final class WallhavendUITests: XCTestCase {
 
 	func testStartStopAutoUpdate() throws {
 		// Start auto-update
-		let startButton = app.buttons["Start"]
+		let startButton = app.buttons["Start Auto Update"]
 		XCTAssertTrue(startButton.exists)
 		startButton.click()
 
-		// Button should change to "Stop"
-		let stopButton = app.buttons["Stop"]
+		// Button should change to "Stop Auto Update"
+		let stopButton = app.buttons["Stop Auto Update"]
 		XCTAssertTrue(stopButton.exists)
 
 		// Stop auto-update
 		stopButton.click()
 
-		// Button should change back to "Start"
-		XCTAssertTrue(app.buttons["Start"].exists)
+		// Button should change back to "Start Auto Update"
+		XCTAssertTrue(app.buttons["Start Auto Update"].exists)
 	}
 
 	func testSearchQuery() throws {
 		// Find search field
-		let searchField = app.textFields["Search Query"]
+		let searchField = app.textFields["Search query (optional; delimit with a comma)"]
 		XCTAssertTrue(searchField.exists)
 
 		// Type a search query
