@@ -176,7 +176,7 @@ struct ContentView: View {
 				.disabled(!wallpaperManager.hasCurrentWallpaper)
 			}
 		}
-		.frame(minWidth: 240, minHeight: 650)
+		.frame(minWidth: 420, minHeight: 750)
 		.padding()
 	}
 
