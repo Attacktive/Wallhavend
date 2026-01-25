@@ -12,9 +12,10 @@ class WallpaperManager: ObservableObject {
 	var manualScaling: NSImageScaling = .scaleProportionallyUpOrDown
 
 	private var timer: Timer?
-	private var currentWallpaperFileURL: URL?
-	private var previousWallpaperFileURL: URL?
+	var currentWallpaperFileURL: URL?
+	var previousWallpaperFileURL: URL?
 	private var deletionWorkItem: DispatchWorkItem?
+	private var errorDismissTask: Task<Void, Never>?
 
 	@Published
 	var isRunning = false
@@ -92,6 +93,42 @@ class WallpaperManager: ObservableObject {
 		guard let url = currentWallpaperFileURL else { return }
 
 		NSWorkspace.shared.selectFile(url.path, inFileViewerRootedAtPath: url.deletingLastPathComponent().path)
+	}
+
+	func restorePreviousWallpaper() async {
+		guard let previousURL = previousWallpaperFileURL else {
+			print("No previous wallpaper available")
+			return
+		}
+
+		guard FileManager.default.fileExists(atPath: previousURL.path) else {
+			print("Previous wallpaper file no longer exists")
+			return
+		}
+
+		guard let image = NSImage(contentsOf: previousURL) else {
+			print("Failed to load previous wallpaper image")
+			return
+		}
+
+		do {
+			error = nil
+			errorDismissTask?.cancel()
+
+			print("Restoring previous wallpaper: \(previousURL.lastPathComponent)")
+			try setWallpaperForAllScreens(url: previousURL, image: image)
+
+			// Swap current and previous
+			let temp = currentWallpaperFileURL
+			currentWallpaperFileURL = previousURL
+			previousWallpaperFileURL = temp
+
+			lastUpdated = Date()
+			print("Previous wallpaper restored successfully")
+		} catch {
+			self.error = "Failed to restore previous wallpaper"
+			print("Failed to restore previous wallpaper: \(error)")
+		}
 	}
 
 	private func fetchRandomWallpaper() async throws -> Wallpaper {

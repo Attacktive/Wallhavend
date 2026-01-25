@@ -1,9 +1,11 @@
 import SwiftUI
 
+@MainActor
 class StatusBarController {
 	private var statusItem: NSStatusItem
 	private var popover: NSPopover
 	private var appDelegate: AppDelegate?
+	private let wallpaperManager = WallpaperManager.shared
 
 	init(appDelegate: AppDelegate) {
 		self.appDelegate = appDelegate
@@ -28,7 +30,7 @@ class StatusBarController {
 			MenuBarView(onAction: { [weak self] in
 				self?.closePopover()
 			})
-			.environmentObject(WallpaperManager.shared)
+			.environmentObject(wallpaperManager)
 			.environmentObject(WallhavenService.shared)
 			.environment(\.appDelegate, appDelegate)
 
@@ -96,6 +98,14 @@ struct MenuBarView: View {
 					await wallpaperManager.updateWallpaper()
 				}
 			}
+
+			Button("Previous Wallpaper") {
+				Task {
+					onAction()
+					await wallpaperManager.restorePreviousWallpaper()
+				}
+			}
+			.disabled(wallpaperManager.previousWallpaperFileURL == nil)
 
 			Button(wallpaperManager.isRunning ? "Stop Auto Update" : "Start Auto Update") {
 				if wallpaperManager.isRunning {

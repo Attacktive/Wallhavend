@@ -137,6 +137,14 @@ struct ContentView: View {
 					}
 				}
 				.buttonStyle(.borderedProminent)
+
+				Button("Previous") {
+					Task {
+						await wallpaperManager.restorePreviousWallpaper()
+					}
+				}
+				.buttonStyle(.bordered)
+				.disabled(wallpaperManager.previousWallpaperFileURL == nil)
 			}
 
 			if wallpaperManager.lastUpdated != nil {
@@ -176,7 +184,7 @@ struct ContentView: View {
 				.disabled(!wallpaperManager.hasCurrentWallpaper)
 			}
 		}
-		.frame(minWidth: 420, minHeight: 750)
+		.frame(minWidth: 240, minHeight: 750)
 		.padding()
 	}
 
