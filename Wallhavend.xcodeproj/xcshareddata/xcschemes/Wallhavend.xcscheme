@@ -39,17 +39,6 @@
                ReferencedContainer = "container:Wallhavend.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D0ED74AE2DCB72F90008C397"
-               BuildableName = "WallhavendUITests.xctest"
-               BlueprintName = "WallhavendUITests"
-               ReferencedContainer = "container:Wallhavend.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
