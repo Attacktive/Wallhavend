@@ -18,19 +18,10 @@
 		D0ED749C2DCB72F70008C397 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0ED749B2DCB72F70008C397 /* Assets.xcassets */; };
 		D0ED749F2DCB72F70008C397 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0ED749E2DCB72F70008C397 /* Preview Assets.xcassets */; };
 		D0ED74AA2DCB72F90008C397 /* WallhavendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74A92DCB72F90008C397 /* WallhavendTests.swift */; };
-		D0ED74B42DCB72F90008C397 /* WallhavendUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74B32DCB72F90008C397 /* WallhavendUITests.swift */; };
-		D0ED74B62DCB72F90008C397 /* WallhavendUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74B52DCB72F90008C397 /* WallhavendUITestsLaunchTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		D0ED74A62DCB72F90008C397 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D0ED748C2DCB72EE0008C397 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D0ED74932DCB72EE0008C397;
-			remoteInfo = Wallhavend;
-		};
-		D0ED74B02DCB72F90008C397 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D0ED748C2DCB72EE0008C397 /* Project object */;
 			proxyType = 1;
@@ -54,9 +45,6 @@
 		D0ED74A02DCB72F70008C397 /* Wallhavend.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Wallhavend.entitlements; sourceTree = "<group>"; };
 		D0ED74A52DCB72F90008C397 /* WallhavendTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WallhavendTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0ED74A92DCB72F90008C397 /* WallhavendTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendTests.swift; sourceTree = "<group>"; };
-		D0ED74AF2DCB72F90008C397 /* WallhavendUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WallhavendUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		D0ED74B32DCB72F90008C397 /* WallhavendUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendUITests.swift; sourceTree = "<group>"; };
-		D0ED74B52DCB72F90008C397 /* WallhavendUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendUITestsLaunchTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,13 +62,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D0ED74AC2DCB72F90008C397 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -89,7 +70,6 @@
 			children = (
 				D0ED74962DCB72EE0008C397 /* Wallhavend */,
 				D0ED74A82DCB72F90008C397 /* WallhavendTests */,
-				D0ED74B22DCB72F90008C397 /* WallhavendUITests */,
 				D0ED74952DCB72EE0008C397 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -99,7 +79,6 @@
 			children = (
 				D0ED74942DCB72EE0008C397 /* Wallhavend.app */,
 				D0ED74A52DCB72F90008C397 /* WallhavendTests.xctest */,
-				D0ED74AF2DCB72F90008C397 /* WallhavendUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -136,15 +115,6 @@
 				D0ED74A92DCB72F90008C397 /* WallhavendTests.swift */,
 			);
 			path = WallhavendTests;
-			sourceTree = "<group>";
-		};
-		D0ED74B22DCB72F90008C397 /* WallhavendUITests */ = {
-			isa = PBXGroup;
-			children = (
-				D0ED74B32DCB72F90008C397 /* WallhavendUITests.swift */,
-				D0ED74B52DCB72F90008C397 /* WallhavendUITestsLaunchTests.swift */,
-			);
-			path = WallhavendUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -185,24 +155,6 @@
 			productReference = D0ED74A52DCB72F90008C397 /* WallhavendTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		D0ED74AE2DCB72F90008C397 /* WallhavendUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = D0ED74BF2DCB72F90008C397 /* Build configuration list for PBXNativeTarget "WallhavendUITests" */;
-			buildPhases = (
-				D0ED74AB2DCB72F90008C397 /* Sources */,
-				D0ED74AC2DCB72F90008C397 /* Frameworks */,
-				D0ED74AD2DCB72F90008C397 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				D0ED74B12DCB72F90008C397 /* PBXTargetDependency */,
-			);
-			name = WallhavendUITests;
-			productName = WallhavendUITests;
-			productReference = D0ED74AF2DCB72F90008C397 /* WallhavendUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -217,10 +169,6 @@
 						CreatedOnToolsVersion = 14.2;
 					};
 					D0ED74A42DCB72F90008C397 = {
-						CreatedOnToolsVersion = 14.2;
-						TestTargetID = D0ED74932DCB72EE0008C397;
-					};
-					D0ED74AE2DCB72F90008C397 = {
 						CreatedOnToolsVersion = 14.2;
 						TestTargetID = D0ED74932DCB72EE0008C397;
 					};
@@ -241,7 +189,6 @@
 			targets = (
 				D0ED74932DCB72EE0008C397 /* Wallhavend */,
 				D0ED74A42DCB72F90008C397 /* WallhavendTests */,
-				D0ED74AE2DCB72F90008C397 /* WallhavendUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -257,13 +204,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D0ED74A32DCB72F90008C397 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D0ED74AD2DCB72F90008C397 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -296,15 +236,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D0ED74AB2DCB72F90008C397 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D0ED74B62DCB72F90008C397 /* WallhavendUITestsLaunchTests.swift in Sources */,
-				D0ED74B42DCB72F90008C397 /* WallhavendUITests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -312,11 +243,6 @@
 			isa = PBXTargetDependency;
 			target = D0ED74932DCB72EE0008C397 /* Wallhavend */;
 			targetProxy = D0ED74A62DCB72F90008C397 /* PBXContainerItemProxy */;
-		};
-		D0ED74B12DCB72F90008C397 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D0ED74932DCB72EE0008C397 /* Wallhavend */;
-			targetProxy = D0ED74B02DCB72F90008C397 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -354,7 +280,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2.1.1;
+				CURRENT_PROJECT_VERSION = 2.1.2;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -376,7 +302,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.1.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -420,7 +346,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2.1.1;
+				CURRENT_PROJECT_VERSION = 2.1.2;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -436,7 +362,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.1.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -454,7 +380,7 @@
 				CODE_SIGN_ENTITLEMENTS = Wallhavend/Wallhavend.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2.1.1;
+				CURRENT_PROJECT_VERSION = 2.1.2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Wallhavend/Preview Content\"";
 				ENABLE_APP_SANDBOX = YES;
@@ -470,7 +396,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.Wallhavend;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -486,7 +412,7 @@
 				CODE_SIGN_ENTITLEMENTS = Wallhavend/Wallhavend.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2.1.1;
+				CURRENT_PROJECT_VERSION = 2.1.2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Wallhavend/Preview Content\"";
 				ENABLE_APP_SANDBOX = YES;
@@ -502,7 +428,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.Wallhavend;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -515,11 +441,11 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2.1.1;
+				CURRENT_PROJECT_VERSION = 2.1.2;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.WallhavendTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -533,50 +459,16 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2.1.1;
+				CURRENT_PROJECT_VERSION = 2.1.2;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.WallhavendTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Wallhavend.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Wallhavend";
-			};
-			name = Release;
-		};
-		D0ED74C02DCB72F90008C397 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2.1.1;
-				DEAD_CODE_STRIPPING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.WallhavendUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = Wallhavend;
-			};
-			name = Debug;
-		};
-		D0ED74C12DCB72F90008C397 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2.1.1;
-				DEAD_CODE_STRIPPING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = xyz.attacktive.WallhavendUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = Wallhavend;
 			};
 			name = Release;
 		};
@@ -606,15 +498,6 @@
 			buildConfigurations = (
 				D0ED74BD2DCB72F90008C397 /* Debug */,
 				D0ED74BE2DCB72F90008C397 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		D0ED74BF2DCB72F90008C397 /* Build configuration list for PBXNativeTarget "WallhavendUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D0ED74C02DCB72F90008C397 /* Debug */,
-				D0ED74C12DCB72F90008C397 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

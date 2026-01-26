@@ -22,5 +22,4 @@ jobs:
       - name: 'Checkout'
         uses: 'actions/checkout@v6'
       - name: 'Build and Test'
-        # skipping the UI tests for now 😏
-        run: 'xcodebuild test -project Wallhavend.xcodeproj -scheme Wallhavend -destination "platform=macOS" -skip-testing:WallhavendUITests'
+        run: 'xcodebuild test -project Wallhavend.xcodeproj -scheme Wallhavend -destination "platform=macOS"'

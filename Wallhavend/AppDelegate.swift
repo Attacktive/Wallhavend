@@ -19,6 +19,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 		// Hide dock icon
 		NSApp.setActivationPolicy(.accessory)
 
+		if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+			DispatchQueue.main.async { [weak self] in
+				self?.showSettings()
+			}
+		}
+
 		if startAutoUpdateOnLaunch {
 			wallpaperManager.startAutoUpdate(interval: updateInterval)
 		}
