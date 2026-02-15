@@ -5,6 +5,14 @@ import AppKit
 class WallpaperManager: ObservableObject {
 	static let shared = WallpaperManager()
 
+	private var sessionDidResignActiveObserver: NSObjectProtocol?
+	private var sessionDidBecomeActiveObserver: NSObjectProtocol?
+	private var isSessionActive: Bool = true
+
+	init() {
+		setupSessionObservers()
+	}
+
 	@Published
 	var autoScaling = true
 
@@ -61,12 +69,37 @@ class WallpaperManager: ObservableObject {
 			}
 
 			Task { @MainActor in
+				guard self.isSessionActive else {
+					print("Session inactive (screensaver/lock). Skipping auto-update.")
+					return
+				}
+
 				await self.updateWallpaper()
 				self.cleanupOldWallpapers()
 			}
 		}
 
 		timer?.fire()
+	}
+
+	private func setupSessionObservers() {
+		sessionDidResignActiveObserver = NSWorkspace.shared.notificationCenter.addObserver(
+			forName: NSWorkspace.sessionDidResignActiveNotification,
+			object: nil,
+			queue: .main
+		) { [weak self] _ in
+			guard let self else { return }
+			self.isSessionActive = false
+		}
+
+		sessionDidBecomeActiveObserver = NSWorkspace.shared.notificationCenter.addObserver(
+			forName: NSWorkspace.sessionDidBecomeActiveNotification,
+			object: nil,
+			queue: .main
+		) { [weak self] _ in
+			guard let self else { return }
+			self.isSessionActive = true
+		}
 	}
 
 	func stopAutoUpdate() {
