@@ -113,6 +113,12 @@ struct ContentView: View {
 			.frame(maxWidth: .infinity)
 			.background(Color(NSColor.controlBackgroundColor))
 
+			if !wallpaperManager.isOnline {
+				Label("Offline", systemImage: "wifi.slash")
+					.foregroundColor(.secondary)
+					.font(.caption)
+			}
+
 			if let error = wallpaperManager.error {
 				Text(error)
 					.foregroundColor(.red)
@@ -130,6 +136,7 @@ struct ContentView: View {
 					}
 				}
 				.buttonStyle(.borderedProminent)
+				.disabled(!wallpaperManager.isOnline && !wallpaperManager.isRunning)
 
 				Button("Update Now") {
 					Task {
@@ -137,6 +144,7 @@ struct ContentView: View {
 					}
 				}
 				.buttonStyle(.borderedProminent)
+				.disabled(!wallpaperManager.isOnline)
 
 				Button("Previous") {
 					Task {

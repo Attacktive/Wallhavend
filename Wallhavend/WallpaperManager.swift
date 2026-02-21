@@ -1,5 +1,6 @@
 import Foundation
 import AppKit
+import Combine
 
 @MainActor
 class WallpaperManager: ObservableObject {
@@ -9,8 +10,15 @@ class WallpaperManager: ObservableObject {
 	private var sessionDidBecomeActiveObserver: NSObjectProtocol?
 	private var isSessionActive: Bool = true
 
+	private let networkMonitor = NetworkMonitor.shared
+	private var networkCancellable: AnyCancellable?
+
+	@Published
+	private(set) var isOnline: Bool = true
+
 	init() {
 		setupSessionObservers()
+		setupNetworkObserver()
 	}
 
 	@Published
@@ -20,6 +28,7 @@ class WallpaperManager: ObservableObject {
 	var manualScaling: NSImageScaling = .scaleProportionallyUpOrDown
 
 	private var timer: Timer?
+	private var timerInterval: TimeInterval = 60
 	var currentWallpaperFileURL: URL?
 	var previousWallpaperFileURL: URL?
 	private var deletionWorkItem: DispatchWorkItem?
@@ -59,8 +68,8 @@ class WallpaperManager: ObservableObject {
 	func startAutoUpdate(interval: TimeInterval = 60) {
 		stopAutoUpdate()
 		isRunning = true
+		timerInterval = interval
 
-		// Clean up old wallpapers on start
 		cleanupOldWallpapers()
 
 		timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
@@ -82,6 +91,54 @@ class WallpaperManager: ObservableObject {
 		timer?.fire()
 	}
 
+	private func setupNetworkObserver() {
+		networkCancellable = networkMonitor.$isOnline
+			.dropFirst()
+			.sink { [weak self] isOnline in
+				guard let self else { return }
+				Task { @MainActor [weak self] in
+					guard let self else { return }
+					self.isOnline = isOnline
+					if isOnline {
+						self.handleCameOnline()
+					} else {
+						self.handleWentOffline()
+					}
+				}
+			}
+	}
+
+	private func handleWentOffline() {
+		print("Network went offline. Pausing timer.")
+		timer?.invalidate()
+		timer = nil
+	}
+
+	private func handleCameOnline() {
+		print("Network came online.")
+		if isRunning {
+			print("Resuming auto-update and triggering immediate update.")
+			restartTimer()
+			Task { await updateWallpaper() }
+		}
+	}
+
+	private func restartTimer() {
+		timer?.invalidate()
+		timer = Timer.scheduledTimer(withTimeInterval: timerInterval, repeats: true) { [weak self] _ in
+			guard let self = self else { return }
+			Task { @MainActor in
+				guard self.isSessionActive else {
+					print("Session inactive (screensaver/lock). Skipping auto-update.")
+					return
+				}
+
+				await self.updateWallpaper()
+				self.cleanupOldWallpapers()
+			}
+		}
+	}
+
 	private func setupSessionObservers() {
 		sessionDidResignActiveObserver = NSWorkspace.shared.notificationCenter.addObserver(
 			forName: NSWorkspace.sessionDidResignActiveNotification,
@@ -89,7 +146,7 @@ class WallpaperManager: ObservableObject {
 			queue: .main
 		) { [weak self] _ in
 			guard let self else { return }
-			self.isSessionActive = false
+			Task { @MainActor in self.isSessionActive = false }
 		}
 
 		sessionDidBecomeActiveObserver = NSWorkspace.shared.notificationCenter.addObserver(
@@ -98,7 +155,7 @@ class WallpaperManager: ObservableObject {
 			queue: .main
 		) { [weak self] _ in
 			guard let self else { return }
-			self.isSessionActive = true
+			Task { @MainActor in self.isSessionActive = true }
 		}
 	}
 

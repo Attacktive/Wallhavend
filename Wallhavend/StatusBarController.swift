@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 @MainActor
 class StatusBarController {
@@ -6,6 +7,7 @@ class StatusBarController {
 	private var popover: NSPopover
 	private var appDelegate: AppDelegate?
 	private let wallpaperManager = WallpaperManager.shared
+	private var cancellables = Set<AnyCancellable>()
 
 	init(appDelegate: AppDelegate) {
 		self.appDelegate = appDelegate
@@ -18,12 +20,6 @@ class StatusBarController {
 		if let button = statusItem.button {
 			button.action = #selector(togglePopover(_:))
 			button.target = self
-
-			if let image = NSImage(named: NSImage.Name("MenuBarIcon")) {
-				image.size.width = 24
-				image.size.height = 24
-				button.image = image
-			}
 		}
 
 		let contentView =
@@ -35,6 +31,73 @@ class StatusBarController {
 			.environment(\.appDelegate, appDelegate)
 
 		popover.contentViewController = NSHostingController(rootView: contentView)
+
+		wallpaperManager.$isOnline
+			.combineLatest(wallpaperManager.$isRunning)
+			.sink { [weak self] isOnline, isRunning in
+				self?.updateStatusBarIcon(isOnline: isOnline, isRunning: isRunning)
+			}
+			.store(in: &cancellables)
+	}
+
+	private func updateStatusBarIcon(isOnline: Bool, isRunning: Bool) {
+		guard let button = statusItem.button else { return }
+		let iconSize = NSSize(width: 18, height: 18)
+
+		guard let baseImage = NSImage(named: NSImage.Name("MenuBarIcon")) else { return }
+		baseImage.size = iconSize
+
+		if !isOnline {
+			button.image = makeOfflineIcon(from: baseImage, size: iconSize)
+		} else if isRunning {
+			button.image = baseImage
+		} else {
+			button.image = makeGrayscaleIcon(from: baseImage, size: iconSize)
+		}
+	}
+
+	private func makeGrayscaleIcon(from source: NSImage, size: NSSize) -> NSImage {
+		guard
+			let tiffData = source.tiffRepresentation,
+			let ciImage = CIImage(data: tiffData),
+			let filter = CIFilter(name: "CIColorControls")
+		else {
+			return source
+		}
+
+		filter.setValue(ciImage, forKey: kCIInputImageKey)
+		filter.setValue(0.0, forKey: kCIInputSaturationKey)
+
+		guard let outputCI = filter.outputImage else { return source }
+
+		let rep = NSCIImageRep(ciImage: outputCI)
+		let result = NSImage(size: size)
+		result.addRepresentation(rep)
+
+		return result
+	}
+
+	private func makeOfflineIcon(from source: NSImage, size: NSSize) -> NSImage {
+		let grayscale = makeGrayscaleIcon(from: source, size: size)
+
+		let result = NSImage(size: size)
+		result.lockFocus()
+
+		grayscale.draw(in: NSRect(origin: .zero, size: size))
+
+		let badgeSize: CGFloat = 8
+		let badgeRect = NSRect(x: size.width - badgeSize, y: 0, width: badgeSize, height: badgeSize)
+
+		let symbolConfig = NSImage.SymbolConfiguration(pointSize: badgeSize, weight: .bold)
+
+		if let badge = NSImage(systemSymbolName: "wifi.slash", accessibilityDescription: nil)?
+			.withSymbolConfiguration(symbolConfig) {
+				badge.draw(in: badgeRect)
+			}
+
+		result.unlockFocus()
+
+		return result
 	}
 
 	@objc
@@ -49,6 +112,7 @@ class StatusBarController {
 	private func showPopover() {
 		DispatchQueue.main.async { [weak self] in
 			guard let self = self else { return }
+
 			guard let button = self.statusItem.button else {
 				print("🛑 statusItem.button is nil. Not showing popover.")
 				return
@@ -79,6 +143,12 @@ struct MenuBarView: View {
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 12) {
+			if !wallpaperManager.isOnline {
+				Label("Offline", systemImage: "wifi.slash")
+					.foregroundColor(.secondary)
+					.font(.caption)
+			}
+
 			if wallpaperManager.lastUpdated != nil {
 				Text(wallpaperManager.formattedLastUpdated)
 					.font(.caption)
@@ -98,6 +168,7 @@ struct MenuBarView: View {
 					await wallpaperManager.updateWallpaper()
 				}
 			}
+			.disabled(!wallpaperManager.isOnline)
 
 			Button("Previous Wallpaper") {
 				Task {
@@ -116,6 +187,7 @@ struct MenuBarView: View {
 
 				onAction()
 			}
+			.disabled(!wallpaperManager.isOnline && !wallpaperManager.isRunning)
 
 			Divider()
 
