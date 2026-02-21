@@ -18,8 +18,9 @@ class StatusBarController {
 
 		statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 		if let button = statusItem.button {
-			button.action = #selector(togglePopover(_:))
+			button.action = #selector(handleClick(_:))
 			button.target = self
+			button.sendAction(on: [.leftMouseUp, .rightMouseUp])
 		}
 
 		let contentView =
@@ -101,11 +102,26 @@ class StatusBarController {
 	}
 
 	@objc
-	private func togglePopover(_ sender: AnyObject?) {
-		if popover.isShown {
+	private func handleClick(_ sender: AnyObject?) {
+		guard let event = NSApp.currentEvent else { return }
+		if event.type == .rightMouseUp {
 			closePopover()
+			toggleAutoUpdate()
 		} else {
-			showPopover()
+			if popover.isShown {
+				closePopover()
+			} else {
+				showPopover()
+			}
+		}
+	}
+
+	private func toggleAutoUpdate() {
+		if wallpaperManager.isRunning {
+			wallpaperManager.stopAutoUpdate()
+		} else if wallpaperManager.isOnline {
+			let interval = UserDefaults.standard.double(forKey: "updateInterval")
+			wallpaperManager.startAutoUpdate(interval: interval > 0 ? interval : 60)
 		}
 	}
 
