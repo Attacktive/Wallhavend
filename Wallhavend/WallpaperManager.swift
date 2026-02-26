@@ -27,7 +27,7 @@ class WallpaperManager: ObservableObject {
 	@Published
 	var manualScaling: NSImageScaling = .scaleProportionallyUpOrDown
 
-	private var timer: Timer?
+	private var autoUpdateTask: Task<Void, Never>?
 	private var timerInterval: TimeInterval = 60
 	var savedUpdateInterval: TimeInterval {
 		let value = UserDefaults.standard.double(forKey: "updateInterval")
@@ -72,30 +72,19 @@ class WallpaperManager: ObservableObject {
 	}
 
 	func startAutoUpdate(interval: TimeInterval? = nil) {
-		let interval = interval ?? savedUpdateInterval
+		timerInterval = interval ?? savedUpdateInterval
+
 		stopAutoUpdate()
+
 		isRunning = true
-		timerInterval = interval
 
 		cleanupOldWallpapers()
 
-		timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-			guard let self = self else {
-				return
-			}
+		autoUpdateTask = Task { [weak self] in
+			guard let self else { return }
 
-			Task { @MainActor in
-				guard self.isSessionActive else {
-					print("Session inactive (screensaver/lock). Skipping auto-update.")
-					return
-				}
-
-				await self.updateWallpaper()
-				self.cleanupOldWallpapers()
-			}
+			await self.runAutoUpdateLoop()
 		}
-
-		timer?.fire()
 	}
 
 	private func setupNetworkObserver() {
@@ -105,46 +94,55 @@ class WallpaperManager: ObservableObject {
 				guard let self else { return }
 				Task { @MainActor [weak self] in
 					guard let self else { return }
+
 					self.isOnline = isOnline
 					if isOnline {
-						self.handleCameOnline()
+						print("Network came online.")
 					} else {
-						self.handleWentOffline()
+						print("Network went offline.")
 					}
 				}
 			}
 	}
 
-	private func handleWentOffline() {
-		print("Network went offline. Pausing timer.")
-		timer?.invalidate()
-		timer = nil
-	}
+	private func runAutoUpdateLoop() async {
+		await self.performAutoUpdateTick()
 
-	private func handleCameOnline() {
-		print("Network came online.")
-		if isRunning {
-			print("Resuming auto-update.")
-			restartTimer()
-		}
-	}
-
-	private func restartTimer() {
-		timer?.invalidate()
-		timer = Timer.scheduledTimer(withTimeInterval: timerInterval, repeats: true) { [weak self] _ in
-			guard let self = self else { return }
-			Task { @MainActor in
-				guard self.isSessionActive else {
-					print("Session inactive (screensaver/lock). Skipping auto-update.")
-					return
+		while !Task.isCancelled {
+			do {
+				if #available(macOS 13.0, *) {
+					try await Task.sleep(for: .seconds(timerInterval))
+				} else {
+					try await Task.sleep(nanoseconds: UInt64(timerInterval * 1_000_000_000))
 				}
+			} catch is CancellationError {
+				return
+			} catch {
+				print("Auto-update loop stopped due to unexpected sleep error: \(error)")
+				stopAutoUpdate()
 
-				await self.updateWallpaper()
-				self.cleanupOldWallpapers()
+				return
 			}
+
+			await self.performAutoUpdateTick()
+		}
+	}
+
+	private func performAutoUpdateTick() async {
+		guard isRunning else { return }
+
+		guard isOnline else {
+			print("Offline. Skipping auto-update.")
+			return
 		}
 
-		timer?.fire()
+		guard isSessionActive else {
+			print("Session inactive (screensaver/lock). Skipping auto-update.")
+			return
+		}
+
+		await updateWallpaper()
+		cleanupOldWallpapers()
 	}
 
 	private func setupSessionObservers() {
@@ -168,8 +166,8 @@ class WallpaperManager: ObservableObject {
 	}
 
 	func stopAutoUpdate() {
-		timer?.invalidate()
-		timer = nil
+		autoUpdateTask?.cancel()
+		autoUpdateTask = nil
 		isRunning = false
 	}
 
@@ -304,7 +302,7 @@ class WallpaperManager: ObservableObject {
 	private func setWallpaperAndUpdateState(wallpaperPath: URL, originalURL: String) async throws {
 		if let oldURL = currentWallpaperFileURL {
 			previousWallpaperFileURL = oldURL
-			scheduleWallpaperDeletion(fileURL: oldURL, delay: timer?.timeInterval ?? 60)
+			scheduleWallpaperDeletion(fileURL: oldURL, delay: timerInterval)
 		}
 
 		currentWallpaperFileURL = wallpaperPath
@@ -327,9 +325,12 @@ class WallpaperManager: ObservableObject {
 		print("Found \(screens.count) screen(s)")
 
 		for (index, screen) in screens.enumerated() {
-			let imageScaling = self.autoScaling
-				? determineImageScaling(for: image, on: screen)
-				: manualScaling
+			let imageScaling: NSImageScaling
+			if self.autoScaling {
+				imageScaling = determineImageScaling(for: image, on: screen)
+			} else {
+				imageScaling = manualScaling
+			}
 
 			let options: [NSWorkspace.DesktopImageOptionKey: Any] = [
 				.imageScaling: imageScaling.rawValue,
