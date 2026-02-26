@@ -29,6 +29,12 @@ class WallpaperManager: ObservableObject {
 
 	private var timer: Timer?
 	private var timerInterval: TimeInterval = 60
+	var savedUpdateInterval: TimeInterval {
+		let value = UserDefaults.standard.double(forKey: "updateInterval")
+
+		return if value > 0 { value } else { 60 }
+	}
+
 	var currentWallpaperFileURL: URL?
 	var previousWallpaperFileURL: URL?
 	private var deletionWorkItem: DispatchWorkItem?
@@ -65,7 +71,8 @@ class WallpaperManager: ObservableObject {
 		return dateFormatter.string(from: lastUpdated)
 	}
 
-	func startAutoUpdate(interval: TimeInterval = 60) {
+	func startAutoUpdate(interval: TimeInterval? = nil) {
+		let interval = interval ?? savedUpdateInterval
 		stopAutoUpdate()
 		isRunning = true
 		timerInterval = interval
@@ -117,9 +124,8 @@ class WallpaperManager: ObservableObject {
 	private func handleCameOnline() {
 		print("Network came online.")
 		if isRunning {
-			print("Resuming auto-update and triggering immediate update.")
+			print("Resuming auto-update.")
 			restartTimer()
-			Task { await updateWallpaper() }
 		}
 	}
 
@@ -137,6 +143,8 @@ class WallpaperManager: ObservableObject {
 				self.cleanupOldWallpapers()
 			}
 		}
+
+		timer?.fire()
 	}
 
 	private func setupSessionObservers() {

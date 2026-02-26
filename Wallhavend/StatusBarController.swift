@@ -120,8 +120,7 @@ class StatusBarController {
 		if wallpaperManager.isRunning {
 			wallpaperManager.stopAutoUpdate()
 		} else if wallpaperManager.isOnline {
-			let interval = UserDefaults.standard.double(forKey: "updateInterval")
-			wallpaperManager.startAutoUpdate(interval: interval > 0 ? interval : 60)
+			wallpaperManager.startAutoUpdate()
 		}
 	}
 
