@@ -52,8 +52,9 @@ jobs:
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
-          brew install sparkle
-          echo "$SPARKLE_PRIVATE_KEY" | /opt/homebrew/bin/sign_update ./build/Wallhavend.zip > ./build/Wallhavend.zip.sig
+          curl -L -o /tmp/Sparkle.tar.xz https://github.com/sparkle-project/Sparkle/releases/download/2.9.0/Sparkle-2.9.0.tar.xz
+          tar -xf /tmp/Sparkle.tar.xz 
+          echo "$SPARKLE_PRIVATE_KEY" | ./bin/sign_update ./build/Wallhavend.zip > ./build/Wallhavend.zip.sig
 
       - name: 'Generate appcast.xml'
         run: |
