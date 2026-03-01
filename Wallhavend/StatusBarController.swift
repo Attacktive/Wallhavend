@@ -211,6 +211,11 @@ struct MenuBarView: View {
 				onAction()
 			}
 
+			Button("Check for Updates...") {
+				appDelegate?.checkForUpdates()
+				onAction()
+			}
+
 			Button("Quit") {
 				onAction()
 				NSApplication.shared.terminate(nil)

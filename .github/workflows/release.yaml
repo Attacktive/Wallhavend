@@ -7,9 +7,13 @@ jobs:
   build-dmg:
     name: 'Build DMG'
     runs-on: 'macos-latest'
+    permissions:
+      contents: 'write'
     steps:
       - name: 'Checkout'
         uses: 'actions/checkout@v6'
+        with:
+          fetch-depth: 0
       
       - name: 'Build App'
         run: |
@@ -26,7 +30,7 @@ jobs:
         run: |
           mkdir -p ./build/export
           cp -R ./build/Wallhavend.xcarchive/Products/Applications/Wallhavend.app ./build/export/
-      
+
       - name: 'Create DMG'
         run: |
           brew install create-dmg
@@ -38,9 +42,53 @@ jobs:
             --app-drop-link 450 185 \
             "./build/Wallhavend.dmg" \
             "./build/export/Wallhavend.app"
-      
-      - name: 'Upload DMG to Release'
+
+      - name: 'Create ZIP for Sparkle'
+        run: |
+          cd ./build/export
+          zip -r --symlinks ../Wallhavend.zip Wallhavend.app
+
+      - name: 'Sign ZIP with Sparkle EdDSA key'
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          brew install sparkle
+          echo "$SPARKLE_PRIVATE_KEY" | /opt/homebrew/bin/sign_update ./build/Wallhavend.zip > ./build/Wallhavend.zip.sig
+
+      - name: 'Generate appcast.xml'
+        run: |
+          TAG=${GITHUB_REF_NAME}
+          ZIP_URL="https://github.com/Attacktive/Wallhavend/releases/download/${TAG}/Wallhavend.zip"
+          ZIP_SIZE=$(stat -f%z ./build/Wallhavend.zip)
+          ED_SIGNATURE=$(cat ./build/Wallhavend.zip.sig)
+          VERSION=${TAG#v}
+
+          cat > ./build/appcast.xml <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+            <channel>
+              <title>Wallhavend</title>
+              <item>
+                <title>${VERSION}</title>
+                <sparkle:version>${VERSION}</sparkle:version>
+                <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+                <pubDate>$(date -u +"%a, %d %b %Y %H:%M:%S +0000")</pubDate>
+                <enclosure
+                  url="${ZIP_URL}"
+                  sparkle:edSignature="${ED_SIGNATURE}"
+                  length="${ZIP_SIZE}"
+                  type="application/octet-stream"
+                />
+              </item>
+            </channel>
+          </rss>
+          EOF
+
+      - name: 'Upload DMG, ZIP, and appcast.xml to Release'
         uses: 'softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b'
         with:
-          files: './build/Wallhavend.dmg'
+          files: |
+            ./build/Wallhavend.dmg
+            ./build/Wallhavend.zip
+            ./build/appcast.xml
           generate_release_notes: true

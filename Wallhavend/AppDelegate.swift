@@ -1,4 +1,5 @@
 import SwiftUI
+import Sparkle
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -6,11 +7,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 	private var settingsWindowController: NSWindowController?
 	private let wallpaperManager = WallpaperManager.shared
+	private var updaterController: SPUStandardUpdaterController?
 
 	@AppStorage("startAutoUpdateOnLaunch")
 	private var startAutoUpdateOnLaunch: Bool = false
 
 	func applicationDidFinishLaunching(_ notification: Notification) {
+		updaterController = SPUStandardUpdaterController(
+			startingUpdater: true,
+			updaterDelegate: nil,
+			userDriverDelegate: nil
+		)
+
 		statusBarController = StatusBarController(appDelegate: self)
 
 		// Hide dock icon
@@ -63,6 +71,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 		settingsWindowController = windowController
 
 		NSApp.activate(ignoringOtherApps: true)
+	}
+
+	func checkForUpdates() {
+		updaterController?.checkForUpdates(nil)
 	}
 }
 
