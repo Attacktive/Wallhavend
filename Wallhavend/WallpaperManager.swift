@@ -38,7 +38,6 @@ class WallpaperManager: ObservableObject {
 	var currentWallpaperFileURL: URL?
 	var previousWallpaperFileURL: URL?
 	private var deletionWorkItem: DispatchWorkItem?
-	private var errorDismissTask: Task<Void, Never>?
 
 	@Published
 	var isRunning = false
@@ -209,7 +208,6 @@ class WallpaperManager: ObservableObject {
 
 		do {
 			error = nil
-			errorDismissTask?.cancel()
 
 			print("Restoring previous wallpaper: \(previousURL.lastPathComponent)")
 			try setWallpaperForAllScreens(url: previousURL, image: image)
@@ -250,6 +248,10 @@ class WallpaperManager: ObservableObject {
 
 		print("Download complete. Status: \(httpResponse.statusCode), Size: \(data.count) bytes")
 
+		guard httpResponse.statusCode == 200 else {
+			throw WallpaperError.httpError(httpResponse.statusCode)
+		}
+
 		guard let mimeType = httpResponse.mimeType else {
 			throw WallpaperError.noContentType
 		}
@@ -281,7 +283,7 @@ class WallpaperManager: ObservableObject {
 			.appendingPathComponent("Desktop Pictures", isDirectory: true)
 			.appendingPathComponent("Wallhavend", isDirectory: true)
 
-		try? FileManager.default.createDirectory(at: desktopPicturesURL, withIntermediateDirectories: true)
+		try FileManager.default.createDirectory(at: desktopPicturesURL, withIntermediateDirectories: true)
 		return desktopPicturesURL
 	}
 

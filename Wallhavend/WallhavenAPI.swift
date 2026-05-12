@@ -42,14 +42,6 @@ enum WallhavenCategory: String, CaseIterable {
 	case general
 	case anime
 	case people
-
-	var code: String {
-		switch self {
-			case .general: return "1"
-			case .anime: return "0"
-			case .people: return "0"
-		}
-	}
 }
 
 class WallhavenService: ObservableObject {
@@ -216,7 +208,7 @@ class WallhavenService: ObservableObject {
 		let apiResponse = try JSONDecoder().decode(WallhavenResponse.self, from: data)
 
 		if apiResponse.data.isEmpty {
-			throw WallpaperError.zeroByteResource
+			throw WallpaperError.noResults
 		}
 
 		cachedWallpapers = apiResponse.data

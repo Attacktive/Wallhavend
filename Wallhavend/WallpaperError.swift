@@ -3,10 +3,11 @@ import Foundation
 enum WallpaperError: LocalizedError {
 	case invalidURL
 	case invalidResponse
+	case httpError(Int)
 	case noContentType
 	case unsupportedImageType(String)
 	case invalidImage
-	case zeroByteResource
+	case noResults
 
 	var errorDescription: String? {
 		switch self {
@@ -14,14 +15,16 @@ enum WallpaperError: LocalizedError {
 				return "Invalid wallpaper URL"
 			case .invalidResponse:
 				return "Invalid response type"
+			case .httpError(let statusCode):
+				return "Download failed with HTTP \(statusCode)"
 			case .noContentType:
 				return "No content type in response"
 			case .unsupportedImageType(let type):
 				return "Unsupported image type: \(type)"
 			case .invalidImage:
 				return "Failed to load downloaded image"
-			case .zeroByteResource:
-				return "The response is literally empty."
+			case .noResults:
+				return "No wallpapers found matching your search criteria"
 		}
 	}
 }
