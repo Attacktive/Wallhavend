@@ -16,8 +16,8 @@ struct ContentView: View {
 	var body: some View {
 		VStack(spacing: 0) {
 			Picker("", selection: $selectedTab) {
-				ForEach(tabs.indices, id: \.self) { i in
-					Text(tabs[i]).tag(i)
+				ForEach(tabs.indices, id: \.self) { index in
+					Text(tabs[index]).tag(index)
 				}
 			}
 			.pickerStyle(.segmented)
