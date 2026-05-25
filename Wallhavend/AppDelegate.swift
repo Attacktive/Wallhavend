@@ -45,7 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 		}
 
 		let window = NSWindow(
-			contentRect: NSRect(x: 0, y: 0, width: 400, height: 650),
+			contentRect: NSRect(x: 0, y: 0, width: 400, height: 540),
 			styleMask: [.titled, .closable, .miniaturizable, .resizable],
 			backing: .buffered,
 			defer: false
@@ -56,13 +56,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 			.environmentObject(WallhavenService.shared)
 
 		let hostingView = NSHostingView(rootView: contentView)
-		hostingView.frame = NSRect(x: 0, y: 0, width: 400, height: 650)
+		hostingView.frame = NSRect(x: 0, y: 0, width: 400, height: 540)
 		hostingView.autoresizingMask = [.width, .height]
 
 		window.contentView = hostingView
 		window.title = "Wallhavend Settings"
-		window.contentMinSize = NSSize(width: 400, height: 650)
-		window.setContentSize(NSSize(width: 400, height: 650))
+		window.contentMinSize = NSSize(width: 400, height: 480)
+		window.setContentSize(NSSize(width: 400, height: 540))
 		window.center()
 
 		let windowController = NSWindowController(window: window)

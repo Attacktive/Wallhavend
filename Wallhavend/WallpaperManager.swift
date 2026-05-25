@@ -17,8 +17,13 @@ class WallpaperManager: ObservableObject {
 	private(set) var isOnline: Bool = true
 
 	init() {
+		// Initialise _poolSize directly to avoid didSet writing UserDefaults on launch
+		let stored = UserDefaults.standard.object(forKey: "poolSize") as? Int ?? 10
+		_poolSize = Published(initialValue: stored)
+
 		setupSessionObservers()
 		setupNetworkObserver()
+		loadPoolFromDisk()
 	}
 
 	@Published
@@ -36,8 +41,16 @@ class WallpaperManager: ObservableObject {
 	}
 
 	var currentWallpaperFileURL: URL?
-	var previousWallpaperFileURL: URL?
-	private var deletionWorkItem: DispatchWorkItem?
+
+	@Published var poolPaths: [URL] = []
+
+	var previousWallpaperFileURL: URL? { poolPaths.count > 1 ? poolPaths[1] : nil }
+
+	@Published var poolSize: Int = 10 {
+		didSet {
+			UserDefaults.standard.set(poolSize, forKey: "poolSize")
+		}
+	}
 
 	@Published
 	var isRunning = false
@@ -84,6 +97,26 @@ class WallpaperManager: ObservableObject {
 
 			await self.runAutoUpdateLoop()
 		}
+	}
+
+	private func loadPoolFromDisk() {
+		guard let storageURL = try? getWallpaperStorageDirectory() else { return }
+
+		let fileManager = FileManager.default
+		guard let files = try? fileManager.contentsOfDirectory(
+			at: storageURL,
+			includingPropertiesForKeys: [.contentModificationDateKey],
+			options: .skipsHiddenFiles
+		) else { return }
+
+		let sorted = files.sorted { a, b in
+			let aDate = (try? a.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+			let bDate = (try? b.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+			return aDate > bDate
+		}
+
+		poolPaths = Array(sorted.prefix(poolSize))
+		currentWallpaperFileURL = sorted.first
 	}
 
 	private func setupNetworkObserver() {
@@ -191,38 +224,48 @@ class WallpaperManager: ObservableObject {
 	}
 
 	func restorePreviousWallpaper() async {
-		guard let previousURL = previousWallpaperFileURL else {
+		guard let previous = poolPaths.dropFirst().first else {
 			print("No previous wallpaper available")
 			return
 		}
 
-		guard FileManager.default.fileExists(atPath: previousURL.path) else {
-			print("Previous wallpaper file no longer exists")
-			return
-		}
+		await applyFromPool(url: previous)
+	}
 
-		guard let image = NSImage(contentsOf: previousURL) else {
-			print("Failed to load previous wallpaper image")
+	func applyFromPool(url: URL) async {
+		guard
+			FileManager.default.fileExists(atPath: url.path),
+			let image = NSImage(contentsOf: url)
+		else {
+			print("Pool wallpaper no longer exists: \(url.lastPathComponent)")
+			poolPaths.removeAll { $0 == url }
 			return
 		}
 
 		do {
 			error = nil
+			try setWallpaperForAllScreens(url: url, image: image)
 
-			print("Restoring previous wallpaper: \(previousURL.lastPathComponent)")
-			try setWallpaperForAllScreens(url: previousURL, image: image)
-
-			// Swap current and previous
-			let temp = currentWallpaperFileURL
-			currentWallpaperFileURL = previousURL
-			previousWallpaperFileURL = temp
-
+			poolPaths.removeAll { $0 == url }
+			poolPaths.insert(url, at: 0)
+			currentWallpaperFileURL = url
 			lastUpdated = Date()
-			print("Previous wallpaper restored successfully")
+			print("Applied pool wallpaper: \(url.lastPathComponent)")
 		} catch {
-			self.error = "Failed to restore previous wallpaper"
-			print("Failed to restore previous wallpaper: \(error)")
+			self.error = "Failed to apply wallpaper: \(error.localizedDescription)"
+			print("Failed to apply pool wallpaper: \(error)")
 		}
+	}
+
+	func deleteFromPool(url: URL) {
+		poolPaths.removeAll { $0 == url }
+		try? FileManager.default.removeItem(at: url)
+
+		if currentWallpaperFileURL == url {
+			currentWallpaperFileURL = poolPaths.first
+		}
+
+		print("Deleted from pool: \(url.lastPathComponent)")
 	}
 
 	private func fetchRandomWallpaper() async throws -> Wallpaper {
@@ -302,11 +345,6 @@ class WallpaperManager: ObservableObject {
 	}
 
 	private func setWallpaperAndUpdateState(wallpaperPath: URL, originalURL: String) async throws {
-		if let oldURL = currentWallpaperFileURL {
-			previousWallpaperFileURL = oldURL
-			scheduleWallpaperDeletion(fileURL: oldURL, delay: timerInterval)
-		}
-
 		currentWallpaperFileURL = wallpaperPath
 
 		guard let image = NSImage(contentsOf: wallpaperPath) else {
@@ -316,6 +354,10 @@ class WallpaperManager: ObservableObject {
 		print("Setting wallpaper for all screens and spaces...")
 		try setWallpaperForAllScreens(url: wallpaperPath, image: image)
 		print("Wallpaper set successfully")
+
+		poolPaths.removeAll { $0 == wallpaperPath }
+		poolPaths.insert(wallpaperPath, at: 0)
+		poolPaths = Array(poolPaths.prefix(poolSize))
 
 		currentWallpaperURL = URL(string: originalURL)
 		lastUpdated = Date()
@@ -362,16 +404,18 @@ class WallpaperManager: ObservableObject {
 	private func cleanupOldWallpapers() {
 		do {
 			let storageURL = try getWallpaperStorageDirectory()
-
 			let fileManager = FileManager.default
-			let files = try fileManager.contentsOfDirectory(at: storageURL, includingPropertiesForKeys: [.creationDateKey])
+			let files = try fileManager.contentsOfDirectory(
+				at: storageURL,
+				includingPropertiesForKeys: nil
+			)
 
-			// Keep current and previous wallpapers
-			let wallpapersToKeep = Set([currentWallpaperFileURL, previousWallpaperFileURL].compactMap { $0 })
+			var toKeep = Set(poolPaths.map { $0.standardized })
+			if let current = currentWallpaperFileURL {
+				toKeep.insert(current.standardized)
+			}
 
-			for file in files {
-				guard !wallpapersToKeep.contains(file) else { continue }
-
+			for file in files where !toKeep.contains(file.standardized) {
 				try? fileManager.removeItem(at: file)
 				print("Cleaned up old wallpaper: \(file.lastPathComponent)")
 			}
@@ -380,22 +424,5 @@ class WallpaperManager: ObservableObject {
 		}
 	}
 
-	private func scheduleWallpaperDeletion(fileURL: URL, delay: TimeInterval) {
-		// Cancel any pending deletion
-		deletionWorkItem?.cancel()
-
-		// Schedule new deletion
-		let workItem = DispatchWorkItem { [weak self] in
-			guard let self = self else { return }
-
-			// Only delete if this URL is not the current or previous wallpaper
-			if fileURL != self.currentWallpaperFileURL && fileURL != self.previousWallpaperFileURL {
-				try? FileManager.default.removeItem(at: fileURL)
-				print("Deleted old wallpaper: \(fileURL.lastPathComponent)")
-			}
-		}
-
-		deletionWorkItem = workItem
-		DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
-	}
 }
+

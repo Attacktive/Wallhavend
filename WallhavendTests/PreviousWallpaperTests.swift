@@ -55,20 +55,22 @@ final class PreviousWallpaperTests: XCTestCase {
 		let manager = WallpaperManager.shared
 
 		// Save original state
-		let originalPrevious = manager.previousWallpaperFileURL
+		let originalPaths = manager.poolPaths
 		let originalCurrent = manager.currentWallpaperFileURL
 
-		// Temporarily clear previous wallpaper (simulate first run)
-		manager.previousWallpaperFileURL = nil
+		// Simulate first run — clear the pool
+		manager.poolPaths = []
+		manager.currentWallpaperFileURL = nil
 
-		// Try to restore - should handle gracefully
+		// Try to restore — should handle gracefully
 		await manager.restorePreviousWallpaper()
 
-		// Current should remain unchanged
-		XCTAssertEqual(manager.currentWallpaperFileURL, originalCurrent)
+		// Current should remain nil (nothing to restore to)
+		XCTAssertNil(manager.currentWallpaperFileURL)
 
 		// Restore original state
-		manager.previousWallpaperFileURL = originalPrevious
+		manager.poolPaths = originalPaths
+		manager.currentWallpaperFileURL = originalCurrent
 	}
 
 	@MainActor
