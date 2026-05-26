@@ -65,7 +65,7 @@ class WallhavenService: ObservableObject {
 	var apiKey: String = ""
 
 	@AppStorage("ratios")
-	var ratios: String = "16x9"
+	var ratios: String = ""
 
 	@AppStorage("includeSFW")
 	var includeSFW: Bool = true
@@ -235,16 +235,41 @@ class WallhavenService: ObservableObject {
 		.joined()
 	}
 
+	func isRatioSelected(_ ratio: String) -> Bool {
+		ratios
+			.split(separator: ",")
+			.map { $0.trimmingCharacters(in: .whitespaces) }
+			.contains(ratio)
+	}
+
+	func toggleRatio(_ ratio: String) {
+		var parts = ratios
+			.split(separator: ",")
+			.map { $0.trimmingCharacters(in: .whitespaces) }
+			.filter { !$0.isEmpty }
+
+		if let index = parts.firstIndex(of: ratio) {
+			parts.remove(at: index)
+		} else {
+			parts.append(ratio)
+		}
+
+		ratios = parts.joined(separator: ",")
+	}
+
 	private func buildQueryItems(_ categoriesString: String) -> [URLQueryItem] {
 		var items = [
 			URLQueryItem(name: "q", value: searchQuery),
 			URLQueryItem(name: "categories", value: categoriesString),
 			URLQueryItem(name: "purity", value: purityString),
-			URLQueryItem(name: "ratios", value: ratios),
 			URLQueryItem(name: "sorting", value: "random"),
 			URLQueryItem(name: "seed", value: UUID().uuidString),
 			URLQueryItem(name: "atleast", value: ratioResolution)
 		]
+
+		if !ratios.isEmpty {
+			items.append(URLQueryItem(name: "ratios", value: ratios))
+		}
 
 		if !apiKey.isEmpty {
 			items.append(URLQueryItem(name: "apikey", value: apiKey))

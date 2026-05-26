@@ -116,6 +116,45 @@ final class WallhavendTests: XCTestCase {
 		XCTAssertEqual(peopleWallpaper.category, "people")
 	}
 
+	func testToggleRatioAdds() {
+		service.ratios = ""
+		service.toggleRatio("16x9")
+		XCTAssertEqual(service.ratios, "16x9")
+	}
+
+	func testToggleRatioRemoves() {
+		service.ratios = "16x9"
+		service.toggleRatio("16x9")
+		XCTAssertEqual(service.ratios, "")
+	}
+
+	func testToggleRatioAddsSecond() {
+		service.ratios = "16x9"
+		service.toggleRatio("21x9")
+		XCTAssertTrue(service.isRatioSelected("16x9"))
+		XCTAssertTrue(service.isRatioSelected("21x9"))
+	}
+
+	func testToggleRatioRemovesOneOfMultiple() {
+		service.ratios = "16x9,21x9"
+		service.toggleRatio("16x9")
+		XCTAssertFalse(service.isRatioSelected("16x9"))
+		XCTAssertTrue(service.isRatioSelected("21x9"))
+		XCTAssertEqual(service.ratios, "21x9")
+	}
+
+	func testIsRatioSelectedHandlesWhitespace() {
+		service.ratios = "16x9, 21x9"
+		XCTAssertTrue(service.isRatioSelected("21x9"))
+	}
+
+	func testToggleRatioTrimsWhitespace() {
+		service.ratios = "16x9, 21x9"
+		service.toggleRatio("21x9")
+		XCTAssertFalse(service.isRatioSelected("21x9"))
+		XCTAssertTrue(service.isRatioSelected("16x9"))
+	}
+
 	func testSearchQueryEncoding() async throws {
 		service.searchQuery = "mountain landscape"
 

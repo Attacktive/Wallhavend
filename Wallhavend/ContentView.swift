@@ -174,6 +174,8 @@ private struct ContentTab: View {
 		)
 	}
 
+	private let presetRatios = ["16x9", "16x10", "21x9", "4x3"]
+
 	private var ratiosBinding: Binding<String> {
 		Binding(
 			get: { wallhavenService.ratios },
@@ -217,7 +219,21 @@ private struct ContentTab: View {
 
 				Divider()
 
-				TextField("Aspect Ratio (e.g. 16x9)", text: ratiosBinding)
+				HStack(spacing: 6) {
+					ForEach(presetRatios, id: \.self) { ratio in
+						Toggle(isOn: Binding(
+							get: { wallhavenService.isRatioSelected(ratio) },
+							set: { _ in wallhavenService.toggleRatio(ratio) }
+						)) {
+							Text(ratio)
+						}
+						.toggleStyle(.button)
+						.controlSize(.small)
+						.font(.system(.body, design: .monospaced))
+					}
+				}
+
+				TextField("e.g. 16x9,21x9", text: ratiosBinding)
 					.textFieldStyle(.roundedBorder)
 					.font(.system(.body, design: .monospaced))
 
