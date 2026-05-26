@@ -418,7 +418,6 @@ private struct WallpaperThumbnailView: View {
 				.stroke(Color.accentColor, lineWidth: isCurrent ? 2 : 0)
 			)
 			.onTapGesture(perform: onApply)
-			.onHover { isHovered = $0 }
 
 			if isHovered {
 				Button(action: onDelete) {
@@ -434,12 +433,10 @@ private struct WallpaperThumbnailView: View {
 		}
 		.frame(maxWidth: .infinity, minHeight: 64, maxHeight: 64)
 		.contentShape(Rectangle())
+		.onHover { isHovered = $0 }
 		.task(id: url) {
-			let imageLoadingTask = Task.detached(priority: .userInitiated) {
-				NSImage(contentsOf: url)
-			}
-
-			nsImage = await imageLoadingTask.value
+			let loadTask = Task.detached(priority: .userInitiated) { try? Data(contentsOf: url) }
+			nsImage = await loadTask.value.flatMap { NSImage(data: $0) }
 		}
 	}
 }
