@@ -1,12 +1,12 @@
 import Foundation
 import SwiftUI
 
-struct WallhavenResponse: Codable {
+struct WallhavenResponse: Decodable {
 	let data: [Wallpaper]
 	let meta: Meta
 }
 
-struct Wallpaper: Codable {
+struct Wallpaper: Decodable {
 	let id: String
 	let url: String
 	let path: String
@@ -23,18 +23,25 @@ struct Wallpaper: Codable {
 	}
 }
 
-struct Meta: Codable {
+struct Meta: Decodable {
 	let currentPage: Int
 	let lastPage: Int
-	let perPage: Int
 	let total: Int
-	let query: String?
 
 	enum CodingKeys: String, CodingKey {
 		case currentPage = "current_page"
 		case lastPage = "last_page"
 		case perPage = "per_page"
-		case total, query
+		case total
+	}
+
+	init(from decoder: Decoder) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		currentPage = try container.decode(Int.self, forKey: .currentPage)
+		lastPage = try container.decode(Int.self, forKey: .lastPage)
+		total = try container.decode(Int.self, forKey: .total)
+		// perPage can be Int or String depending on the API version; skip it
+		// query can be String, null, or {"id":…,"tag":…} for tag searches; skip it
 	}
 }
 
@@ -204,7 +211,12 @@ class WallhavenService: ObservableObject {
 			request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
 		}
 
-		let (data, _) = try await URLSession.shared.data(for: request)
+		let (data, response) = try await URLSession.shared.data(for: request)
+
+		if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+			throw WallpaperError.httpError(httpResponse.statusCode)
+		}
+
 		let apiResponse = try JSONDecoder().decode(WallhavenResponse.self, from: data)
 
 		if apiResponse.data.isEmpty {
