@@ -150,7 +150,12 @@ class WallpaperManager: ObservableObject {
 		guard isRunning else { return }
 
 		guard isOnline else {
-			print("Offline. Skipping auto-update.")
+			if let oldest = poolPaths.last {
+				await applyFromPool(url: oldest)
+			} else {
+				print("Offline and pool is empty. Skipping auto-update.")
+			}
+
 			return
 		}
 
