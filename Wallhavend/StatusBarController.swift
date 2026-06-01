@@ -53,38 +53,26 @@ class StatusBarController {
 		} else if isRunning {
 			button.image = baseImage
 		} else {
-			button.image = makeGrayscaleIcon(from: baseImage, size: iconSize)
+			button.image = makeDimmedIcon(from: baseImage, size: iconSize)
 		}
 	}
 
-	private func makeGrayscaleIcon(from source: NSImage, size: NSSize) -> NSImage {
-		guard
-			let tiffData = source.tiffRepresentation,
-			let ciImage = CIImage(data: tiffData),
-			let filter = CIFilter(name: "CIColorControls")
-		else {
-			return source
-		}
-
-		filter.setValue(ciImage, forKey: kCIInputImageKey)
-		filter.setValue(0.0, forKey: kCIInputSaturationKey)
-
-		guard let outputCI = filter.outputImage else { return source }
-
-		let rep = NSCIImageRep(ciImage: outputCI)
+	private func makeDimmedIcon(from source: NSImage, size: NSSize) -> NSImage {
 		let result = NSImage(size: size)
-		result.addRepresentation(rep)
+		result.lockFocus()
+		source.draw(in: NSRect(origin: .zero, size: size), from: .zero, operation: .sourceOver, fraction: 0.35)
+		result.unlockFocus()
 
 		return result
 	}
 
 	private func makeOfflineIcon(from source: NSImage, size: NSSize) -> NSImage {
-		let grayscale = makeGrayscaleIcon(from: source, size: size)
+		let dimmed = makeDimmedIcon(from: source, size: size)
 
 		let result = NSImage(size: size)
 		result.lockFocus()
 
-		grayscale.draw(in: NSRect(origin: .zero, size: size))
+		dimmed.draw(in: NSRect(origin: .zero, size: size))
 
 		let badgeSize: CGFloat = 8
 		let badgeRect = NSRect(x: size.width - badgeSize, y: 0, width: badgeSize, height: badgeSize)
