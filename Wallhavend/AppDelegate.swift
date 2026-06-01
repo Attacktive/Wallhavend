@@ -13,11 +13,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 	private var startAutoUpdateOnLaunch: Bool = false
 
 	func applicationDidFinishLaunching(_ notification: Notification) {
-		updaterController = SPUStandardUpdaterController(
-			startingUpdater: true,
-			updaterDelegate: nil,
-			userDriverDelegate: nil
-		)
+		let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+		if !isRunningTests {
+			updaterController = SPUStandardUpdaterController(
+				startingUpdater: true,
+				updaterDelegate: nil,
+				userDriverDelegate: nil
+			)
+		}
 
 		statusBarController = StatusBarController(appDelegate: self)
 
