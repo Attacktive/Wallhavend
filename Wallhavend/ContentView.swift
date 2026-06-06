@@ -274,8 +274,14 @@ private struct AdvancedTab: View {
 private struct GalleryTab: View {
 	@EnvironmentObject var wallpaperManager: WallpaperManager
 
+	private var nonEmptyBuckets: [AspectBucket] {
+		AspectBucket.allCases.filter { bucket in
+			(wallpaperManager.poolsByBucket[bucket.rawValue]?.isEmpty == false)
+		}
+	}
+
 	var body: some View {
-		if wallpaperManager.poolPaths.isEmpty {
+		if nonEmptyBuckets.isEmpty {
 			VStack(spacing: 8) {
 				Image(systemName: "photo.on.rectangle.angled")
 					.font(.system(size: 40))
@@ -292,16 +298,33 @@ private struct GalleryTab: View {
 			.frame(maxWidth: .infinity)
 			.padding(.vertical, 40)
 		} else {
+			VStack(alignment: .leading, spacing: 16) {
+				ForEach(nonEmptyBuckets, id: \.self) { bucket in
+					GalleryBucketSection(bucket: bucket)
+				}
+			}
+		}
+	}
+}
+
+private struct GalleryBucketSection: View {
+	@EnvironmentObject var wallpaperManager: WallpaperManager
+	let bucket: AspectBucket
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 6) {
+			Text(bucket.label)
+				.font(.headline)
+
 			LazyVGrid(
 				columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 3),
 				spacing: 4
 			) {
-				ForEach(wallpaperManager.poolPaths, id: \.self) { url in
+				ForEach(wallpaperManager.poolsByBucket[bucket.rawValue] ?? [], id: \.self) { url in
 					WallpaperThumbnailView(
 						url: url,
-						isCurrent: url == wallpaperManager.currentWallpaperFileURL,
-						onApply: { Task { await wallpaperManager.applyFromPool(url: url) } },
-						onDelete: { wallpaperManager.deleteFromPool(url: url) }
+						bucket: bucket.rawValue,
+						isCurrent: url == wallpaperManager.currentByBucket[bucket.rawValue]
 					)
 				}
 			}
@@ -310,47 +333,48 @@ private struct GalleryTab: View {
 }
 
 private struct WallpaperThumbnailView: View {
+	@EnvironmentObject var wallpaperManager: WallpaperManager
 	let url: URL
+	let bucket: String
 	let isCurrent: Bool
-	let onApply: () -> Void
-	let onDelete: () -> Void
 
-	@State private var isHovered = false
 	@State private var nsImage: NSImage?
 
 	var body: some View {
-		ZStack(alignment: .topTrailing) {
-			Group {
-				if let nsImage {
-					Image(nsImage: nsImage)
-						.resizable()
-						.scaledToFill()
-				} else {
-					Color(NSColor.windowBackgroundColor)
-				}
-			}
-			.frame(maxWidth: .infinity, minHeight: 64, maxHeight: 64)
-			.clipShape(RoundedRectangle(cornerRadius: 4))
-			.overlay(RoundedRectangle(cornerRadius: 4)
-				.stroke(Color.accentColor, lineWidth: isCurrent ? 2 : 0)
-			)
-			.onTapGesture(perform: onApply)
-
-			if isHovered {
-				Button(action: onDelete) {
-					Image(systemName: "xmark.circle.fill")
-						.foregroundColor(.white)
-						.shadow(radius: 2)
-						.font(.system(size: 16))
-				}
-				.buttonStyle(.plain)
-				.accessibilityLabel("Remove wallpaper")
-				.padding(4)
+		Group {
+			if let nsImage {
+				Image(nsImage: nsImage)
+					.resizable()
+					.scaledToFill()
+			} else {
+				Color(NSColor.windowBackgroundColor)
 			}
 		}
 		.frame(maxWidth: .infinity, minHeight: 64, maxHeight: 64)
+		.clipShape(RoundedRectangle(cornerRadius: 4))
+		.overlay(
+			RoundedRectangle(cornerRadius: 4)
+				.stroke(Color.red, lineWidth: isCurrent ? 2 : 0)
+		)
 		.contentShape(Rectangle())
-		.onHover { isHovered = $0 }
+		.onTapGesture {
+			Task { await wallpaperManager.applyFromPool(url: url, bucket: bucket) }
+		}
+		.contextMenu {
+			Button("Locate in Finder") {
+				wallpaperManager.revealInFinder(url: url)
+			}
+
+			Button("Copy Wallhaven URL") {
+				wallpaperManager.copyWallhavenURL(for: url)
+			}
+
+			Divider()
+
+			Button("Delete from pool", role: .destructive) {
+				wallpaperManager.deleteFromPool(url: url, bucket: bucket)
+			}
+		}
 		.task(id: url) {
 			let loadTask = Task.detached(priority: .userInitiated) { try? Data(contentsOf: url) }
 			nsImage = await loadTask.value.flatMap { NSImage(data: $0) }

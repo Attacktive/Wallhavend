@@ -157,12 +157,6 @@ struct MenuBarView: View {
 					.font(.caption)
 			}
 
-			Button("Locate in Finder") {
-				wallpaperManager.revealCurrentWallpaperInFinder()
-				onAction()
-			}
-			.disabled(!wallpaperManager.hasCurrentWallpaper)
-
 			Divider()
 
 			Button("Update Now") {

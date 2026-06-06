@@ -17,7 +17,6 @@ class WallpaperManager: ObservableObject {
 	private(set) var isOnline: Bool = true
 
 	init() {
-		// Initialise _poolSize directly to avoid didSet writing UserDefaults on launch
 		let stored = UserDefaults.standard.object(forKey: "poolSize") as? Int ?? 10
 		_poolSize = Published(initialValue: stored)
 
@@ -25,12 +24,6 @@ class WallpaperManager: ObservableObject {
 		setupNetworkObserver()
 		loadPoolFromDisk()
 	}
-
-	@Published
-	var autoScaling = true
-
-	@Published
-	var manualScaling: NSImageScaling = .scaleProportionallyUpOrDown
 
 	private var autoUpdateTask: Task<Void, Never>?
 	private var timerInterval: TimeInterval = 60
@@ -40,11 +33,8 @@ class WallpaperManager: ObservableObject {
 		return if value > 0 { value } else { 60 }
 	}
 
-	var currentWallpaperFileURL: URL?
-
-	@Published var poolPaths: [URL] = []
-
-	var previousWallpaperFileURL: URL? { poolPaths.count > 1 ? poolPaths[1] : nil }
+	@Published var poolsByBucket: [String: [URL]] = [:]
+	@Published var currentByBucket: [String: URL] = [:]
 
 	@Published var poolSize: Int = 10 {
 		didSet {
@@ -59,21 +49,13 @@ class WallpaperManager: ObservableObject {
 	var lastUpdated: Date?
 
 	@Published
-	var currentWallpaperURL: URL?
-
-	@Published
 	var error: String?
 
-	private let wallhavenService = WallhavenService.shared
 	private let dateFormatter: DateFormatter = {
 		let formatter = DateFormatter()
 		formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
 		return formatter
 	}()
-
-	var hasCurrentWallpaper: Bool {
-		currentWallpaperFileURL != nil
-	}
 
 	var formattedLastUpdated: String {
 		guard let lastUpdated = lastUpdated else {
@@ -148,16 +130,6 @@ class WallpaperManager: ObservableObject {
 
 	private func performAutoUpdateTick() async {
 		guard isRunning else { return }
-
-		guard isOnline else {
-			if let oldest = poolPaths.last {
-				await applyFromPool(url: oldest)
-			} else {
-				print("Offline and pool is empty. Skipping auto-update.")
-			}
-
-			return
-		}
 
 		guard isSessionActive else {
 			print("Session inactive (screensaver/lock). Skipping auto-update.")
