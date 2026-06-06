@@ -36,7 +36,7 @@ extension WallpaperManager {
 		currentByBucket = loadedCurrent
 	}
 
-	static func readImagePixelDimensions(at url: URL) -> (Int, Int)? {
+	nonisolated static func readImagePixelDimensions(at url: URL) -> (Int, Int)? {
 		guard
 			let source = CGImageSourceCreateWithURL(url as CFURL, nil),
 			let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any],
@@ -52,7 +52,7 @@ extension WallpaperManager {
 	}
 
 	@discardableResult
-	static func migrateFlatFilesToBuckets(in storageURL: URL) -> Int {
+	nonisolated static func migrateFlatFilesToBuckets(in storageURL: URL) -> Int {
 		let fileManager = FileManager.default
 		guard let entries = try? fileManager.contentsOfDirectory(
 			at: storageURL,
