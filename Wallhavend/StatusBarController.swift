@@ -173,14 +173,6 @@ struct MenuBarView: View {
 			}
 			.disabled(!wallpaperManager.isOnline)
 
-			Button("Previous Wallpaper") {
-				Task {
-					onAction()
-					await wallpaperManager.restorePreviousWallpaper()
-				}
-			}
-			.disabled(wallpaperManager.previousWallpaperFileURL == nil)
-
 			Button(wallpaperManager.isRunning ? "Stop Auto Update" : "Start Auto Update") {
 				if wallpaperManager.isRunning {
 					wallpaperManager.stopAutoUpdate()

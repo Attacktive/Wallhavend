@@ -74,51 +74,11 @@ struct ContentView: View {
 					}
 					.buttonStyle(.borderedProminent)
 					.disabled(!wallpaperManager.isOnline)
-
-					Button("Previous") {
-						Task {
-							await wallpaperManager.restorePreviousWallpaper()
-						}
-					}
-					.buttonStyle(.bordered)
-					.disabled(wallpaperManager.previousWallpaperFileURL == nil)
 				}
 
 				if wallpaperManager.lastUpdated != nil {
 					Text("Last updated: \(wallpaperManager.formattedLastUpdated)")
 						.font(.caption)
-				}
-
-				if let url = wallpaperManager.currentWallpaperURL {
-					Button {
-						NSWorkspace.shared.open(url)
-					} label: {
-						HStack(spacing: 4) {
-							Text("Current wallpaper:")
-								.foregroundColor(.secondary)
-
-							Text(url.absoluteString)
-								.foregroundColor(.accentColor)
-						}
-						.font(.caption)
-						.lineLimit(1)
-						.truncationMode(.middle)
-						.multilineTextAlignment(.leading)
-					}
-					.buttonStyle(.link)
-					.disabled(!wallpaperManager.hasCurrentWallpaper)
-					.onHover { inside in
-						if inside {
-							NSCursor.pointingHand.push()
-						} else {
-							NSCursor.pop()
-						}
-					}
-
-					Button("Locate in Finder") {
-						wallpaperManager.revealCurrentWallpaperInFinder()
-					}
-					.disabled(!wallpaperManager.hasCurrentWallpaper)
 				}
 			}
 			.padding()
@@ -174,15 +134,6 @@ private struct ContentTab: View {
 		)
 	}
 
-	private let presetRatios = ["16x9", "16x10", "21x9", "4x3"]
-
-	private var ratiosBinding: Binding<String> {
-		Binding(
-			get: { wallhavenService.ratios },
-			set: { wallhavenService.ratios = $0 }
-		)
-	}
-
 	var body: some View {
 		GroupBox {
 			TextField("Search query (optional; delimit with a comma)", text: searchQueryBinding)
@@ -216,30 +167,6 @@ private struct ContentTab: View {
 						}
 					}
 				}
-
-				Divider()
-
-				HStack(spacing: 6) {
-					ForEach(presetRatios, id: \.self) { ratio in
-						Toggle(isOn: Binding(
-							get: { wallhavenService.isRatioSelected(ratio) },
-							set: { _ in wallhavenService.toggleRatio(ratio) }
-						)) {
-							Text(ratio)
-						}
-						.toggleStyle(.button)
-						.controlSize(.small)
-						.font(.system(.body, design: .monospaced))
-					}
-				}
-
-				TextField("e.g. 16x9,21x9", text: ratiosBinding)
-					.textFieldStyle(.roundedBorder)
-					.font(.system(.body, design: .monospaced))
-
-				Text("Leave blank to match any ratio")
-					.font(.caption)
-					.foregroundColor(.secondary)
 			}
 			.padding(.vertical, 4)
 		} label: {
@@ -269,13 +196,6 @@ private struct ScheduleTab: View {
 		("24 hours", 86400)
 	]
 
-	private var autoScalingBinding: Binding<Bool> {
-		Binding(
-			get: { wallpaperManager.autoScaling },
-			set: { wallpaperManager.autoScaling = $0 }
-		)
-	}
-
 	var body: some View {
 		GroupBox {
 			VStack(alignment: .leading, spacing: 8) {
@@ -298,25 +218,6 @@ private struct ScheduleTab: View {
 			.padding(.vertical, 4)
 		} label: {
 			Text("Auto Update").font(.system(size: 15, weight: .semibold))
-		}
-
-		GroupBox {
-			VStack(alignment: .leading, spacing: 8) {
-				Toggle("Automatic", isOn: autoScalingBinding)
-
-				if !wallpaperManager.autoScaling {
-					Picker("", selection: $wallpaperManager.manualScaling) {
-						Text("Fill Screen").tag(NSImageScaling.scaleAxesIndependently)
-						Text("Fit to Screen").tag(NSImageScaling.scaleProportionallyUpOrDown)
-					}
-					.labelsHidden()
-					.pickerStyle(.radioGroup)
-					.padding(.leading)
-				}
-			}
-			.padding(.vertical, 4)
-		} label: {
-			Text("Wallpaper Scaling").font(.system(size: 15, weight: .semibold))
 		}
 	}
 }
