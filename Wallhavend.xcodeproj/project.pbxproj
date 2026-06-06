@@ -15,6 +15,8 @@
 		D01707E82DCC4F3E00158EDD /* WallpaperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01707E52DCC4F3E00158EDD /* WallpaperManager.swift */; };
 		AA0000012F600000000POOL1 /* WallpaperManager+Pool.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000POOL1 /* WallpaperManager+Pool.swift */; };
 		AA0000012F600000000WALL1 /* WallpaperManager+Wallpaper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000WALL1 /* WallpaperManager+Wallpaper.swift */; };
+		AA0000012F600000000ASPC1 /* AspectBucket.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000ASPC1 /* AspectBucket.swift */; };
+		AA0000012F600000000ASPC2 /* AspectBucketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000ASPC2 /* AspectBucketTests.swift */; };
 		D0C2AED12DCDD1E700B5E4EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C2AECF2DCDD1E700B5E4EA /* AppDelegate.swift */; };
 		D0C2AED22DCDD1E700B5E4EA /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C2AED02DCDD1E700B5E4EA /* StatusBarController.swift */; };
 		D0ED74982DCB72EE0008C397 /* WallhavendApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74972DCB72EE0008C397 /* WallhavendApp.swift */; };
@@ -43,6 +45,8 @@
 		D01707E52DCC4F3E00158EDD /* WallpaperManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallpaperManager.swift; sourceTree = "<group>"; };
 		AA0000002F600000000POOL1 /* WallpaperManager+Pool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WallpaperManager+Pool.swift"; sourceTree = "<group>"; };
 		AA0000002F600000000WALL1 /* WallpaperManager+Wallpaper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WallpaperManager+Wallpaper.swift"; sourceTree = "<group>"; };
+		AA0000002F600000000ASPC1 /* AspectBucket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AspectBucket.swift; sourceTree = "<group>"; };
+		AA0000002F600000000ASPC2 /* AspectBucketTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AspectBucketTests.swift; sourceTree = "<group>"; };
 		D0C2AECF2DCDD1E700B5E4EA /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D0C2AED02DCDD1E700B5E4EA /* StatusBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
 		D0ED74942DCB72EE0008C397 /* Wallhavend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wallhavend.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -104,6 +108,7 @@
 				D01707E52DCC4F3E00158EDD /* WallpaperManager.swift */,
 				AA0000002F600000000POOL1 /* WallpaperManager+Pool.swift */,
 				AA0000002F600000000WALL1 /* WallpaperManager+Wallpaper.swift */,
+				AA0000002F600000000ASPC1 /* AspectBucket.swift */,
 				D0ED74972DCB72EE0008C397 /* WallhavendApp.swift */,
 				D0ED74992DCB72EE0008C397 /* ContentView.swift */,
 				D0ED749B2DCB72F70008C397 /* Assets.xcassets */,
@@ -125,6 +130,7 @@
 			isa = PBXGroup;
 			children = (
 				0BBF89662F2653C200EF9085 /* PreviousWallpaperTests.swift */,
+				AA0000002F600000000ASPC2 /* AspectBucketTests.swift */,
 				D0ED74A92DCB72F90008C397 /* WallhavendTests.swift */,
 			);
 			path = WallhavendTests;
@@ -243,6 +249,7 @@
 				D01707E82DCC4F3E00158EDD /* WallpaperManager.swift in Sources */,
 				AA0000012F600000000POOL1 /* WallpaperManager+Pool.swift in Sources */,
 				AA0000012F600000000WALL1 /* WallpaperManager+Wallpaper.swift in Sources */,
+				AA0000012F600000000ASPC1 /* AspectBucket.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -252,6 +259,7 @@
 			files = (
 				D0ED74AA2DCB72F90008C397 /* WallhavendTests.swift in Sources */,
 				0BBF89672F2653C200EF9085 /* PreviousWallpaperTests.swift in Sources */,
+				AA0000012F600000000ASPC2 /* AspectBucketTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
