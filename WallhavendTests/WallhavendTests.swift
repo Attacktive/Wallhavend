@@ -15,32 +15,32 @@ final class WallhavendTests: XCTestCase {
 	func testCategoryBitString() async throws {
 		// Test with no categories
 		service.selectedCategories = []
-		let wallpaper = try await service.fetchRandomWallpaper()
+		let wallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(wallpaper)
 
 		// Test with general category
 		service.selectedCategories = [.general]
-		let generalWallpaper = try await service.fetchRandomWallpaper()
+		let generalWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(generalWallpaper)
 
 		// Test with anime category
 		service.selectedCategories = [.anime]
-		let animeWallpaper = try await service.fetchRandomWallpaper()
+		let animeWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(animeWallpaper)
 
 		// Test with people category
 		service.selectedCategories = [.people]
-		let peopleWallpaper = try await service.fetchRandomWallpaper()
+		let peopleWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(peopleWallpaper)
 
 		// Test with multiple categories
 		service.selectedCategories = [.general, .anime]
-		let multipleWallpaper = try await service.fetchRandomWallpaper()
+		let multipleWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(multipleWallpaper)
 
 		// Test with all categories
 		service.selectedCategories = [.general, .anime, .people]
-		let allWallpaper = try await service.fetchRandomWallpaper()
+		let allWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(allWallpaper)
 	}
 
@@ -82,88 +82,32 @@ final class WallhavendTests: XCTestCase {
 		XCTAssertEqual(service.purityString, "111")
 	}
 
-	func testRatioResolution() throws {
-		// Test with valid ratio
-		service.ratios = "16x9"
-		XCTAssertTrue(service.ratioResolution.contains("x"))
-		XCTAssertTrue(service.ratioResolution.split(separator: "x").count == 2)
-
-		// Test with colon separator
-		service.ratios = "21:9"
-		XCTAssertTrue(service.ratioResolution.contains("x"))
-		XCTAssertTrue(service.ratioResolution.split(separator: "x").count == 2)
-
-		// Test with invalid ratio (should fallback to screen resolution)
-		service.ratios = "invalid"
-		XCTAssertTrue(service.ratioResolution.contains("x"))
-		XCTAssertTrue(service.ratioResolution.split(separator: "x").count == 2)
-	}
-
 	func testCategories() async throws {
 		// Test with general category
 		service.selectedCategories = [.general]
-		let generalWallpaper = try await service.fetchRandomWallpaper()
+		let generalWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertEqual(generalWallpaper.category, "general")
 
 		// Test with anime category
 		service.selectedCategories = [.anime]
-		let animeWallpaper = try await service.fetchRandomWallpaper()
+		let animeWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertEqual(animeWallpaper.category, "anime")
 
 		// Test with people category
 		service.selectedCategories = [.people]
-		let peopleWallpaper = try await service.fetchRandomWallpaper()
+		let peopleWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertEqual(peopleWallpaper.category, "people")
-	}
-
-	func testToggleRatioAdds() {
-		service.ratios = ""
-		service.toggleRatio("16x9")
-		XCTAssertEqual(service.ratios, "16x9")
-	}
-
-	func testToggleRatioRemoves() {
-		service.ratios = "16x9"
-		service.toggleRatio("16x9")
-		XCTAssertEqual(service.ratios, "")
-	}
-
-	func testToggleRatioAddsSecond() {
-		service.ratios = "16x9"
-		service.toggleRatio("21x9")
-		XCTAssertTrue(service.isRatioSelected("16x9"))
-		XCTAssertTrue(service.isRatioSelected("21x9"))
-	}
-
-	func testToggleRatioRemovesOneOfMultiple() {
-		service.ratios = "16x9,21x9"
-		service.toggleRatio("16x9")
-		XCTAssertFalse(service.isRatioSelected("16x9"))
-		XCTAssertTrue(service.isRatioSelected("21x9"))
-		XCTAssertEqual(service.ratios, "21x9")
-	}
-
-	func testIsRatioSelectedHandlesWhitespace() {
-		service.ratios = "16x9, 21x9"
-		XCTAssertTrue(service.isRatioSelected("21x9"))
-	}
-
-	func testToggleRatioTrimsWhitespace() {
-		service.ratios = "16x9, 21x9"
-		service.toggleRatio("21x9")
-		XCTAssertFalse(service.isRatioSelected("21x9"))
-		XCTAssertTrue(service.isRatioSelected("16x9"))
 	}
 
 	func testSearchQueryEncoding() async throws {
 		service.searchQuery = "mountain landscape"
 
-		let wallpaper = try await service.fetchRandomWallpaper()
+		let wallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(wallpaper)
 	}
 
 	func testFetchRandomWallpaper() async throws {
-		let wallpaper = try await service.fetchRandomWallpaper()
+		let wallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(wallpaper)
 		XCTAssertFalse(wallpaper.path.isEmpty)
 		XCTAssertFalse(wallpaper.url.isEmpty)

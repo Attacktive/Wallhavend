@@ -24,7 +24,10 @@ extension WallpaperManager {
 
 	private func fetchRandomWallpaper() async throws -> Wallpaper {
 		print("Fetching random wallpaper...")
-		let wallpaper = try await WallhavenService.shared.fetchRandomWallpaper()
+		let mainScreen = NSScreen.main ?? NSScreen.screens.first
+		let ratios = mainScreen.map { AspectBucket.forScreen($0).rawValue } ?? "16x9"
+		let atleast = mainScreen.map { AspectBucket.atleastString(for: [$0]) } ?? "1920x1080"
+		let wallpaper = try await WallhavenService.shared.fetchRandomWallpaper(ratios: ratios, atleast: atleast)
 		print("Got wallpaper: \(wallpaper.path)")
 
 		return wallpaper

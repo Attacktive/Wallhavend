@@ -40,8 +40,6 @@ struct Meta: Decodable {
 		currentPage = try container.decode(Int.self, forKey: .currentPage)
 		lastPage = try container.decode(Int.self, forKey: .lastPage)
 		total = try container.decode(Int.self, forKey: .total)
-		// perPage can be Int or String depending on the API version; skip it
-		// query can be String, null, or {"id":…,"tag":…} for tag searches; skip it
 	}
 }
 
@@ -59,13 +57,10 @@ class WallhavenService: ObservableObject {
 	var searchQuery: String = ""
 
 	@AppStorage("selectedCategories")
-	private var selectedCategoriesRaw: String = "general" // Store as comma-separated string
+	private var selectedCategoriesRaw: String = "general"
 
 	@AppStorage("apiKey")
 	var apiKey: String = ""
-
-	@AppStorage("ratios")
-	var ratios: String = ""
 
 	@AppStorage("includeSFW")
 	var includeSFW: Bool = true
@@ -100,107 +95,59 @@ class WallhavenService: ObservableObject {
 		return bits.joined()
 	}
 
-	var ratioResolution: String {
-		// Parse ratio like "16x9" or "21:9" into width and height multipliers
-		let parts = ratios.lowercased()
-			.replacingOccurrences(of: ":", with: "x")
-			.split(separator: "x")
-			.compactMap {
-				Double($0.trimmingCharacters(in: .whitespaces))
-			}
-
-		guard parts.count == 2, parts[0] > 0, parts[1] > 0 else {
-			// If no valid ratio is provided, use the main screen's resolution
-			if let screen = NSScreen.main {
-				let frame = screen.frame
-				return "\(Int(frame.width))x\(Int(frame.height))"
-			}
-
-			return "1920x1080"
-		}
-
-		let aspectRatio = parts[0] / parts[1]
-
-		// Get the main screen's resolution
-		let screenHeight: Double
-		let screenWidth: Double
-		if let screen = NSScreen.main {
-			let frame = screen.frame
-			screenWidth = frame.width
-			screenHeight = frame.height
-		} else {
-			screenWidth = 1920
-			screenHeight = 1080
-		}
-
-		// Use screen resolution as the base, maintaining the user's desired aspect ratio
-		let (width, height): (Double, Double)
-		if aspectRatio > 1 {
-			width = screenHeight * aspectRatio
-			height = screenHeight
-		} else {
-			width = screenWidth
-			height = screenWidth / aspectRatio
-		}
-
-		return "\(Int(width))x\(Int(height))"
-	}
-
-	private var cachedWallpapers: [Wallpaper] = []
-	private var lastSearchParams: SearchParams?
-
-	private struct SearchParams: Equatable {
+	private struct GlobalParams: Equatable {
 		let categories: Set<WallhavenCategory>
 		let purity: String
-		let ratios: String
 		let searchQuery: String
 		let apiKey: String
 	}
 
-	private func shouldInvalidateCache() -> Bool {
-		let currentParams = SearchParams(
+	private var cachedWallpapers: [String: [Wallpaper]] = [:]
+	private var lastGlobalParams: GlobalParams?
+
+	private func clearCacheIfGlobalParamsChanged() {
+		let current = GlobalParams(
 			categories: selectedCategories,
 			purity: purityString,
-			ratios: ratios,
 			searchQuery: searchQuery,
 			apiKey: apiKey
 		)
 
-		if lastSearchParams != currentParams {
-			lastSearchParams = currentParams
-			return true
-		}
-
-		return false
-	}
-
-	func fetchRandomWallpaper() async throws -> Wallpaper {
-		// Check if we need to invalidate cache due to parameter changes
-		if shouldInvalidateCache() {
+		if lastGlobalParams != current {
 			cachedWallpapers.removeAll()
-			print("Cache invalidated due to search parameter changes")
+			lastGlobalParams = current
+			print("Wallhaven cache invalidated (global params changed).")
 		}
-
-		// If we have cached wallpapers, take one from it
-		if !cachedWallpapers.isEmpty {
-			return getNextCachedWallpaper()
-		}
-
-		return try await fetchNewWallpapers()
 	}
 
-	private func getNextCachedWallpaper() -> Wallpaper {
-		let wallpaper = cachedWallpapers.removeFirst()
-		print("Using cached wallpaper: ID=\(wallpaper.id), Resolution=\(wallpaper.resolution), Category=\(wallpaper.category), Type=\(wallpaper.fileType)")
-		return wallpaper
+	func fetchRandomWallpaper(ratios: String, atleast: String) async throws -> Wallpaper {
+		clearCacheIfGlobalParamsChanged()
+
+		let key = cacheKey(ratios: ratios, atleast: atleast)
+		if var cached = cachedWallpapers[key], !cached.isEmpty {
+			let next = cached.removeFirst()
+			cachedWallpapers[key] = cached
+			print("Using cached wallpaper for \(key): ID=\(next.id)")
+			return next
+		}
+
+		return try await fetchNewWallpapers(ratios: ratios, atleast: atleast, cacheKey: key)
 	}
 
-	private func fetchNewWallpapers() async throws -> Wallpaper {
+	private func cacheKey(ratios: String, atleast: String) -> String {
+		"\(ratios)|\(atleast)"
+	}
+
+	private func fetchNewWallpapers(ratios: String, atleast: String, cacheKey: String) async throws -> Wallpaper {
 		let categories = selectedCategories.isEmpty ? [.general] : selectedCategories
 		let categoriesString = buildCategoriesString(categories)
 
 		var components = URLComponents(string: "\(baseURL)/search")!
-		components.queryItems = buildQueryItems(categoriesString)
+		components.queryItems = buildQueryItems(
+			categoriesString: categoriesString,
+			ratios: ratios,
+			atleast: atleast
+		)
 
 		guard let url = components.url else {
 			throw WallpaperError.invalidURL
@@ -223,9 +170,10 @@ class WallhavenService: ObservableObject {
 			throw WallpaperError.noResults
 		}
 
-		cachedWallpapers = apiResponse.data
-
-		return getNextCachedWallpaper()
+		var pool = apiResponse.data
+		let first = pool.removeFirst()
+		cachedWallpapers[cacheKey] = pool
+		return first
 	}
 
 	private func buildCategoriesString(_ categories: Set<WallhavenCategory>) -> String {
@@ -235,41 +183,16 @@ class WallhavenService: ObservableObject {
 		.joined()
 	}
 
-	func isRatioSelected(_ ratio: String) -> Bool {
-		ratios
-			.split(separator: ",")
-			.map { $0.trimmingCharacters(in: .whitespaces) }
-			.contains(ratio)
-	}
-
-	func toggleRatio(_ ratio: String) {
-		var parts = ratios
-			.split(separator: ",")
-			.map { $0.trimmingCharacters(in: .whitespaces) }
-			.filter { !$0.isEmpty }
-
-		if let index = parts.firstIndex(of: ratio) {
-			parts.remove(at: index)
-		} else {
-			parts.append(ratio)
-		}
-
-		ratios = parts.joined(separator: ",")
-	}
-
-	private func buildQueryItems(_ categoriesString: String) -> [URLQueryItem] {
+	private func buildQueryItems(categoriesString: String, ratios: String, atleast: String) -> [URLQueryItem] {
 		var items = [
 			URLQueryItem(name: "q", value: searchQuery),
 			URLQueryItem(name: "categories", value: categoriesString),
 			URLQueryItem(name: "purity", value: purityString),
 			URLQueryItem(name: "sorting", value: "random"),
 			URLQueryItem(name: "seed", value: UUID().uuidString),
-			URLQueryItem(name: "atleast", value: ratioResolution)
+			URLQueryItem(name: "atleast", value: atleast),
+			URLQueryItem(name: "ratios", value: ratios)
 		]
-
-		if !ratios.isEmpty {
-			items.append(URLQueryItem(name: "ratios", value: ratios))
-		}
 
 		if !apiKey.isEmpty {
 			items.append(URLQueryItem(name: "apikey", value: apiKey))
