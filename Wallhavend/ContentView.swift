@@ -252,9 +252,19 @@ private struct AdvancedTab: View {
 				}
 				.pickerStyle(.segmented)
 
-				Text("Wallpapers kept on device and shown in Gallery tab")
+				HStack {
+					Text("Wallpapers kept on device and shown in Gallery tab")
+						.font(.caption)
+						.foregroundColor(.secondary)
+
+					Spacer()
+
+					Button("Show in Finder") {
+						wallpaperManager.openStorageDirectoryInFinder()
+					}
 					.font(.caption)
-					.foregroundColor(.secondary)
+					.buttonStyle(.link)
+				}
 			}
 			.padding(.vertical, 4)
 		} label: {

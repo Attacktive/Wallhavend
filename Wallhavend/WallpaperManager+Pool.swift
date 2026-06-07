@@ -161,6 +161,12 @@ extension WallpaperManager {
 		NSWorkspace.shared.selectFile(url.path, inFileViewerRootedAtPath: url.deletingLastPathComponent().path)
 	}
 
+	func openStorageDirectoryInFinder() {
+		guard let url = try? getWallpaperStorageDirectory() else { return }
+
+		NSWorkspace.shared.open(url)
+	}
+
 	func copyWallhavenURL(for url: URL) {
 		let id = url.deletingPathExtension().lastPathComponent
 		let pasteboard = NSPasteboard.general
