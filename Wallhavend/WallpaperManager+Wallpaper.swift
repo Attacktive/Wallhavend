@@ -42,12 +42,14 @@ extension WallpaperManager {
 			)
 
 			let (data, fileExtension) = try await downloadWallpaper(from: wallpaper.path)
-			let wallpaperPath = try saveWallpaper(
-				data: data,
-				id: wallpaper.id,
-				fileExtension: fileExtension,
-				bucket: bucket
-			)
+			let wallpaperPath = try await Task.detached(priority: .userInitiated) {
+				try self.saveWallpaper(
+					data: data,
+					id: wallpaper.id,
+					fileExtension: fileExtension,
+					bucket: bucket
+				)
+			}.value
 
 			try applyWallpaper(url: wallpaperPath, to: screens)
 
@@ -119,7 +121,7 @@ extension WallpaperManager {
 		throw WallpaperError.unsupportedImageType(mimeType)
 	}
 
-	func getWallpaperStorageDirectory() throws -> URL {
+	nonisolated func getWallpaperStorageDirectory() throws -> URL {
 		let libraryURL = try FileManager.default.url(
 			for: .libraryDirectory,
 			in: .userDomainMask,
@@ -135,7 +137,7 @@ extension WallpaperManager {
 		return desktopPicturesURL
 	}
 
-	private func saveWallpaper(data: Data, id: String, fileExtension: String, bucket: AspectBucket) throws -> URL {
+	nonisolated private func saveWallpaper(data: Data, id: String, fileExtension: String, bucket: AspectBucket) throws -> URL {
 		let storageURL = try getWallpaperStorageDirectory()
 		let bucketDir = storageURL.appendingPathComponent(bucket.rawValue, isDirectory: true)
 		try FileManager.default.createDirectory(at: bucketDir, withIntermediateDirectories: true)
