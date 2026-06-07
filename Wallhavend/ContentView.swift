@@ -1,4 +1,5 @@
 import SwiftUI
+import ImageIO
 
 struct ContentView: View {
 	@EnvironmentObject
@@ -376,8 +377,19 @@ private struct WallpaperThumbnailView: View {
 			}
 		}
 		.task(id: url) {
-			let loadTask = Task.detached(priority: .userInitiated) { try? Data(contentsOf: url) }
-			nsImage = await loadTask.value.flatMap { NSImage(data: $0) }
+			let loadTask = Task.detached(priority: .userInitiated) {
+				let options: [CFString: Any] = [
+					kCGImageSourceCreateThumbnailFromImageAlways: true,
+					kCGImageSourceThumbnailMaxPixelSize: 300,
+					kCGImageSourceCreateThumbnailWithTransform: true
+				]
+				guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+					  let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+					return nil as NSImage?
+				}
+				return NSImage(cgImage: cgImage, size: .zero)
+			}
+			nsImage = await loadTask.value
 		}
 	}
 }
