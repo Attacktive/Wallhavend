@@ -92,6 +92,7 @@ class WallpaperManager: ObservableObject {
 			.dropFirst()
 			.sink { [weak self] isOnline in
 				guard let self else { return }
+
 				Task { @MainActor [weak self] in
 					guard let self else { return }
 
@@ -147,6 +148,7 @@ class WallpaperManager: ObservableObject {
 			queue: .main
 		) { [weak self] _ in
 			guard let self else { return }
+
 			Task { @MainActor in self.isSessionActive = false }
 		}
 
@@ -156,6 +158,7 @@ class WallpaperManager: ObservableObject {
 			queue: .main
 		) { [weak self] _ in
 			guard let self else { return }
+
 			Task { @MainActor in self.isSessionActive = true }
 		}
 	}

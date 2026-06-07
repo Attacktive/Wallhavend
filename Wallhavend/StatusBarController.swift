@@ -43,9 +43,11 @@ class StatusBarController {
 
 	private func updateStatusBarIcon(isOnline: Bool, isRunning: Bool) {
 		guard let button = statusItem.button else { return }
+
 		let iconSize = NSSize(width: 18, height: 18)
 
 		guard let baseImage = NSImage(named: NSImage.Name("MenuBarIcon")) else { return }
+
 		baseImage.size = iconSize
 
 		if !isOnline {
@@ -92,6 +94,7 @@ class StatusBarController {
 	@objc
 	private func handleClick(_ sender: AnyObject?) {
 		guard let event = NSApp.currentEvent else { return }
+
 		if event.type == .rightMouseUp {
 			closePopover()
 			toggleAutoUpdate()

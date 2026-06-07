@@ -65,7 +65,10 @@ extension WallpaperManager {
 
 	@MainActor
 	private func rotatePoolForBucket(bucket: AspectBucket, screens: [NSScreen]) async {
-		guard let list = poolsByBucket[bucket.rawValue], let oldest = list.last else {
+		guard
+			let list = poolsByBucket[bucket.rawValue],
+			let oldest = list.last
+		else {
 			print("Offline and pool empty for \(bucket.rawValue). Skipping.")
 			return
 		}

@@ -17,7 +17,9 @@ extension WallpaperManager {
 				at: bucketDir,
 				includingPropertiesForKeys: [.contentModificationDateKey],
 				options: .skipsHiddenFiles
-			) else { continue }
+			) else {
+				continue
+			}
 
 			let sorted = files.sorted { left, right in
 				let leftDate = (try? left.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
@@ -54,11 +56,13 @@ extension WallpaperManager {
 	@discardableResult
 	nonisolated static func migrateFlatFilesToBuckets(in storageURL: URL) -> Int {
 		let fileManager = FileManager.default
-		guard let entries = try? fileManager.contentsOfDirectory(
-			at: storageURL,
-			includingPropertiesForKeys: [.isDirectoryKey],
-			options: .skipsHiddenFiles
-		) else {
+		guard
+			let entries = try? fileManager.contentsOfDirectory(
+				at: storageURL,
+				includingPropertiesForKeys: [.isDirectoryKey],
+				options: .skipsHiddenFiles
+			)
+		else {
 			return 0
 		}
 
@@ -180,7 +184,9 @@ extension WallpaperManager {
 
 			for bucket in AspectBucket.allCases {
 				let dir = storageURL.appendingPathComponent(bucket.rawValue, isDirectory: true)
-				guard let files = try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) else {
+				guard
+					let files = try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)
+				else {
 					continue
 				}
 

@@ -5,18 +5,20 @@ import ImageIO
 
 final class PoolMigrationTests: XCTestCase {
 	private func writePNG(width: Int, height: Int, to url: URL) throws {
-		guard let rep = NSBitmapImageRep(
-			bitmapDataPlanes: nil,
-			pixelsWide: width,
-			pixelsHigh: height,
-			bitsPerSample: 8,
-			samplesPerPixel: 4,
-			hasAlpha: true,
-			isPlanar: false,
-			colorSpaceName: .deviceRGB,
-			bytesPerRow: 0,
-			bitsPerPixel: 0
-		) else {
+		guard
+			let rep = NSBitmapImageRep(
+				bitmapDataPlanes: nil,
+				pixelsWide: width,
+				pixelsHigh: height,
+				bitsPerSample: 8,
+				samplesPerPixel: 4,
+				hasAlpha: true,
+				isPlanar: false,
+				colorSpaceName: .deviceRGB,
+				bytesPerRow: 0,
+				bitsPerPixel: 0
+			)
+		else {
 			throw XCTSkip("Could not create bitmap rep")
 		}
 

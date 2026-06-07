@@ -383,12 +383,17 @@ private struct WallpaperThumbnailView: View {
 					kCGImageSourceThumbnailMaxPixelSize: 300,
 					kCGImageSourceCreateThumbnailWithTransform: true
 				]
-				guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
-					  let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+
+				guard
+					let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+					let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+				else {
 					return nil as NSImage?
 				}
+
 				return NSImage(cgImage: cgImage, size: .zero)
 			}
+
 			nsImage = await loadTask.value
 		}
 	}
