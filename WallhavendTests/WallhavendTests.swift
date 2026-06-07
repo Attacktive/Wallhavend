@@ -1,6 +1,7 @@
 import XCTest
 @testable import Wallhavend
 
+@MainActor
 final class WallhavendTests: XCTestCase {
 	var service: WallhavenService!
 

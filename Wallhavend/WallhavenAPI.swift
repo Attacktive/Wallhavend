@@ -49,6 +49,7 @@ enum WallhavenCategory: String, CaseIterable {
 	case people
 }
 
+@MainActor
 class WallhavenService: ObservableObject {
 	static let shared = WallhavenService()
 	let baseURL = "https://wallhaven.cc/api/v1"
