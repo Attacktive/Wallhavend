@@ -75,6 +75,11 @@ struct ContentView: View {
 					}
 					.buttonStyle(.borderedProminent)
 					.disabled(!wallpaperManager.isOnline)
+
+					Button("Show in Finder") {
+						wallpaperManager.openStorageDirectoryInFinder()
+					}
+					.buttonStyle(.bordered)
 				}
 
 				if wallpaperManager.lastUpdated != nil {
@@ -300,15 +305,6 @@ private struct GalleryTab: View {
 			.padding(.vertical, 40)
 		} else {
 			VStack(alignment: .leading, spacing: 16) {
-				HStack {
-					Spacer()
-					Button("Show in Finder") {
-						wallpaperManager.openStorageDirectoryInFinder()
-					}
-					.font(.caption)
-					.buttonStyle(.link)
-				}
-
 				ForEach(nonEmptyBuckets, id: \.self) { bucket in
 					GalleryBucketSection(bucket: bucket)
 				}
