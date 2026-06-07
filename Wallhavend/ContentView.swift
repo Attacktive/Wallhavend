@@ -252,19 +252,9 @@ private struct AdvancedTab: View {
 				}
 				.pickerStyle(.segmented)
 
-				HStack {
-					Text("Wallpapers kept on device and shown in Gallery tab")
-						.font(.caption)
-						.foregroundColor(.secondary)
-
-					Spacer()
-
-					Button("Show in Finder") {
-						wallpaperManager.openStorageDirectoryInFinder()
-					}
+				Text("Wallpapers kept on device and shown in Gallery tab")
 					.font(.caption)
-					.buttonStyle(.link)
-				}
+					.foregroundColor(.secondary)
 			}
 			.padding(.vertical, 4)
 		} label: {
@@ -310,6 +300,15 @@ private struct GalleryTab: View {
 			.padding(.vertical, 40)
 		} else {
 			VStack(alignment: .leading, spacing: 16) {
+				HStack {
+					Spacer()
+					Button("Show in Finder") {
+						wallpaperManager.openStorageDirectoryInFinder()
+					}
+					.font(.caption)
+					.buttonStyle(.link)
+				}
+
 				ForEach(nonEmptyBuckets, id: \.self) { bucket in
 					GalleryBucketSection(bucket: bucket)
 				}
