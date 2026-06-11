@@ -12,18 +12,19 @@ struct ContentView: View {
 	private var updateInterval: TimeInterval = 60
 
 	@State private var selectedTab = 0
-	private let tabs = ["Content", "Schedule", "Advanced", "Gallery"]
 
 	var body: some View {
 		VStack(spacing: 0) {
 			Picker("", selection: $selectedTab) {
-				ForEach(tabs.indices, id: \.self) { index in
-					Text(tabs[index]).tag(index)
-				}
+				Label("Content", systemImage: "magnifyingglass").tag(0)
+				Label("Schedule", systemImage: "clock").tag(1)
+				Label("Advanced", systemImage: "gearshape").tag(2)
+				Label("Gallery", systemImage: "photo.on.rectangle").tag(3)
 			}
 			.pickerStyle(.segmented)
-			.padding([.horizontal, .top])
-			.padding(.bottom, 8)
+			.padding()
+
+			Divider()
 
 			ScrollView {
 				VStack(alignment: .leading, spacing: 16) {
@@ -34,11 +35,9 @@ struct ContentView: View {
 					default: GalleryTab()
 					}
 				}
-				.padding(.horizontal)
-				.padding(.bottom, 16)
+				.padding()
 			}
 			.frame(maxWidth: .infinity)
-			.background(Color(NSColor.controlBackgroundColor))
 
 			Divider()
 
@@ -141,42 +140,35 @@ private struct ContentTab: View {
 	}
 
 	var body: some View {
-		GroupBox {
+		VStack(alignment: .leading, spacing: 6) {
+			Text("Search")
+				.font(.headline)
+
 			TextField("Search query (optional; delimit with a comma)", text: searchQueryBinding)
 				.textFieldStyle(.roundedBorder)
-				.padding(.vertical, 4)
-		} label: {
-			Text("Search").font(.system(size: 15, weight: .semibold))
 		}
 
-		GroupBox {
+		HStack(alignment: .top, spacing: 32) {
 			VStack(alignment: .leading, spacing: 8) {
-				HStack(alignment: .top, spacing: 32) {
-					VStack(alignment: .leading, spacing: 8) {
-						Text("Content Rating")
-							.font(.headline)
+				Text("Content Rating")
+					.font(.headline)
 
-						Toggle("SFW", isOn: sfwBinding)
-						Toggle("Sketchy", isOn: sketchyBinding)
-						Toggle("NSFW", isOn: nsfwBinding)
-					}
+				Toggle("SFW", isOn: sfwBinding)
+				Toggle("Sketchy", isOn: sketchyBinding)
+				Toggle("NSFW", isOn: nsfwBinding)
+			}
 
-					VStack(alignment: .leading, spacing: 8) {
-						Text("Categories")
-							.font(.headline)
+			VStack(alignment: .leading, spacing: 8) {
+				Text("Categories")
+					.font(.headline)
 
-						ForEach(WallhavenCategory.allCases, id: \.self) { category in
-							Toggle(
-								category.rawValue.capitalized,
-								isOn: categoryBinding(category)
-							)
-						}
-					}
+				ForEach(WallhavenCategory.allCases, id: \.self) { category in
+					Toggle(
+						category.rawValue.capitalized,
+						isOn: categoryBinding(category)
+					)
 				}
 			}
-			.padding(.vertical, 4)
-		} label: {
-			Text("Content Filters").font(.system(size: 15, weight: .semibold))
 		}
 	}
 }
@@ -203,27 +195,25 @@ private struct ScheduleTab: View {
 	]
 
 	var body: some View {
-		GroupBox {
-			VStack(alignment: .leading, spacing: 8) {
-				HStack {
-					Text("Update interval")
-					Spacer()
-					Picker("", selection: $updateInterval) {
-						ForEach(intervals, id: \.seconds) { interval in
-							Text(interval.label)
-								.tag(interval.seconds)
-						}
-					}
-					.labelsHidden()
-					.pickerStyle(.menu)
-					.fixedSize()
-				}
+		VStack(alignment: .leading, spacing: 8) {
+			Text("Auto Update")
+				.font(.headline)
 
-				Toggle("Start automatically on launch", isOn: $startAutoUpdateOnLaunch)
+			HStack {
+				Text("Update interval")
+				Spacer()
+				Picker("", selection: $updateInterval) {
+					ForEach(intervals, id: \.seconds) { interval in
+						Text(interval.label)
+							.tag(interval.seconds)
+					}
+				}
+				.labelsHidden()
+				.pickerStyle(.menu)
+				.fixedSize()
 			}
-			.padding(.vertical, 4)
-		} label: {
-			Text("Auto Update").font(.system(size: 15, weight: .semibold))
+
+			Toggle("Start automatically on launch", isOn: $startAutoUpdateOnLaunch)
 		}
 	}
 }
@@ -247,32 +237,31 @@ private struct AdvancedTab: View {
 	}
 
 	var body: some View {
-		GroupBox {
-			VStack(alignment: .leading, spacing: 4) {
-				Picker("Pool size", selection: poolSizeBinding) {
-					Text("Current only").tag(0)
-					Text("5").tag(5)
-					Text("10").tag(10)
-					Text("25").tag(25)
-				}
-				.pickerStyle(.segmented)
+		VStack(alignment: .leading, spacing: 6) {
+			Text("Wallpaper Pool")
+				.font(.headline)
 
-				Text("Wallpapers kept on device and shown in Gallery tab")
-					.font(.caption)
-					.foregroundColor(.secondary)
+			Picker("Pool size", selection: poolSizeBinding) {
+				Text("Current only").tag(0)
+				Text("5").tag(5)
+				Text("10").tag(10)
+				Text("25").tag(25)
 			}
-			.padding(.vertical, 4)
-		} label: {
-			Text("Wallpaper Pool").font(.system(size: 15, weight: .semibold))
+			.labelsHidden()
+			.pickerStyle(.segmented)
+
+			Text("Wallpapers kept on device and shown in Gallery tab")
+				.font(.caption)
+				.foregroundColor(.secondary)
 		}
 
-		GroupBox {
+		VStack(alignment: .leading, spacing: 6) {
+			Text("API Key")
+				.font(.headline)
+
 			SecureField("Your Wallhaven API key (optional)", text: apiKeyBinding)
 				.textFieldStyle(.roundedBorder)
 				.font(.system(.body, design: .monospaced))
-				.padding(.vertical, 4)
-		} label: {
-			Text("API Key").font(.system(size: 15, weight: .semibold))
 		}
 	}
 }
@@ -353,7 +342,7 @@ private struct WallpaperThumbnailView: View {
 					.resizable()
 					.scaledToFill()
 			} else {
-				Color(NSColor.windowBackgroundColor)
+				Color(NSColor.controlBackgroundColor)
 			}
 		}
 		.frame(maxWidth: .infinity, minHeight: 64, maxHeight: 64)
