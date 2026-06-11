@@ -143,35 +143,57 @@ class WallhavenService: ObservableObject {
 		let categories = selectedCategories.isEmpty ? [.general] : selectedCategories
 		let categoriesString = buildCategoriesString(categories)
 
-		var components = URLComponents(string: "\(baseURL)/search")!
-		components.queryItems = buildQueryItems(
-			categoriesString: categoriesString,
-			ratios: ratios,
-			atleast: atleast
-		)
+		let keywords: [String?] = {
+			let parts = searchQuery
+				.components(separatedBy: CharacterSet(charactersIn: ",;| ").union(.whitespacesAndNewlines))
+				.filter { !$0.isEmpty }
 
-		guard let url = components.url else {
-			throw WallpaperError.invalidURL
+			return parts.isEmpty ? [nil] : parts.map { Optional($0) }
+		}()
+
+		let requests: [URLRequest] = try keywords.map { keyword in
+			var components = URLComponents(string: "\(baseURL)/search")!
+			components.queryItems = buildQueryItems(keyword: keyword, categoriesString: categoriesString, ratios: ratios, atleast: atleast)
+
+			guard let url = components.url else {
+				throw WallpaperError.invalidURL
+			}
+
+			var request = URLRequest(url: url)
+			if !apiKey.isEmpty {
+				request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
+			}
+
+			return request
 		}
 
-		var request = URLRequest(url: url)
-		if !apiKey.isEmpty {
-			request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
+		var allWallpapers: [Wallpaper] = []
+
+		try await withThrowingTaskGroup(of: [Wallpaper].self) { group in
+			for request in requests {
+				group.addTask {
+					let (data, response) = try await URLSession.shared.data(for: request)
+
+					if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+						throw WallpaperError.httpError(httpResponse.statusCode)
+					}
+
+					return try JSONDecoder().decode(WallhavenResponse.self, from: data).data
+				}
+			}
+
+			for try await wallpapers in group {
+				allWallpapers.append(contentsOf: wallpapers)
+			}
 		}
 
-		let (data, response) = try await URLSession.shared.data(for: request)
-
-		if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
-			throw WallpaperError.httpError(httpResponse.statusCode)
-		}
-
-		let apiResponse = try JSONDecoder().decode(WallhavenResponse.self, from: data)
-
-		if apiResponse.data.isEmpty {
+		if allWallpapers.isEmpty {
 			throw WallpaperError.noResults
 		}
 
-		var pool = apiResponse.data
+		allWallpapers.shuffle()
+
+		var pool = allWallpapers
 		let first = pool.removeFirst()
 		cachedWallpapers[cacheKey] = pool
 		return first
@@ -184,16 +206,21 @@ class WallhavenService: ObservableObject {
 		.joined()
 	}
 
-	private func buildQueryItems(categoriesString: String, ratios: String, atleast: String) -> [URLQueryItem] {
-		var items = [
-			URLQueryItem(name: "q", value: searchQuery),
+	private func buildQueryItems(keyword: String?, categoriesString: String, ratios: String, atleast: String) -> [URLQueryItem] {
+		var items: [URLQueryItem] = []
+
+		if let keyword {
+			items.append(URLQueryItem(name: "q", value: keyword))
+		}
+
+		items.append(contentsOf: [
 			URLQueryItem(name: "categories", value: categoriesString),
 			URLQueryItem(name: "purity", value: purityString),
 			URLQueryItem(name: "sorting", value: "random"),
 			URLQueryItem(name: "seed", value: UUID().uuidString),
 			URLQueryItem(name: "atleast", value: atleast),
 			URLQueryItem(name: "ratios", value: ratios)
-		]
+		])
 
 		if !apiKey.isEmpty {
 			items.append(URLQueryItem(name: "apikey", value: apiKey))
