@@ -1,37 +1,23 @@
-import SwiftUI
+import AppKit
 import Combine
 
 @MainActor
-class StatusBarController {
+class StatusBarController: NSObject, NSMenuDelegate {
 	private var statusItem: NSStatusItem
-	private var popover: NSPopover
-	private var appDelegate: AppDelegate?
+	private weak var appDelegate: AppDelegate?
 	private let wallpaperManager = WallpaperManager.shared
 	private var cancellables = Set<AnyCancellable>()
 
 	init(appDelegate: AppDelegate) {
 		self.appDelegate = appDelegate
 
-		popover = NSPopover()
-		popover.contentSize = NSSize(width: 180, height: 400)
-		popover.behavior = .applicationDefined
-
 		statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-		if let button = statusItem.button {
-			button.action = #selector(handleClick(_:))
-			button.target = self
-			button.sendAction(on: [.leftMouseUp, .rightMouseUp])
-		}
 
-		let contentView =
-			MenuBarView(onAction: { [weak self] in
-				self?.closePopover()
-			})
-			.environmentObject(wallpaperManager)
-			.environmentObject(WallhavenService.shared)
-			.environment(\.appDelegate, appDelegate)
+		super.init()
 
-		popover.contentViewController = NSHostingController(rootView: contentView)
+		let menu = NSMenu()
+		menu.delegate = self
+		statusItem.menu = menu
 
 		wallpaperManager.$isOnline
 			.combineLatest(wallpaperManager.$isRunning)
@@ -40,6 +26,76 @@ class StatusBarController {
 			}
 			.store(in: &cancellables)
 	}
+
+	// MARK: - NSMenuDelegate
+
+	func menuWillOpen(_ menu: NSMenu) {
+		menu.removeAllItems()
+
+		if !wallpaperManager.isOnline {
+			let offlineItem = NSMenuItem(title: "Offline", action: nil, keyEquivalent: "")
+			offlineItem.image = NSImage(systemSymbolName: "wifi.slash", accessibilityDescription: nil)
+			offlineItem.isEnabled = false
+			menu.addItem(offlineItem)
+			menu.addItem(.separator())
+		}
+
+		let updateNowItem = NSMenuItem(title: "Update Now", action: #selector(updateNow), keyEquivalent: "")
+		updateNowItem.target = self
+		updateNowItem.isEnabled = wallpaperManager.isOnline
+		menu.addItem(updateNowItem)
+
+		let autoUpdateTitle = wallpaperManager.isRunning ? "Stop Auto Update" : "Start Auto Update"
+		let autoUpdateItem = NSMenuItem(title: autoUpdateTitle, action: #selector(toggleAutoUpdate), keyEquivalent: "")
+		autoUpdateItem.target = self
+		autoUpdateItem.isEnabled = wallpaperManager.isOnline || wallpaperManager.isRunning
+		menu.addItem(autoUpdateItem)
+
+		menu.addItem(.separator())
+
+		let settingsItem = NSMenuItem(title: "Open Settings...", action: #selector(openSettings), keyEquivalent: ",")
+		settingsItem.target = self
+		menu.addItem(settingsItem)
+
+		let checkUpdatesItem = NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "")
+		checkUpdatesItem.target = self
+		menu.addItem(checkUpdatesItem)
+
+		menu.addItem(.separator())
+
+		let quitItem = NSMenuItem(title: "Quit Wallhavend", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+		menu.addItem(quitItem)
+	}
+
+	// MARK: - Actions
+
+	@objc
+	private func updateNow() {
+		Task {
+			await wallpaperManager.updateWallpaper()
+		}
+	}
+
+	@objc
+	private func toggleAutoUpdate() {
+		if wallpaperManager.isRunning {
+			wallpaperManager.stopAutoUpdate()
+		} else {
+			wallpaperManager.startAutoUpdate()
+		}
+	}
+
+	@objc
+	private func openSettings() {
+		appDelegate?.showSettings()
+	}
+
+	@objc
+	private func checkForUpdates() {
+		appDelegate?.checkForUpdates()
+	}
+
+	// MARK: - Icon
 
 	private func updateStatusBarIcon(isOnline: Bool, isRunning: Bool) {
 		guard let button = statusItem.button else { return }
@@ -89,115 +145,5 @@ class StatusBarController {
 		result.unlockFocus()
 
 		return result
-	}
-
-	@objc
-	private func handleClick(_ sender: AnyObject?) {
-		guard let event = NSApp.currentEvent else { return }
-
-		if event.type == .rightMouseUp {
-			closePopover()
-			toggleAutoUpdate()
-		} else {
-			if popover.isShown {
-				closePopover()
-			} else {
-				showPopover()
-			}
-		}
-	}
-
-	private func toggleAutoUpdate() {
-		if wallpaperManager.isRunning {
-			wallpaperManager.stopAutoUpdate()
-		} else if wallpaperManager.isOnline {
-			wallpaperManager.startAutoUpdate()
-		}
-	}
-
-	private func showPopover() {
-		DispatchQueue.main.async { [weak self] in
-			guard let self = self else { return }
-
-			guard let button = self.statusItem.button else {
-				print("🛑 statusItem.button is nil. Not showing popover.")
-				return
-			}
-
-			guard self.popover.contentViewController != nil else {
-				print("🛑 popover.contentViewController is nil. Not showing popover.")
-				return
-			}
-
-			self.popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-		}
-	}
-
-	private func closePopover() {
-		popover.performClose(nil)
-	}
-}
-
-struct MenuBarView: View {
-	@StateObject
-	private var wallpaperManager = WallpaperManager.shared
-
-	@Environment(\.appDelegate)
-	private var appDelegate
-
-	var onAction: () -> Void
-
-	var body: some View {
-		VStack(alignment: .leading, spacing: 12) {
-			if !wallpaperManager.isOnline {
-				Label("Offline", systemImage: "wifi.slash")
-					.foregroundColor(.secondary)
-					.font(.caption)
-			}
-
-			if wallpaperManager.lastUpdated != nil {
-				Text(wallpaperManager.formattedLastUpdated)
-					.font(.caption)
-			}
-
-			Divider()
-
-			Button("Update Now") {
-				Task {
-					onAction()
-					await wallpaperManager.updateWallpaper()
-				}
-			}
-			.disabled(!wallpaperManager.isOnline)
-
-			Button(wallpaperManager.isRunning ? "Stop Auto Update" : "Start Auto Update") {
-				if wallpaperManager.isRunning {
-					wallpaperManager.stopAutoUpdate()
-				} else {
-					wallpaperManager.startAutoUpdate()
-				}
-
-				onAction()
-			}
-			.disabled(!wallpaperManager.isOnline && !wallpaperManager.isRunning)
-
-			Divider()
-
-			Button("Open Settings...") {
-				appDelegate?.showSettings()
-				onAction()
-			}
-
-			Button("Check for Updates...") {
-				appDelegate?.checkForUpdates()
-				onAction()
-			}
-
-			Button("Quit") {
-				onAction()
-				NSApplication.shared.terminate(nil)
-			}
-		}
-		.padding()
 	}
 }
