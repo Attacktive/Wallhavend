@@ -65,9 +65,11 @@ extension WallpaperManager {
 
 	@MainActor
 	private func rotatePoolForBucket(bucket: AspectBucket, screens: [NSScreen]) async {
+		let blockedIds = WallhavenService.shared.blockedIds
+
 		guard
 			let list = poolsByBucket[bucket.rawValue],
-			let oldest = list.last
+			let oldest = list.last(where: { !blockedIds.contains(wallpaperId(for: $0)) })
 		else {
 			print("Offline and pool empty for \(bucket.rawValue). Skipping.")
 			return

@@ -11,6 +11,7 @@
 		0B7085D62F4986830023C675 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B7085D52F4986830023C675 /* NetworkMonitor.swift */; };
 		AA0000012F600000000ASPC1 /* AspectBucket.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000ASPC1 /* AspectBucket.swift */; };
 		AA0000012F600000000ASPC2 /* AspectBucketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000ASPC2 /* AspectBucketTests.swift */; };
+		AA0000012F600000000BLOK1 /* BlocklistTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000BLOK1 /* BlocklistTests.swift */; };
 		AA0000012F600000000MIG1 /* PoolMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000MIG1 /* PoolMigrationTests.swift */; };
 		AA0000012F600000000POOL1 /* WallpaperManager+Pool.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000POOL1 /* WallpaperManager+Pool.swift */; };
 		AA0000012F600000000WALL1 /* WallpaperManager+Wallpaper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000WALL1 /* WallpaperManager+Wallpaper.swift */; };
@@ -20,6 +21,11 @@
 		D0C2AED12DCDD1E700B5E4EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C2AECF2DCDD1E700B5E4EA /* AppDelegate.swift */; };
 		D0C2AED22DCDD1E700B5E4EA /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C2AED02DCDD1E700B5E4EA /* StatusBarController.swift */; };
 		D0ED74982DCB72EE0008C397 /* WallhavendApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74972DCB72EE0008C397 /* WallhavendApp.swift */; };
+		AA0000012F600000000BTAB1 /* BlockedTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000BTAB1 /* BlockedTab.swift */; };
+		AA0000012F600000000CTAB1 /* ContentTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000CTAB1 /* ContentTab.swift */; };
+		AA0000012F600000000STAB1 /* ScheduleTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000STAB1 /* ScheduleTab.swift */; };
+		AA0000012F600000000ATAB1 /* AdvancedTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000ATAB1 /* AdvancedTab.swift */; };
+		AA0000012F600000000GTAB1 /* GalleryTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000GTAB1 /* GalleryTab.swift */; };
 		D0ED749A2DCB72EE0008C397 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED74992DCB72EE0008C397 /* ContentView.swift */; };
 		D0ED749C2DCB72F70008C397 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0ED749B2DCB72F70008C397 /* Assets.xcassets */; };
 		D0ED749F2DCB72F70008C397 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0ED749E2DCB72F70008C397 /* Preview Assets.xcassets */; };
@@ -41,6 +47,7 @@
 		0B7085D52F4986830023C675 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		AA0000002F600000000ASPC1 /* AspectBucket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AspectBucket.swift; sourceTree = "<group>"; };
 		AA0000002F600000000ASPC2 /* AspectBucketTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AspectBucketTests.swift; sourceTree = "<group>"; };
+		AA0000002F600000000BLOK1 /* BlocklistTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlocklistTests.swift; sourceTree = "<group>"; };
 		AA0000002F600000000MIG1 /* PoolMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoolMigrationTests.swift; sourceTree = "<group>"; };
 		AA0000002F600000000POOL1 /* WallpaperManager+Pool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WallpaperManager+Pool.swift"; sourceTree = "<group>"; };
 		AA0000002F600000000WALL1 /* WallpaperManager+Wallpaper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WallpaperManager+Wallpaper.swift"; sourceTree = "<group>"; };
@@ -51,6 +58,11 @@
 		D0C2AED02DCDD1E700B5E4EA /* StatusBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
 		D0ED74942DCB72EE0008C397 /* Wallhavend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wallhavend.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0ED74972DCB72EE0008C397 /* WallhavendApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavendApp.swift; sourceTree = "<group>"; };
+		AA0000002F600000000BTAB1 /* BlockedTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedTab.swift; sourceTree = "<group>"; };
+		AA0000002F600000000CTAB1 /* ContentTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentTab.swift; sourceTree = "<group>"; };
+		AA0000002F600000000STAB1 /* ScheduleTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleTab.swift; sourceTree = "<group>"; };
+		AA0000002F600000000ATAB1 /* AdvancedTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedTab.swift; sourceTree = "<group>"; };
+		AA0000002F600000000GTAB1 /* GalleryTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryTab.swift; sourceTree = "<group>"; };
 		D0ED74992DCB72EE0008C397 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D0ED749B2DCB72F70008C397 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D0ED749E2DCB72F70008C397 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -111,6 +123,11 @@
 				AA0000002F600000000ASPC1 /* AspectBucket.swift */,
 				D0ED74972DCB72EE0008C397 /* WallhavendApp.swift */,
 				D0ED74992DCB72EE0008C397 /* ContentView.swift */,
+				AA0000002F600000000CTAB1 /* ContentTab.swift */,
+				AA0000002F600000000STAB1 /* ScheduleTab.swift */,
+				AA0000002F600000000ATAB1 /* AdvancedTab.swift */,
+				AA0000002F600000000GTAB1 /* GalleryTab.swift */,
+				AA0000002F600000000BTAB1 /* BlockedTab.swift */,
 				D0ED749B2DCB72F70008C397 /* Assets.xcassets */,
 				D0ED74A02DCB72F70008C397 /* Wallhavend.entitlements */,
 				D0ED749D2DCB72F70008C397 /* Preview Content */,
@@ -130,6 +147,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0000002F600000000ASPC2 /* AspectBucketTests.swift */,
+				AA0000002F600000000BLOK1 /* BlocklistTests.swift */,
 				AA0000002F600000000MIG1 /* PoolMigrationTests.swift */,
 				D0ED74A92DCB72F90008C397 /* WallhavendTests.swift */,
 			);
@@ -243,6 +261,11 @@
 				0B7085D62F4986830023C675 /* NetworkMonitor.swift in Sources */,
 				D0C2AED22DCDD1E700B5E4EA /* StatusBarController.swift in Sources */,
 				D0ED749A2DCB72EE0008C397 /* ContentView.swift in Sources */,
+				AA0000012F600000000CTAB1 /* ContentTab.swift in Sources */,
+				AA0000012F600000000STAB1 /* ScheduleTab.swift in Sources */,
+				AA0000012F600000000ATAB1 /* AdvancedTab.swift in Sources */,
+				AA0000012F600000000GTAB1 /* GalleryTab.swift in Sources */,
+				AA0000012F600000000BTAB1 /* BlockedTab.swift in Sources */,
 				D01707E72DCC4F3E00158EDD /* WallpaperError.swift in Sources */,
 				D01707E62DCC4F3E00158EDD /* WallhavenAPI.swift in Sources */,
 				D0ED74982DCB72EE0008C397 /* WallhavendApp.swift in Sources */,
@@ -259,6 +282,7 @@
 			files = (
 				D0ED74AA2DCB72F90008C397 /* WallhavendTests.swift in Sources */,
 				AA0000012F600000000ASPC2 /* AspectBucketTests.swift in Sources */,
+				AA0000012F600000000BLOK1 /* BlocklistTests.swift in Sources */,
 				AA0000012F600000000MIG1 /* PoolMigrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

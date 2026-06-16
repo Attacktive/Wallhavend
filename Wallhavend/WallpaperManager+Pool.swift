@@ -8,6 +8,7 @@ extension WallpaperManager {
 		migrateFlatFilesToBuckets(in: storageURL)
 
 		let fileManager = FileManager.default
+		let blockedIds = WallhavenService.shared.blockedIds
 		var loadedPools: [String: [URL]] = [:]
 		var loadedCurrent: [String: URL] = [:]
 
@@ -21,7 +22,9 @@ extension WallpaperManager {
 				continue
 			}
 
-			let sorted = files.sorted { left, right in
+			// Don't re-adopt a blocked wallpaper that's still sitting on disk.
+			let usable = files.filter { !blockedIds.contains(wallpaperId(for: $0)) }
+			let sorted = usable.sorted { left, right in
 				let leftDate = (try? left.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
 				let rightDate = (try? right.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
 
@@ -104,6 +107,11 @@ extension WallpaperManager {
 	}
 
 	func applyFromPool(url: URL, bucket: String) async {
+		guard !WallhavenService.shared.blockedIds.contains(wallpaperId(for: url)) else {
+			print("Refusing to apply blocked wallpaper: \(url.lastPathComponent)")
+			return
+		}
+
 		let targetScreens = NSScreen.screens.filter {
 			AspectBucket.forScreen($0).rawValue == bucket
 		}
@@ -167,11 +175,38 @@ extension WallpaperManager {
 		NSWorkspace.shared.open(url)
 	}
 
+	/// Wallhaven IDs are the local filename stem (see `saveWallpaper`).
+	func wallpaperId(for url: URL) -> String {
+		url.deletingPathExtension().lastPathComponent
+	}
+
 	func copyWallhavenURL(for url: URL) {
-		let id = url.deletingPathExtension().lastPathComponent
+		let id = wallpaperId(for: url)
 		let pasteboard = NSPasteboard.general
 		pasteboard.clearContents()
 		pasteboard.setString("https://wallhaven.cc/w/\(id)", forType: .string)
+	}
+
+	/// Block a wallpaper so it's never applied again, and evict any on-disk copy immediately — the user wants it gone now, not just on the next fetch.
+	func blockWallpaper(url: URL) {
+		let id = wallpaperId(for: url)
+		WallhavenService.shared.block(id)
+		evictFromPool(id: id)
+	}
+
+	/// Remove every copy of `id` from the pool and disk, across all buckets — the same image can be saved under more than one bucket.
+	func evictFromPool(id: String) {
+		let matches: [(url: URL, bucket: String)] = AspectBucket.allCases.flatMap { bucket -> [(URL, String)] in
+			let urls = poolsByBucket[bucket.rawValue] ?? []
+
+			return urls
+				.filter { wallpaperId(for: $0) == id }
+				.map { ($0, bucket.rawValue) }
+		}
+
+		for match in matches {
+			deleteFromPool(url: match.url, bucket: match.bucket)
+		}
 	}
 
 	func cleanupOldWallpapers() {

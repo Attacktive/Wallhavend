@@ -72,6 +72,9 @@ class WallhavenService: ObservableObject {
 	@AppStorage("includeNSFW")
 	var includeNSFW: Bool = false
 
+	@AppStorage("blockedIds")
+	private var blockedIdsRaw: String = ""
+
 	var selectedCategories: Set<WallhavenCategory> {
 		get {
 			Set(selectedCategoriesRaw.split(separator: ",")
@@ -86,6 +89,47 @@ class WallhavenService: ObservableObject {
 				}
 				.joined(separator: ",")
 		}
+	}
+
+	var blockedIds: Set<String> {
+		get {
+			Set(blockedIdsRaw.split(separator: ",")
+				.map {
+					String($0)
+				}
+			)
+		}
+		set {
+			objectWillChange.send()
+			blockedIdsRaw = newValue.sorted().joined(separator: ",")
+		}
+	}
+
+	func block(_ id: String) {
+		var ids = blockedIds
+		ids.insert(id)
+		blockedIds = ids
+	}
+
+	func unblock(_ id: String) {
+		var ids = blockedIds
+		ids.remove(id)
+		blockedIds = ids
+	}
+
+	/// Pure selection step shared by the cache and network paths: drop blocked IDs, then pick the next wallpaper.
+	/// Returns `nil` when nothing remains.
+	static func selectWallpaper(
+		from wallpapers: [Wallpaper],
+		blocked: Set<String>
+	) -> (selected: Wallpaper, remaining: [Wallpaper])? {
+		var filtered = wallpapers.filter { !blocked.contains($0.id) }
+		guard !filtered.isEmpty else {
+			return nil
+		}
+
+		let selected = filtered.removeFirst()
+		return (selected, filtered)
 	}
 
 	var purityString: String {
@@ -125,11 +169,11 @@ class WallhavenService: ObservableObject {
 		clearCacheIfGlobalParamsChanged()
 
 		let key = cacheKey(ratios: ratios, atleast: atleast)
-		if var cached = cachedWallpapers[key], !cached.isEmpty {
-			let next = cached.removeFirst()
-			cachedWallpapers[key] = cached
-			print("Using cached wallpaper for \(key): ID=\(next.id)")
-			return next
+		let cached = cachedWallpapers[key] ?? []
+		if let result = Self.selectWallpaper(from: cached, blocked: blockedIds) {
+			cachedWallpapers[key] = result.remaining
+			print("Using cached wallpaper for \(key): ID=\(result.selected.id)")
+			return result.selected
 		}
 
 		return try await fetchNewWallpapers(ratios: ratios, atleast: atleast, cacheKey: key)
@@ -139,7 +183,35 @@ class WallhavenService: ObservableObject {
 		"\(ratios)|\(atleast)"
 	}
 
+	private static let maxReseedAttempts = 5
+
 	private func fetchNewWallpapers(ratios: String, atleast: String, cacheKey: String) async throws -> Wallpaper {
+		/*
+			Blocked wallpapers are filtered out *after* the fetch, so an entire page can come back fully blocked.
+			Re-seed with a fresh seed a bounded number of times before giving up.
+		*/
+		for _ in 0..<Self.maxReseedAttempts {
+			var fetched = try await rawFetch(ratios: ratios, atleast: atleast)
+
+			// A raw fetch returning nothing is the genuine empty case — surface it immediately rather than burning re-seed attempts.
+			if fetched.isEmpty {
+				throw WallpaperError.noResults
+			}
+
+			fetched.shuffle()
+
+			if let result = Self.selectWallpaper(from: fetched, blocked: blockedIds) {
+				cachedWallpapers[cacheKey] = result.remaining
+				return result.selected
+			}
+
+			print("All \(fetched.count) candidates for \(cacheKey) are blocked; re-seeding.")
+		}
+
+		throw WallpaperError.noResults
+	}
+
+	private func rawFetch(ratios: String, atleast: String) async throws -> [Wallpaper] {
 		let categories = selectedCategories.isEmpty ? [.general] : selectedCategories
 		let categoriesString = buildCategoriesString(categories)
 
@@ -187,16 +259,7 @@ class WallhavenService: ObservableObject {
 			}
 		}
 
-		if allWallpapers.isEmpty {
-			throw WallpaperError.noResults
-		}
-
-		allWallpapers.shuffle()
-
-		var pool = allWallpapers
-		let first = pool.removeFirst()
-		cachedWallpapers[cacheKey] = pool
-		return first
+		return allWallpapers
 	}
 
 	private func buildCategoriesString(_ categories: Set<WallhavenCategory>) -> String {
