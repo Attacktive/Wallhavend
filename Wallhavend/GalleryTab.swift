@@ -102,7 +102,7 @@ private struct WallpaperThumbnailView: View {
 			Divider()
 
 			Button("Block this wallpaper", role: .destructive) {
-				wallpaperManager.blockWallpaper(url: url)
+				Task { await wallpaperManager.blockWallpaper(url: url) }
 			}
 
 			Button("Delete from pool", role: .destructive) {

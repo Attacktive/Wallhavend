@@ -187,11 +187,68 @@ extension WallpaperManager {
 		pasteboard.setString("https://wallhaven.cc/w/\(id)", forType: .string)
 	}
 
+	/// What to do after a wallpaper is blocked, given whether it was the current one and what's left in the bucket's pool.
+	enum BlockReplacementAction: Equatable {
+		case doNothing
+		case applyFromPool(URL)
+		case fetch
+	}
+
+	/// Decide how to replace a just-blocked wallpaper for one bucket: nothing when it wasn't current, the oldest
+	/// remaining non-blocked pool entry when one exists, otherwise a fetch. `blockedIds` already includes the just-blocked id.
+	nonisolated static func replacementAction(wasCurrent: Bool, pool: [URL], blockedIds: Set<String>) -> BlockReplacementAction {
+		guard wasCurrent else {
+			return .doNothing
+		}
+
+		let oldestUsable = pool.last { !blockedIds.contains($0.deletingPathExtension().lastPathComponent) }
+
+		guard let oldestUsable else {
+			return .fetch
+		}
+
+		return .applyFromPool(oldestUsable)
+	}
+
 	/// Block a wallpaper so it's never applied again, and evict any on-disk copy immediately — the user wants it gone now, not just on the next fetch.
-	func blockWallpaper(url: URL) {
+	/// If it was the wallpaper currently on screen, replace it right away (pool-first, fetch as fallback) so the user stops looking at what they just blocked.
+	func blockWallpaper(url: URL) async {
 		let id = wallpaperId(for: url)
+
+		// Capture the buckets currently showing this wallpaper before eviction repoints currentByBucket and erases the signal.
+		let affectedBuckets = AspectBucket.allCases.filter { bucket in
+			guard let current = currentByBucket[bucket.rawValue] else {
+				return false
+			}
+
+			return wallpaperId(for: current) == id
+		}
+
 		WallhavenService.shared.block(id)
 		evictFromPool(id: id)
+
+		for bucket in affectedBuckets {
+			await replaceBlockedCurrent(in: bucket)
+		}
+	}
+
+	/// Replace a bucket's just-blocked current wallpaper: prefer a remaining pool item, otherwise fall back to a normal update (fetch online, no-op offline with an empty pool).
+	private func replaceBlockedCurrent(in bucket: AspectBucket) async {
+		let action = Self.replacementAction(wasCurrent: true, pool: poolsByBucket[bucket.rawValue] ?? [], blockedIds: WallhavenService.shared.blockedIds)
+
+		switch action {
+			case .doNothing:
+				return
+			case .applyFromPool(let replacement):
+				await applyFromPool(url: replacement, bucket: bucket.rawValue)
+			case .fetch:
+				let screens = NSScreen.screens.filter { AspectBucket.forScreen($0).rawValue == bucket.rawValue }
+				guard !screens.isEmpty else {
+					return
+				}
+
+				await updateBucket(bucket, screens: screens)
+		}
 	}
 
 	/// Remove every copy of `id` from the pool and disk, across all buckets — the same image can be saved under more than one bucket.

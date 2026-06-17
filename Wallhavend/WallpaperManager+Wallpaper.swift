@@ -32,6 +32,15 @@ extension WallpaperManager {
 		}
 	}
 
+	/// Run the normal update for a single bucket, respecting connectivity: fetch fresh when online, otherwise rotate the pool (a no-op when the pool is empty).
+	func updateBucket(_ bucket: AspectBucket, screens: [NSScreen]) async {
+		if isOnline {
+			await updateWallpaperForBucket(bucket: bucket, screens: screens)
+		} else {
+			await rotatePoolForBucket(bucket: bucket, screens: screens)
+		}
+	}
+
 	@MainActor
 	private func updateWallpaperForBucket(bucket: AspectBucket, screens: [NSScreen]) async {
 		do {
