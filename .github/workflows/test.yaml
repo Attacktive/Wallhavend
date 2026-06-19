@@ -20,6 +20,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: 'Checkout'
-        uses: 'actions/checkout@v6'
+        uses: 'actions/checkout@v7'
       - name: 'Build and Test'
         run: 'xcodebuild test -project Wallhavend.xcodeproj -scheme Wallhavend -destination "platform=macOS" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO'
