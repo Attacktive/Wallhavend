@@ -18,6 +18,15 @@ final class PinTests: XCTestCase {
 		XCTAssertEqual(result, [url("a"), url("b")])
 	}
 
+	func testPoolEntriesKeepsOnlyNewestWhenPoolSizeOne() {
+		// "Current only" is poolSize 1: keep just the newest (current) non-pinned wallpaper.
+		let sorted = [url("a"), url("b"), url("c")]
+
+		let result = WallpaperManager.poolEntries(sorted: sorted, pinnedIds: [], poolSize: 1)
+
+		XCTAssertEqual(result, [url("a")])
+	}
+
 	func testPoolEntriesKeepsPinnedBeyondPoolSizeAndPreservesOrder() {
 		// Newest-first, with two pinned entries past the non-pinned window.
 		let sorted = [url("n1"), url("p1"), url("n2"), url("n3"), url("p2")]

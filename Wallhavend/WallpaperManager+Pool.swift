@@ -182,7 +182,7 @@ extension WallpaperManager {
 	}
 
 	/// Build the in-memory pool list for a bucket: keep every pinned file, plus the newest `poolSize` non-pinned files.
-	/// Pinned files do not count toward `poolSize` — the target governs only the rotating, non-pinned buffer — so they survive even when `poolSize` is 0. `sorted` must be newest-first; the returned list preserves that order.
+	/// Pinned files do not count toward `poolSize` — the target governs only the rotating, non-pinned buffer — so they survive regardless of how small `poolSize` is. `sorted` must be newest-first; the returned list preserves that order.
 	nonisolated static func poolEntries(sorted: [URL], pinnedIds: Set<String>, poolSize: Int) -> [URL] {
 		var nonPinnedKept = 0
 		var result: [URL] = []
@@ -330,7 +330,7 @@ extension WallpaperManager {
 				}
 
 				for file in files where pinnedIds.contains(wallpaperId(for: file)) {
-					// Pinned files are exempt from cleanup, even when poolSize is 0 ("apply and forget").
+					// Pinned files are exempt from cleanup, even at the minimum pool size ("apply and forget").
 					toKeep.insert(file.standardized)
 				}
 

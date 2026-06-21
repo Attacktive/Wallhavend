@@ -62,7 +62,7 @@ struct AdvancedTab: View {
 				.font(.headline)
 
 			Picker("Pool size", selection: poolSizeBinding) {
-				Text("Current only").tag(0)
+				Text("Current only").tag(1)
 				Text("5").tag(5)
 				Text("10").tag(10)
 				Text("25").tag(25)

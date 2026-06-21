@@ -126,6 +126,11 @@ extension WallpaperManager {
 			return
 		}
 
+		guard oldest != currentByBucket[bucket.rawValue] else {
+			print("Offline and the only usable pool wallpaper for \(bucket.rawValue) is already current. Skipping.")
+			return
+		}
+
 		do {
 			error = nil
 			try applyWallpaper(url: oldest, to: screens)

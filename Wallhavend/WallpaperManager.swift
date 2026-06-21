@@ -39,7 +39,13 @@ class WallpaperManager: ObservableObject {
 
 	init() {
 		let stored = UserDefaults.standard.object(forKey: "poolSize") as? Int ?? 10
-		_poolSize = Published(initialValue: stored)
+		// "Current only" used to be 0; it's now 1 so the current wallpaper shows in the gallery. Migrate any persisted 0.
+		let migratedPoolSize = stored == 0 ? 1 : stored
+		if migratedPoolSize != stored {
+			UserDefaults.standard.set(migratedPoolSize, forKey: "poolSize")
+		}
+
+		_poolSize = Published(initialValue: migratedPoolSize)
 
 		let storedMode = UserDefaults.standard.string(forKey: "rotationMode")
 			.flatMap(RotationMode.init(rawValue:)) ?? .fresh
