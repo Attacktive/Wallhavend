@@ -48,7 +48,10 @@ class StatusBarController: NSObject, NSMenuDelegate {
 		let autoUpdateTitle = wallpaperManager.isRunning ? "Stop Auto Update" : "Start Auto Update"
 		let autoUpdateItem = NSMenuItem(title: autoUpdateTitle, action: #selector(toggleAutoUpdate), keyEquivalent: "")
 		autoUpdateItem.target = self
-		autoUpdateItem.isEnabled = wallpaperManager.isOnline || wallpaperManager.isRunning
+
+		// Auto-update can run offline in Pinned-only mode (it never downloads).
+		let canRunAutoUpdate = wallpaperManager.isOnline || wallpaperManager.isRunning || wallpaperManager.effectiveRotationMode == .pinnedOnly
+		autoUpdateItem.isEnabled = canRunAutoUpdate
 		menu.addItem(autoUpdateItem)
 
 		menu.addItem(.separator())
@@ -72,7 +75,7 @@ class StatusBarController: NSObject, NSMenuDelegate {
 	@objc
 	private func updateNow() {
 		Task {
-			await wallpaperManager.updateWallpaper()
+			await wallpaperManager.fetchFreshNow()
 		}
 	}
 

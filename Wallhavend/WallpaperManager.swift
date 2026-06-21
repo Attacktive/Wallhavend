@@ -2,6 +2,27 @@ import Foundation
 import AppKit
 import Combine
 
+/// How automatic rotation picks the next wallpaper.
+///
+/// macOS has no wifi-only axis (the Android sibling's middle option) — rotation is already auto-gated on online/offline — so the source axis collapses to two real states. The network rule stays automatic within `.fresh`.
+enum RotationMode: String, CaseIterable, Identifiable {
+	/// Download fresh when online; rotate the saved pool when offline (the historical behavior).
+	case fresh
+	/// Never download — cycle only the pinned set. Works offline; the manual "Update Now" still fetches fresh.
+	case pinnedOnly = "pinned_only"
+
+	var id: String { rawValue }
+
+	var label: String {
+		switch self {
+			case .fresh:
+				return "Fresh"
+			case .pinnedOnly:
+				return "Pinned only"
+		}
+	}
+}
+
 @MainActor
 class WallpaperManager: ObservableObject {
 	static let shared = WallpaperManager()
@@ -19,6 +40,11 @@ class WallpaperManager: ObservableObject {
 	init() {
 		let stored = UserDefaults.standard.object(forKey: "poolSize") as? Int ?? 10
 		_poolSize = Published(initialValue: stored)
+
+		let storedMode = UserDefaults.standard.string(forKey: "rotationMode")
+			.flatMap(RotationMode.init(rawValue:)) ?? .fresh
+
+		_rotationMode = Published(initialValue: storedMode)
 
 		setupSessionObservers()
 		setupNetworkObserver()
@@ -39,6 +65,21 @@ class WallpaperManager: ObservableObject {
 	@Published var poolSize: Int = 10 {
 		didSet {
 			UserDefaults.standard.set(poolSize, forKey: "poolSize")
+		}
+	}
+
+	@Published var rotationMode: RotationMode = .fresh {
+		didSet {
+			UserDefaults.standard.set(rotationMode.rawValue, forKey: "rotationMode")
+		}
+	}
+
+	/// The rotation mode the engine actually uses. Pinned-only with zero pins is a dead state (never downloads, nothing to cycle), so it falls back to `.fresh` — matching what the settings picker shows when no pins exist.
+	var effectiveRotationMode: RotationMode {
+		if rotationMode == .pinnedOnly && WallhavenService.shared.pinnedIds.isEmpty {
+			return .fresh
+		} else {
+			return rotationMode
 		}
 	}
 

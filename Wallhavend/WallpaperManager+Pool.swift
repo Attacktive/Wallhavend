@@ -9,6 +9,7 @@ extension WallpaperManager {
 
 		let fileManager = FileManager.default
 		let blockedIds = WallhavenService.shared.blockedIds
+		let pinnedIds = WallhavenService.shared.pinnedIds
 		var loadedPools: [String: [URL]] = [:]
 		var loadedCurrent: [String: URL] = [:]
 
@@ -32,7 +33,7 @@ extension WallpaperManager {
 			}
 
 			if !sorted.isEmpty {
-				loadedPools[bucket.rawValue] = Array(sorted.prefix(poolSize))
+				loadedPools[bucket.rawValue] = Self.poolEntries(sorted: sorted, pinnedIds: pinnedIds, poolSize: poolSize)
 				loadedCurrent[bucket.rawValue] = sorted.first
 			}
 		}
@@ -162,7 +163,7 @@ extension WallpaperManager {
 		var list = poolsByBucket[bucket] ?? []
 		list.removeAll { $0 == url }
 		list.insert(url, at: 0)
-		poolsByBucket[bucket] = Array(list.prefix(poolSize))
+		poolsByBucket[bucket] = Self.poolEntries(sorted: list, pinnedIds: WallhavenService.shared.pinnedIds, poolSize: poolSize)
 	}
 
 	func revealInFinder(url: URL) {
@@ -180,11 +181,49 @@ extension WallpaperManager {
 		url.deletingPathExtension().lastPathComponent
 	}
 
+	/// Build the in-memory pool list for a bucket: keep every pinned file, plus the newest `poolSize` non-pinned files.
+	/// Pinned files do not count toward `poolSize` — the target governs only the rotating, non-pinned buffer — so they survive even when `poolSize` is 0. `sorted` must be newest-first; the returned list preserves that order.
+	nonisolated static func poolEntries(sorted: [URL], pinnedIds: Set<String>, poolSize: Int) -> [URL] {
+		var nonPinnedKept = 0
+		var result: [URL] = []
+
+		for url in sorted {
+			let id = url.deletingPathExtension().lastPathComponent
+			if pinnedIds.contains(id) {
+				result.append(url)
+			} else if nonPinnedKept < poolSize {
+				result.append(url)
+				nonPinnedKept += 1
+			}
+		}
+
+		return result
+	}
+
+	/// Pick the next pinned wallpaper to apply in Pinned-only mode: the oldest pinned, non-blocked entry. Pools are newest-first, so that's the last match; applying it moves it to the front, so successive ticks walk the whole pinned set. Returns nil when the bucket has no usable pinned file.
+	nonisolated static func nextPinnedToRotate(pool: [URL], pinnedIds: Set<String>, blockedIds: Set<String>) -> URL? {
+		pool.last {
+			let id = $0.deletingPathExtension().lastPathComponent
+
+			return pinnedIds.contains(id) && !blockedIds.contains(id)
+		}
+	}
+
 	func copyWallhavenURL(for url: URL) {
 		let id = wallpaperId(for: url)
 		let pasteboard = NSPasteboard.general
 		pasteboard.clearContents()
 		pasteboard.setString("https://wallhaven.cc/w/\(id)", forType: .string)
+	}
+
+	/// Flip a wallpaper's pinned state. Pinning protects it from pool eviction and adds it to the Pinned-only rotation set.
+	func togglePin(url: URL) {
+		let id = wallpaperId(for: url)
+		if WallhavenService.shared.pinnedIds.contains(id) {
+			WallhavenService.shared.unpin(id)
+		} else {
+			WallhavenService.shared.pin(id)
+		}
 	}
 
 	/// What to do after a wallpaper is blocked, given whether it was the current one and what's left in the bucket's pool.
@@ -225,6 +264,7 @@ extension WallpaperManager {
 		}
 
 		WallhavenService.shared.block(id)
+		WallhavenService.shared.unpin(id)
 		evictFromPool(id: id)
 
 		for bucket in affectedBuckets {
@@ -270,6 +310,7 @@ extension WallpaperManager {
 		do {
 			let storageURL = try getWallpaperStorageDirectory()
 			let fileManager = FileManager.default
+			let pinnedIds = WallhavenService.shared.pinnedIds
 
 			var toKeep = Set<URL>()
 			for list in poolsByBucket.values {
@@ -286,6 +327,11 @@ extension WallpaperManager {
 					let files = try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)
 				else {
 					continue
+				}
+
+				for file in files where pinnedIds.contains(wallpaperId(for: file)) {
+					// Pinned files are exempt from cleanup, even when poolSize is 0 ("apply and forget").
+					toKeep.insert(file.standardized)
 				}
 
 				for file in files where !toKeep.contains(file.standardized) {

@@ -12,6 +12,11 @@ struct ContentView: View {
 
 	@State private var selectedTab = 0
 
+	/// Auto-update can run offline in Pinned-only mode (it never downloads), so don't gate it on connectivity there.
+	private var canStartAutoUpdate: Bool {
+		wallpaperManager.isOnline || wallpaperManager.isRunning || wallpaperManager.effectiveRotationMode == .pinnedOnly
+	}
+
 	var body: some View {
 		VStack(spacing: 0) {
 			Picker("", selection: $selectedTab) {
@@ -66,11 +71,11 @@ struct ContentView: View {
 						}
 					}
 					.buttonStyle(.borderedProminent)
-					.disabled(!wallpaperManager.isOnline && !wallpaperManager.isRunning)
+					.disabled(!canStartAutoUpdate)
 
 					Button("Update Now") {
 						Task {
-							await wallpaperManager.updateWallpaper()
+							await wallpaperManager.fetchFreshNow()
 						}
 					}
 					.buttonStyle(.borderedProminent)

@@ -18,7 +18,45 @@ struct AdvancedTab: View {
 		)
 	}
 
+	private var hasPins: Bool {
+		!wallhavenService.pinnedIds.isEmpty
+	}
+
+	private var rotationModeBinding: Binding<RotationMode> {
+		Binding(
+			get: { hasPins ? wallpaperManager.rotationMode : .fresh },
+			set: { wallpaperManager.rotationMode = ($0 == .pinnedOnly && !hasPins) ? .fresh : $0 }
+		)
+	}
+
+	private var rotationCaption: String {
+		if hasPins {
+			return "Fresh downloads new wallpapers (and rotates your pool when offline). Pinned only never downloads — it cycles just your pinned wallpapers. “Update Now” always fetches a fresh one."
+		} else {
+			return "Fresh downloads new wallpapers (and rotates your pool when offline). Pin a wallpaper to enable Pinned only."
+		}
+	}
+
 	var body: some View {
+		VStack(alignment: .leading, spacing: 6) {
+			Text("Rotation")
+				.font(.headline)
+
+			Picker("Rotation", selection: rotationModeBinding) {
+				ForEach(RotationMode.allCases) { mode in
+					Text(mode.label)
+						.tag(mode)
+						.disabled(mode == .pinnedOnly && !hasPins)
+				}
+			}
+			.labelsHidden()
+			.pickerStyle(.radioGroup)
+
+			Text(rotationCaption)
+				.font(.caption)
+				.foregroundColor(.secondary)
+		}
+
 		VStack(alignment: .leading, spacing: 6) {
 			Text("Wallpaper Pool")
 				.font(.headline)

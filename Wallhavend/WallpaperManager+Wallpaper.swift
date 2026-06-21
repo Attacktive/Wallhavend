@@ -2,13 +2,52 @@ import Foundation
 import AppKit
 
 extension WallpaperManager {
+	/// The automatic rotation tick. In `.fresh` mode it fetches fresh online and rotates the pool offline; in `.pinnedOnly` it never downloads and cycles only the pinned set (so it works offline too).
 	func updateWallpaper() async {
 		error = nil
 
+		guard let screensByBucket = currentScreensByBucket() else {
+			return
+		}
+
+		switch effectiveRotationMode {
+			case .fresh:
+				await runFreshUpdate(screensByBucket: screensByBucket)
+			case .pinnedOnly:
+				await runPinnedUpdate(screensByBucket: screensByBucket)
+		}
+	}
+
+	/// Manual "Update Now": always fetch a fresh wallpaper, regardless of rotation mode (the button is gated to online-only). This is the on-demand "casual blend" the issue settled on — fetch fresh, pin it if you like it — that keeps Pinned-only useful.
+	func fetchFreshNow() async {
+		error = nil
+
+		guard let screensByBucket = currentScreensByBucket() else {
+			return
+		}
+
+		await runFreshUpdate(screensByBucket: screensByBucket)
+	}
+
+	/// Run the normal update for a single bucket, respecting the current rotation mode (used by the block-replacement fallback).
+	func updateBucket(_ bucket: AspectBucket, screens: [NSScreen]) async {
+		switch effectiveRotationMode {
+			case .fresh:
+				if isOnline {
+					await updateWallpaperForBucket(bucket: bucket, screens: screens)
+				} else {
+					await rotatePoolForBucket(bucket: bucket, screens: screens)
+				}
+			case .pinnedOnly:
+				await rotatePinnedForBucket(bucket: bucket, screens: screens)
+		}
+	}
+
+	private func currentScreensByBucket() -> [AspectBucket: [NSScreen]]? {
 		let screens = NSScreen.screens
 		guard !screens.isEmpty else {
 			print("No screens detected. Skipping update.")
-			return
+			return nil
 		}
 
 		var screensByBucket: [AspectBucket: [NSScreen]] = [:]
@@ -17,6 +56,11 @@ extension WallpaperManager {
 			screensByBucket[bucket, default: []].append(screen)
 		}
 
+		return screensByBucket
+	}
+
+	/// Fetch fresh per bucket when online; rotate the saved pool per bucket when offline (a no-op when the pool is empty).
+	private func runFreshUpdate(screensByBucket: [AspectBucket: [NSScreen]]) async {
 		if isOnline {
 			await withTaskGroup(of: Void.self) { group in
 				for (bucket, bucketScreens) in screensByBucket {
@@ -32,12 +76,10 @@ extension WallpaperManager {
 		}
 	}
 
-	/// Run the normal update for a single bucket, respecting connectivity: fetch fresh when online, otherwise rotate the pool (a no-op when the pool is empty).
-	func updateBucket(_ bucket: AspectBucket, screens: [NSScreen]) async {
-		if isOnline {
-			await updateWallpaperForBucket(bucket: bucket, screens: screens)
-		} else {
-			await rotatePoolForBucket(bucket: bucket, screens: screens)
+	/// Cycle the pinned set per bucket, never downloading. Buckets with no usable pinned file are skipped.
+	private func runPinnedUpdate(screensByBucket: [AspectBucket: [NSScreen]]) async {
+		for (bucket, bucketScreens) in screensByBucket {
+			await rotatePinnedForBucket(bucket: bucket, screens: bucketScreens)
 		}
 	}
 
@@ -91,6 +133,33 @@ extension WallpaperManager {
 			currentByBucket[bucket.rawValue] = oldest
 			lastUpdated = Date()
 			print("Rotated pool wallpaper for \(bucket.rawValue): \(oldest.lastPathComponent)")
+		} catch {
+			self.error = "Failed to apply wallpaper: \(error.localizedDescription)"
+		}
+	}
+
+	/// Pinned-only rotation for a single bucket: apply the oldest usable pinned wallpaper, never downloading. A no-op when the bucket has no pinned file — Pinned-only honors "never download" rather than falling back to a fetch.
+	@MainActor
+	private func rotatePinnedForBucket(bucket: AspectBucket, screens: [NSScreen]) async {
+		let pinnedIds = WallhavenService.shared.pinnedIds
+		let blockedIds = WallhavenService.shared.blockedIds
+
+		guard
+			let list = poolsByBucket[bucket.rawValue],
+			let target = Self.nextPinnedToRotate(pool: list, pinnedIds: pinnedIds, blockedIds: blockedIds)
+		else {
+			print("Pinned-only and no pinned wallpaper for \(bucket.rawValue). Skipping.")
+			return
+		}
+
+		do {
+			error = nil
+			try applyWallpaper(url: target, to: screens)
+
+			prependToPool(url: target, bucket: bucket.rawValue)
+			currentByBucket[bucket.rawValue] = target
+			lastUpdated = Date()
+			print("Rotated pinned wallpaper for \(bucket.rawValue): \(target.lastPathComponent)")
 		} catch {
 			self.error = "Failed to apply wallpaper: \(error.localizedDescription)"
 		}

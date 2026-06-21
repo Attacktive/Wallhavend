@@ -64,11 +64,17 @@ private struct GalleryBucketSection: View {
 
 private struct WallpaperThumbnailView: View {
 	@EnvironmentObject var wallpaperManager: WallpaperManager
+	@EnvironmentObject var wallhavenService: WallhavenService
+
 	let url: URL
 	let bucket: String
 	let isCurrent: Bool
 
 	@State private var nsImage: NSImage?
+
+	private var isPinned: Bool {
+		wallhavenService.pinnedIds.contains(wallpaperManager.wallpaperId(for: url))
+	}
 
 	var body: some View {
 		Group {
@@ -86,11 +92,27 @@ private struct WallpaperThumbnailView: View {
 			RoundedRectangle(cornerRadius: 4)
 				.stroke(Color.red, lineWidth: isCurrent ? 2 : 0)
 		)
+		.overlay(alignment: .topTrailing) {
+			if isPinned {
+				Image(systemName: "pin.fill")
+					.font(.system(size: 9, weight: .bold))
+					.foregroundColor(.white)
+					.padding(3)
+					.background(Circle().fill(Color.accentColor))
+					.padding(3)
+			}
+		}
 		.contentShape(Rectangle())
 		.onTapGesture {
 			Task { await wallpaperManager.applyFromPool(url: url, bucket: bucket) }
 		}
 		.contextMenu {
+			Button(isPinned ? "Unpin" : "Pin") {
+				wallpaperManager.togglePin(url: url)
+			}
+
+			Divider()
+
 			Button("Locate in Finder") {
 				wallpaperManager.revealInFinder(url: url)
 			}

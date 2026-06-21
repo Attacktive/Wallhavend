@@ -75,6 +75,9 @@ class WallhavenService: ObservableObject {
 	@AppStorage("blockedIds")
 	private var blockedIdsRaw: String = ""
 
+	@AppStorage("pinnedIds")
+	private var pinnedIdsRaw: String = ""
+
 	var selectedCategories: Set<WallhavenCategory> {
 		get {
 			Set(selectedCategoriesRaw.split(separator: ",")
@@ -115,6 +118,34 @@ class WallhavenService: ObservableObject {
 		var ids = blockedIds
 		ids.remove(id)
 		blockedIds = ids
+	}
+
+	/// Pinned wallpapers are exempt from pool eviction and form the set cycled by the Pinned-only rotation mode.
+	/// Stored exactly like `blockedIds`: a comma-joined string-set keyed on the wallhaven id (the local filename stem).
+	var pinnedIds: Set<String> {
+		get {
+			Set(pinnedIdsRaw.split(separator: ",")
+				.map {
+					String($0)
+				}
+			)
+		}
+		set {
+			objectWillChange.send()
+			pinnedIdsRaw = newValue.sorted().joined(separator: ",")
+		}
+	}
+
+	func pin(_ id: String) {
+		var ids = pinnedIds
+		ids.insert(id)
+		pinnedIds = ids
+	}
+
+	func unpin(_ id: String) {
+		var ids = pinnedIds
+		ids.remove(id)
+		pinnedIds = ids
 	}
 
 	/// Pure selection step shared by the cache and network paths: drop blocked IDs, then pick the next wallpaper.
