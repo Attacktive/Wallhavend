@@ -43,7 +43,7 @@ extension WallpaperManager {
 		}
 	}
 
-	private func currentScreensByBucket() -> [AspectBucket: [NSScreen]]? {
+	func currentScreensByBucket() -> [AspectBucket: [NSScreen]]? {
 		let screens = NSScreen.screens
 		guard !screens.isEmpty else {
 			print("No screens detected. Skipping update.")
@@ -170,7 +170,7 @@ extension WallpaperManager {
 		}
 	}
 
-	private func downloadWallpaper(from path: String) async throws -> (Data, String) {
+	func downloadWallpaper(from path: String) async throws -> (Data, String) {
 		guard let wallpaperURL = URL(string: path) else {
 			throw WallpaperError.invalidURL
 		}
@@ -225,7 +225,7 @@ extension WallpaperManager {
 		return desktopPicturesURL
 	}
 
-	nonisolated private func saveWallpaper(data: Data, id: String, fileExtension: String, bucket: AspectBucket) throws -> URL {
+	nonisolated func saveWallpaper(data: Data, id: String, fileExtension: String, bucket: AspectBucket) throws -> URL {
 		let storageURL = try getWallpaperStorageDirectory()
 		let bucketDir = storageURL.appendingPathComponent(bucket.rawValue, isDirectory: true)
 		try FileManager.default.createDirectory(at: bucketDir, withIntermediateDirectories: true)

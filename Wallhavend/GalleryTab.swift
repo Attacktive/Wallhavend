@@ -11,6 +11,17 @@ struct GalleryTab: View {
 	}
 
 	var body: some View {
+		VStack(alignment: .leading, spacing: 12) {
+			if wallpaperManager.isPrefetching {
+				prefetchIndicator
+			}
+
+			poolContent
+		}
+	}
+
+	@ViewBuilder
+	private var poolContent: some View {
 		if nonEmptyBuckets.isEmpty {
 			VStack(spacing: 8) {
 				Image(systemName: "photo.on.rectangle.angled")
@@ -33,6 +44,25 @@ struct GalleryTab: View {
 					GalleryBucketSection(bucket: bucket)
 				}
 			}
+		}
+	}
+
+	private var prefetchIndicator: some View {
+		HStack(spacing: 6) {
+			ProgressView()
+				.controlSize(.small)
+
+			Text(prefetchLabel)
+				.font(.caption)
+				.foregroundColor(.secondary)
+		}
+	}
+
+	private var prefetchLabel: String {
+		if wallpaperManager.prefetchRemaining > 0 {
+			return "Filling pool… \(wallpaperManager.prefetchRemaining) left"
+		} else {
+			return "Filling pool…"
 		}
 	}
 }

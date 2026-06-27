@@ -29,7 +29,7 @@ class WallpaperManager: ObservableObject {
 
 	private var sessionDidResignActiveObserver: NSObjectProtocol?
 	private var sessionDidBecomeActiveObserver: NSObjectProtocol?
-	private var isSessionActive: Bool = true
+	var isSessionActive: Bool = true
 
 	private let networkMonitor = NetworkMonitor.shared
 	private var networkCancellable: AnyCancellable?
@@ -55,6 +55,7 @@ class WallpaperManager: ObservableObject {
 		setupSessionObservers()
 		setupNetworkObserver()
 		loadPoolFromDisk()
+		setupSettingsObserver()
 	}
 
 	private var autoUpdateTask: Task<Void, Never>?
@@ -98,6 +99,26 @@ class WallpaperManager: ObservableObject {
 	@Published
 	var error: String?
 
+	/// The in-flight background pool fill, if any. Held so settings changes, going offline, or stopping can cancel it.
+	var prefetchTask: Task<Void, Never>?
+
+	/// Bumped on every fill start/cancel so a superseded fill's completion no-ops instead of clobbering a newer one.
+	var prefetchGeneration = 0
+
+	/// True while a background fill runs; drives the gallery's "Filling pool…" indicator.
+	@Published
+	var isPrefetching = false
+
+	/// Best-effort count of wallpapers still to download in the current fill.
+	@Published
+	var prefetchRemaining = 0
+
+	/// Debounced observer of the search/pool settings that should refill the pool.
+	var topUpSettingsCancellable: AnyCancellable?
+
+	/// Last-seen settings snapshot, so unrelated UserDefaults writes don't restart the fill.
+	var lastPrefetchInputs: PrefetchInputs?
+
 	private let dateFormatter: DateFormatter = {
 		let formatter = DateFormatter()
 		formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
@@ -132,6 +153,7 @@ class WallpaperManager: ObservableObject {
 		autoUpdateTask?.cancel()
 		autoUpdateTask = nil
 		isRunning = false
+		cancelPoolTopUp()
 	}
 
 	private func setupNetworkObserver() {
@@ -146,8 +168,10 @@ class WallpaperManager: ObservableObject {
 					self.isOnline = isOnline
 					if isOnline {
 						print("Network came online.")
+						self.requestPoolTopUp()
 					} else {
 						print("Network went offline.")
+						self.cancelPoolTopUp()
 					}
 				}
 			}
@@ -186,6 +210,7 @@ class WallpaperManager: ObservableObject {
 
 		await updateWallpaper()
 		cleanupOldWallpapers()
+		requestPoolTopUp()
 	}
 
 	private func setupSessionObservers() {
@@ -196,7 +221,10 @@ class WallpaperManager: ObservableObject {
 		) { [weak self] _ in
 			guard let self else { return }
 
-			Task { @MainActor in self.isSessionActive = false }
+			Task { @MainActor in
+				self.isSessionActive = false
+				self.cancelPoolTopUp()
+			}
 		}
 
 		sessionDidBecomeActiveObserver = NSWorkspace.shared.notificationCenter.addObserver(
@@ -206,7 +234,10 @@ class WallpaperManager: ObservableObject {
 		) { [weak self] _ in
 			guard let self else { return }
 
-			Task { @MainActor in self.isSessionActive = true }
+			Task { @MainActor in
+				self.isSessionActive = true
+				self.requestPoolTopUp()
+			}
 		}
 	}
 }
