@@ -28,5 +28,9 @@
 	<string>https://github.com/Attacktive/Wallhavend/releases/latest/download/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>FtiRFqJYMaaGBpSP9PamY4D4SMoiV5AXzSj4CSdDzbU=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUAutomaticallyUpdate</key>
+	<true/>
 </dict>
 </plist>
