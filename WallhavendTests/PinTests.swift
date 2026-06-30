@@ -89,6 +89,60 @@ final class PinTests: XCTestCase {
 		XCTAssertNil(result)
 	}
 
+	// MARK: - pinAction: the menu-bar toggle decision (gated to gallery/pool members)
+
+	func testPinActionUnavailableWhenNothingOnScreen() {
+		let result = WallpaperManager.pinAction(currentIds: [], poolIds: ["a"], pinnedIds: ["a"])
+
+		XCTAssertEqual(result, .unavailable)
+	}
+
+	func testPinActionUnavailableWhenCurrentNotInPool() {
+		// The wallpaper on screen isn't in this instance's gallery (e.g. set by another instance), so it can't be pinned.
+		let result = WallpaperManager.pinAction(currentIds: ["x"], poolIds: ["a"], pinnedIds: [])
+
+		XCTAssertEqual(result, .unavailable)
+	}
+
+	func testPinActionPinsWhenSingleCurrentInPoolNotPinned() {
+		let result = WallpaperManager.pinAction(currentIds: ["a"], poolIds: ["a"], pinnedIds: [])
+
+		XCTAssertEqual(result, .pin)
+	}
+
+	func testPinActionUnpinsWhenSingleCurrentAlreadyPinned() {
+		let result = WallpaperManager.pinAction(currentIds: ["a"], poolIds: ["a"], pinnedIds: ["a"])
+
+		XCTAssertEqual(result, .unpin)
+	}
+
+	func testPinActionUnpinsOnlyWhenEveryInPoolCurrentIsPinned() {
+		let result = WallpaperManager.pinAction(currentIds: ["a", "b"], poolIds: ["a", "b"], pinnedIds: ["a", "b"])
+
+		XCTAssertEqual(result, .unpin)
+	}
+
+	func testPinActionPinsWhenInPoolCurrentsAreMixed() {
+		// Both on-screen wallpapers are in the pool but only one is pinned, so the action pins the straggler too.
+		let result = WallpaperManager.pinAction(currentIds: ["a", "b"], poolIds: ["a", "b"], pinnedIds: ["a"])
+
+		XCTAssertEqual(result, .pin)
+	}
+
+	func testPinActionIgnoresOnScreenWallpapersNotInPool() {
+		// "x" is on screen but not in the gallery; only the in-pool "a" counts, and it's unpinned, so the action pins.
+		let result = WallpaperManager.pinAction(currentIds: ["a", "x"], poolIds: ["a"], pinnedIds: [])
+
+		XCTAssertEqual(result, .pin)
+	}
+
+	func testPinActionUnpinsWhenOnlyInPoolCurrentIsPinnedAndOthersAreForeign() {
+		// "x" (not in pool) is ignored; the only pinnable current "a" is already pinned, so the action unpins.
+		let result = WallpaperManager.pinAction(currentIds: ["a", "x"], poolIds: ["a"], pinnedIds: ["a"])
+
+		XCTAssertEqual(result, .unpin)
+	}
+
 	// MARK: - Persistence round-tripping through UserDefaults
 
 	func testPinUnpinRoundTripsThroughUserDefaults() {

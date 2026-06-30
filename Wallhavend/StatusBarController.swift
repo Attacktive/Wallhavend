@@ -45,6 +45,32 @@ class StatusBarController: NSObject, NSMenuDelegate {
 		updateNowItem.isEnabled = wallpaperManager.isOnline
 		menu.addItem(updateNowItem)
 
+		let pinAction = wallpaperManager.currentPinAction
+		let pinTitle: String
+		let pinSymbol: String
+		let pinSelector: Selector?
+
+		switch pinAction {
+			case .unavailable:
+				pinTitle = "Pin Current Wallpaper"
+				pinSymbol = "pin"
+				pinSelector = nil
+			case .pin:
+				pinTitle = "Pin Current Wallpaper"
+				pinSymbol = "pin"
+				pinSelector = #selector(togglePinCurrentWallpaper)
+			case .unpin:
+				pinTitle = "Unpin Current Wallpaper"
+				pinSymbol = "pin.slash"
+				pinSelector = #selector(togglePinCurrentWallpaper)
+		}
+
+		let pinItem = NSMenuItem(title: pinTitle, action: pinSelector, keyEquivalent: "")
+		pinItem.target = self
+		pinItem.isEnabled = pinAction != .unavailable
+		pinItem.image = NSImage(systemSymbolName: pinSymbol, accessibilityDescription: nil)
+		menu.addItem(pinItem)
+
 		let autoUpdateTitle = wallpaperManager.isRunning ? "Stop Auto Update" : "Start Auto Update"
 		let autoUpdateItem = NSMenuItem(title: autoUpdateTitle, action: #selector(toggleAutoUpdate), keyEquivalent: "")
 		autoUpdateItem.target = self
@@ -77,6 +103,11 @@ class StatusBarController: NSObject, NSMenuDelegate {
 		Task {
 			await wallpaperManager.fetchFreshNow()
 		}
+	}
+
+	@objc
+	private func togglePinCurrentWallpaper() {
+		wallpaperManager.toggleCurrentWallpaperPin()
 	}
 
 	@objc

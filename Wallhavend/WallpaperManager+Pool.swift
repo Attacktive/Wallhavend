@@ -226,6 +226,78 @@ extension WallpaperManager {
 		}
 	}
 
+	/// The menu-bar pin toggle's three states, derived from the wallpaper(s) actually on screen, restricted to gallery (pool) members.
+	enum CurrentPinAction: Equatable {
+		/// Nothing on screen is a managed gallery wallpaper — the menu item is shown disabled.
+		case unavailable
+		/// At least one on-screen gallery wallpaper isn't pinned — the item reads "Pin Current Wallpaper" and pins them all.
+		case pin
+		/// Every on-screen gallery wallpaper is already pinned — the item reads "Unpin Current Wallpaper" and unpins them all.
+		case unpin
+	}
+
+	/// Decide what the "Pin Current Wallpaper" menu item should do, given the ids on screen, the gallery's pool ids, and the pinned set.
+	/// Only pool members are pinnable, so an on-screen wallpaper this instance doesn't manage (or hasn't loaded) is ignored — a stale or foreign desktop image can't be pinned.
+	/// Unpin only when *every* pinnable current is already pinned.
+	nonisolated static func pinAction(currentIds: [String], poolIds: Set<String>, pinnedIds: Set<String>) -> CurrentPinAction {
+		let pinnable = currentIds.filter { poolIds.contains($0) }
+
+		guard !pinnable.isEmpty else {
+			return .unavailable
+		}
+
+		return if pinnable.allSatisfy({ pinnedIds.contains($0) }) {
+			.unpin
+		} else {
+			.pin
+		}
+	}
+
+	/// The wallpapers actually on screen right now, read from the system per display, de-duplicated across screens.
+	/// This is the live desktop — not the app's internal record, which can be stale or reflect a wallpaper set by another instance.
+	var currentWallpaperURLs: [URL] {
+		var seen = Set<URL>()
+
+		return NSScreen.screens
+			.compactMap { NSWorkspace.shared.desktopImageURL(for: $0) }
+			.filter { seen.insert($0).inserted }
+	}
+
+	/// Every wallpaper id present in the in-memory pool (i.e. shown in the Gallery), across all buckets.
+	var poolWallpaperIds: Set<String> {
+		Set(poolsByBucket.values.flatMap { $0 }.map { wallpaperId(for: $0) })
+	}
+
+	/// The pin action for whatever is actually on screen now, restricted to gallery members — drives the menu item's title, enabled state, and behavior.
+	var currentPinAction: CurrentPinAction {
+		Self.pinAction(
+			currentIds: currentWallpaperURLs.map { wallpaperId(for: $0) },
+			poolIds: poolWallpaperIds,
+			pinnedIds: WallhavenService.shared.pinnedIds
+		)
+	}
+
+	/// Pin every on-screen gallery wallpaper, or unpin them all when they're already pinned — the menu-bar counterpart to the Gallery's per-item pin.
+	/// On-screen wallpapers not in the gallery are ignored; it's a no-op when none are.
+	func toggleCurrentWallpaperPin() {
+		let poolIds = poolWallpaperIds
+		let currentIds = currentWallpaperURLs.map { wallpaperId(for: $0) }
+		let pinnable = currentIds.filter { poolIds.contains($0) }
+		let action = Self.pinAction(currentIds: currentIds, poolIds: poolIds, pinnedIds: WallhavenService.shared.pinnedIds)
+
+		guard action != .unavailable else {
+			return
+		}
+
+		for id in pinnable {
+			if action == .unpin {
+				WallhavenService.shared.unpin(id)
+			} else {
+				WallhavenService.shared.pin(id)
+			}
+		}
+	}
+
 	/// What to do after a wallpaper is blocked, given whether it was the current one and what's left in the bucket's pool.
 	enum BlockReplacementAction: Equatable {
 		case doNothing
