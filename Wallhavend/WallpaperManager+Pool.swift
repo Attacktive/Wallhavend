@@ -230,8 +230,10 @@ extension WallpaperManager {
 	enum CurrentPinAction: Equatable {
 		/// Nothing on screen is a managed gallery wallpaper — the menu item is shown disabled.
 		case unavailable
+
 		/// At least one on-screen gallery wallpaper isn't pinned — the item reads "Pin Current Wallpaper" and pins them all.
 		case pin
+
 		/// Every on-screen gallery wallpaper is already pinned — the item reads "Unpin Current Wallpaper" and unpins them all.
 		case unpin
 	}

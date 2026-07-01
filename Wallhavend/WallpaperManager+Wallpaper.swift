@@ -18,7 +18,8 @@ extension WallpaperManager {
 		}
 	}
 
-	/// Manual "Update Now": always fetch a fresh wallpaper, regardless of rotation mode (the button is gated to online-only). This is the on-demand "casual blend" the issue settled on — fetch fresh, pin it if you like it — that keeps Pinned-only useful.
+	/// Manual "Update Wallpaper Now": always fetch a fresh wallpaper, regardless of rotation mode (the button is gated to online-only).
+	/// This is the on-demand "casual blend" the issue settled on — fetch fresh, pin it if you like it — that keeps Pinned-only useful.
 	func fetchFreshNow() async {
 		error = nil
 

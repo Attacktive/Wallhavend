@@ -40,7 +40,7 @@ class StatusBarController: NSObject, NSMenuDelegate {
 			menu.addItem(.separator())
 		}
 
-		let updateNowItem = NSMenuItem(title: "Update Now", action: #selector(updateNow), keyEquivalent: "")
+		let updateNowItem = NSMenuItem(title: "Update Wallpaper Now", action: #selector(updateNow), keyEquivalent: "")
 		updateNowItem.target = self
 		updateNowItem.isEnabled = wallpaperManager.isOnline
 		menu.addItem(updateNowItem)

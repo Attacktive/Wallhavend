@@ -8,7 +8,9 @@ import Combine
 enum RotationMode: String, CaseIterable, Identifiable {
 	/// Download fresh when online; rotate the saved pool when offline (the historical behavior).
 	case fresh
-	/// Never download — cycle only the pinned set. Works offline; the manual "Update Now" still fetches fresh.
+
+	/// Never download — cycle only the pinned set.
+	/// Works offline; the manual "Update Wallpaper Now" still fetches fresh.
 	case pinnedOnly = "pinned_only"
 
 	var id: String { rawValue }

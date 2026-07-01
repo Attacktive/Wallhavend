@@ -73,7 +73,7 @@ struct ContentView: View {
 					.buttonStyle(.borderedProminent)
 					.disabled(!canStartAutoUpdate)
 
-					Button("Update Now") {
+					Button("Update Wallpaper Now") {
 						Task {
 							await wallpaperManager.fetchFreshNow()
 						}
