@@ -82,6 +82,10 @@ class StatusBarController: NSObject, NSMenuDelegate {
 
 		menu.addItem(.separator())
 
+		let aboutItem = NSMenuItem(title: "About Wallhavend", action: #selector(showAbout), keyEquivalent: "")
+		aboutItem.target = self
+		menu.addItem(aboutItem)
+
 		let settingsItem = NSMenuItem(title: "Open Settings...", action: #selector(openSettings), keyEquivalent: ",")
 		settingsItem.target = self
 		menu.addItem(settingsItem)
@@ -117,6 +121,27 @@ class StatusBarController: NSObject, NSMenuDelegate {
 		} else {
 			wallpaperManager.startAutoUpdate()
 		}
+	}
+
+	@objc
+	private func showAbout() {
+		NSApp.activate(ignoringOtherApps: true)
+
+		let repositoryURL = URL(string: "https://github.com/Attacktive/Wallhavend")!
+		let paragraphStyle = NSMutableParagraphStyle()
+		paragraphStyle.alignment = .center
+
+		let credits = NSAttributedString(
+			string: repositoryURL.absoluteString,
+			attributes: [
+				.link: repositoryURL,
+				.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize),
+				.paragraphStyle: paragraphStyle
+			]
+		)
+
+		// CURRENT_PROJECT_VERSION always equals MARKETING_VERSION here, so the parenthesized build number would just repeat the version.
+		NSApp.orderFrontStandardAboutPanel(options: [.credits: credits, .version: ""])
 	}
 
 	@objc
