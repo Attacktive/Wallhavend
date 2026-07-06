@@ -22,19 +22,33 @@ struct AdvancedTab: View {
 		!wallhavenService.pinnedIds.isEmpty
 	}
 
+	/// Shows the stored mode as-is; the setter still refuses to enter Pinned only while nothing is pinned (the radio option is disabled then, too).
 	private var rotationModeBinding: Binding<RotationMode> {
 		Binding(
-			get: { hasPins ? wallpaperManager.rotationMode : .fresh },
-			set: { wallpaperManager.rotationMode = ($0 == .pinnedOnly && !hasPins) ? .fresh : $0 }
+			get: { wallpaperManager.rotationMode },
+			set: { newMode in
+				wallpaperManager.rotationMode = if newMode == .pinnedOnly && !hasPins {
+					.fresh
+				} else {
+					newMode
+				}
+			}
 		)
 	}
 
-	private var rotationCaption: String {
+	/// The caption under the Rotation picker. Pins exist: explain both modes. Nothing pinned with Fresh stored: hint how to enable Pinned only. Nothing pinned with Pinned only stored: warn that scheduled updates are paused.
+	static func rotationCaption(storedMode: RotationMode, hasPins: Bool) -> String {
 		if hasPins {
 			return "Fresh downloads new wallpapers (and rotates your pool when offline). Pinned only never downloads — it cycles just your pinned wallpapers. “Update Now” always fetches a fresh one."
+		} else if storedMode == .pinnedOnly {
+			return "Pinned only never downloads, and nothing is pinned — automatic updates are paused. Pin a wallpaper or switch to Fresh. “Update Now” still fetches a fresh one."
 		} else {
 			return "Fresh downloads new wallpapers (and rotates your pool when offline). Pin a wallpaper to enable Pinned only."
 		}
+	}
+
+	private var rotationCaption: String {
+		Self.rotationCaption(storedMode: wallpaperManager.rotationMode, hasPins: hasPins)
 	}
 
 	var body: some View {

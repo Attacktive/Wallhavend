@@ -2,15 +2,29 @@ import Foundation
 import AppKit
 
 extension WallpaperManager {
-	/// The automatic rotation tick. In `.fresh` mode it fetches fresh online and rotates the pool offline; in `.pinnedOnly` it never downloads and cycles only the pinned set (so it works offline too).
+	/// The user-facing explanation for a scheduled update that has nothing to do: Pinned only is selected but nothing is pinned. `nil` whenever rotation has work.
+	static func pinnedRotationPausedMessage(mode: RotationMode, pinnedIds: Set<String>) -> String? {
+		if mode == .pinnedOnly && pinnedIds.isEmpty {
+			return "Nothing is pinned — automatic updates are paused. Pin a wallpaper or switch to Fresh."
+		} else {
+			return nil
+		}
+	}
+
+	/// The automatic rotation tick. In `.fresh` mode it fetches fresh online and rotates the pool offline; in `.pinnedOnly` it never downloads and cycles only the pinned set (so it works offline too). Pinned only with nothing pinned pauses and surfaces why through `error` instead of silently skipping.
 	func updateWallpaper() async {
 		error = nil
+
+		if let pausedMessage = Self.pinnedRotationPausedMessage(mode: rotationMode, pinnedIds: WallhavenService.shared.pinnedIds) {
+			error = pausedMessage
+			return
+		}
 
 		guard let screensByBucket = currentScreensByBucket() else {
 			return
 		}
 
-		switch effectiveRotationMode {
+		switch rotationMode {
 			case .fresh:
 				await runFreshUpdate(screensByBucket: screensByBucket)
 			case .pinnedOnly:
@@ -32,7 +46,7 @@ extension WallpaperManager {
 
 	/// Run the normal update for a single bucket, respecting the current rotation mode (used by the block-replacement fallback).
 	func updateBucket(_ bucket: AspectBucket, screens: [NSScreen]) async {
-		switch effectiveRotationMode {
+		switch rotationMode {
 			case .fresh:
 				if isOnline {
 					await updateWallpaperForBucket(bucket: bucket, screens: screens)

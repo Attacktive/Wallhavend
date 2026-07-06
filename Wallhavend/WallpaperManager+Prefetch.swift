@@ -60,7 +60,7 @@ extension WallpaperManager {
 	/// so this gates only on the engine being active, the session live, being online, and `.fresh` mode — Pinned-only
 	/// never downloads. The pool-size skip (≤ 1) lives in `bucketsNeedingFill`, which then returns no targets.
 	var shouldPrefetch: Bool {
-		isRunning && isSessionActive && isOnline && effectiveRotationMode == .fresh
+		isRunning && isSessionActive && isOnline && rotationMode == .fresh
 	}
 
 	/// Watch for search/pool settings changes that should refill the pool, debounced so per-keystroke typing coalesces

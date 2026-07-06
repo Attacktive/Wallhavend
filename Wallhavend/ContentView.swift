@@ -14,7 +14,7 @@ struct ContentView: View {
 
 	/// Auto-update can run offline in Pinned-only mode (it never downloads), so don't gate it on connectivity there.
 	private var canStartAutoUpdate: Bool {
-		wallpaperManager.isOnline || wallpaperManager.isRunning || wallpaperManager.effectiveRotationMode == .pinnedOnly
+		wallpaperManager.isOnline || wallpaperManager.isRunning || wallpaperManager.rotationMode == .pinnedOnly
 	}
 
 	var body: some View {

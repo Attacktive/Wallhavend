@@ -76,7 +76,7 @@ class StatusBarController: NSObject, NSMenuDelegate {
 		autoUpdateItem.target = self
 
 		// Auto-update can run offline in Pinned-only mode (it never downloads).
-		let canRunAutoUpdate = wallpaperManager.isOnline || wallpaperManager.isRunning || wallpaperManager.effectiveRotationMode == .pinnedOnly
+		let canRunAutoUpdate = wallpaperManager.isOnline || wallpaperManager.isRunning || wallpaperManager.rotationMode == .pinnedOnly
 		autoUpdateItem.isEnabled = canRunAutoUpdate
 		menu.addItem(autoUpdateItem)
 

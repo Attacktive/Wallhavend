@@ -11,6 +11,7 @@ enum RotationMode: String, CaseIterable, Identifiable {
 
 	/// Never download — cycle only the pinned set.
 	/// Works offline; the manual "Update Wallpaper Now" still fetches fresh.
+	/// With nothing pinned, scheduled updates pause (and say so in the UI) rather than fall back to downloading.
 	case pinnedOnly = "pinned_only"
 
 	var id: String { rawValue }
@@ -80,15 +81,6 @@ class WallpaperManager: ObservableObject {
 	@Published var rotationMode: RotationMode = .fresh {
 		didSet {
 			UserDefaults.standard.set(rotationMode.rawValue, forKey: "rotationMode")
-		}
-	}
-
-	/// The rotation mode the engine actually uses. Pinned-only with zero pins is a dead state (never downloads, nothing to cycle), so it falls back to `.fresh` — matching what the settings picker shows when no pins exist.
-	var effectiveRotationMode: RotationMode {
-		if rotationMode == .pinnedOnly && WallhavenService.shared.pinnedIds.isEmpty {
-			return .fresh
-		} else {
-			return rotationMode
 		}
 	}
 
