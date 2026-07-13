@@ -280,12 +280,5 @@ class WallpaperManager: ObservableObject {
 				self.requestPoolTopUp()
 			}
 		}
-
-		// A launch (or crash-relaunch, or update-restart) that happens while the screen is already locked never sees the notification edge, so read the live session state once after registering.
-		let session = CGSessionCopyCurrentDictionary() as? [String: Any]
-		if Self.isScreenLocked(inSessionDictionary: session) {
-			isScreenLocked = true
-			sanitizeWallpaperStoreForLockedSession()
-		}
 	}
 }
