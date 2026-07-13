@@ -92,8 +92,18 @@ enum WallpaperStoreSanitizer {
 }
 
 extension WallpaperManager {
+	/// Reads the lock flag out of a `CGSessionCopyCurrentDictionary()` snapshot; the key is only present while the screen is locked.
+	static func isScreenLocked(inSessionDictionary dictionary: [String: Any]?) -> Bool {
+		dictionary?["CGSSessionScreenIsLocked"] as? Bool ?? false
+	}
+
 	/// Locked-session guard: nobody sees the desktop while the screen is locked, so dropping the poisonous config costs nothing and buys a smooth aerial.
 	func sanitizeWallpaperStoreForLockedSession() {
+		guard ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"] == nil else {
+			print("Wallpaper-store sanitizing needs an unsandboxed build; this one is sandboxed, so the aerial screensaver will stutter while an image wallpaper is set.")
+			return
+		}
+
 		do {
 			let changed = try WallpaperStoreSanitizer.sanitizeStore()
 			if changed {

@@ -252,3 +252,21 @@ final class WallpaperStoreSanitizerTests: XCTestCase {
 		XCTAssertThrowsError(try WallpaperStoreSanitizer.sanitizeStore(at: url))
 	}
 }
+
+/// An app launched or relaunched while the screen is already locked never receives the `screenIsLocked` notification edge, so startup must read the live session state instead — these pin the parsing of `CGSessionCopyCurrentDictionary()`.
+extension WallpaperStoreSanitizerTests {
+	@MainActor
+	func testSessionDictionaryWithLockFlagMeansLocked() {
+		XCTAssertTrue(WallpaperManager.isScreenLocked(inSessionDictionary: ["CGSSessionScreenIsLocked": true]))
+	}
+
+	@MainActor
+	func testSessionDictionaryWithoutLockFlagMeansUnlocked() {
+		XCTAssertFalse(WallpaperManager.isScreenLocked(inSessionDictionary: ["kCGSSessionUserNameKey": "attacktive"]))
+	}
+
+	@MainActor
+	func testMissingSessionDictionaryMeansUnlocked() {
+		XCTAssertFalse(WallpaperManager.isScreenLocked(inSessionDictionary: nil))
+	}
+}
