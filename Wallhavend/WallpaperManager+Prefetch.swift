@@ -57,10 +57,10 @@ extension WallpaperManager {
 	}
 
 	/// Whether background pre-filling should run right now. Bursts are allowed on any connection (the settled design),
-	/// so this gates only on the engine being active, the session live, being online, and `.fresh` mode — Pinned-only
+	/// so this gates only on the engine being active, the session live, the screen unlocked, being online, and `.fresh` mode — Pinned-only
 	/// never downloads. The pool-size skip (≤ 1) lives in `bucketsNeedingFill`, which then returns no targets.
 	var shouldPrefetch: Bool {
-		isRunning && isSessionActive && isOnline && rotationMode == .fresh
+		isRunning && isSessionActive && !isScreenLocked && isOnline && rotationMode == .fresh
 	}
 
 	/// Watch for search/pool settings changes that should refill the pool, debounced so per-keystroke typing coalesces

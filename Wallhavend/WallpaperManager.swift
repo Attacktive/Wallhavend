@@ -34,6 +34,10 @@ class WallpaperManager: ObservableObject {
 	private var sessionDidBecomeActiveObserver: NSObjectProtocol?
 	var isSessionActive: Bool = true
 
+	private var screenDidLockObserver: NSObjectProtocol?
+	private var screenDidUnlockObserver: NSObjectProtocol?
+	var isScreenLocked: Bool = false
+
 	private let networkMonitor = NetworkMonitor.shared
 	private var networkCancellable: AnyCancellable?
 
@@ -56,6 +60,7 @@ class WallpaperManager: ObservableObject {
 		_rotationMode = Published(initialValue: storedMode)
 
 		setupSessionObservers()
+		setupScreenLockObservers()
 		setupNetworkObserver()
 		loadPoolFromDisk()
 		setupSettingsObserver()
@@ -198,7 +203,12 @@ class WallpaperManager: ObservableObject {
 		guard isRunning else { return }
 
 		guard isSessionActive else {
-			print("Session inactive (screensaver/lock). Skipping auto-update.")
+			print("Session inactive (fast user switch). Skipping auto-update.")
+			return
+		}
+
+		guard !isScreenLocked else {
+			print("Screen locked. Skipping auto-update.")
 			return
 		}
 
@@ -230,6 +240,38 @@ class WallpaperManager: ObservableObject {
 
 			Task { @MainActor in
 				self.isSessionActive = true
+				self.requestPoolTopUp()
+			}
+		}
+	}
+
+	/// Screen lock/unlock gating.
+	/// `NSWorkspace.sessionDidResignActive` only fires on fast user switching, so locking the screen needs its own signal.
+	/// While locked we skip the visible rotation and pause background fills; on unlock the fill resumes.
+	/// Delivered as `DistributedNotificationCenter` broadcasts.
+	private func setupScreenLockObservers() {
+		screenDidLockObserver = DistributedNotificationCenter.default().addObserver(
+			forName: Notification.Name("com.apple.screenIsLocked"),
+			object: nil,
+			queue: .main
+		) { [weak self] _ in
+			guard let self else { return }
+
+			Task { @MainActor in
+				self.isScreenLocked = true
+				self.cancelPoolTopUp()
+			}
+		}
+
+		screenDidUnlockObserver = DistributedNotificationCenter.default().addObserver(
+			forName: Notification.Name("com.apple.screenIsUnlocked"),
+			object: nil,
+			queue: .main
+		) { [weak self] _ in
+			guard let self else { return }
+
+			Task { @MainActor in
+				self.isScreenLocked = false
 				self.requestPoolTopUp()
 			}
 		}
