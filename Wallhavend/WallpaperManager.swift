@@ -38,6 +38,9 @@ class WallpaperManager: ObservableObject {
 	private var screenDidUnlockObserver: NSObjectProtocol?
 	var isScreenLocked: Bool = false
 
+	/// Set while the locked-session sanitizer has stripped our wallpaper config from the store, so unlock knows to put the wallpaper back.
+	var didSanitizeWallpaperStoreWhileLocked = false
+
 	private let networkMonitor = NetworkMonitor.shared
 	private var networkCancellable: AnyCancellable?
 
@@ -247,7 +250,7 @@ class WallpaperManager: ObservableObject {
 
 	/// Screen lock/unlock gating.
 	/// `NSWorkspace.sessionDidResignActive` only fires on fast user switching, so locking the screen needs its own signal.
-	/// While locked we skip the visible rotation and pause background fills; on unlock the fill resumes.
+	/// While locked we skip the visible rotation, pause background fills, and strip our wallpaper config from the wallpaper store so the aerial screensaver dodges the macOS 26.5 WindowServer meltdown (see `WallpaperStoreSanitizer`); on unlock the wallpaper and the fill come back.
 	/// Delivered as `DistributedNotificationCenter` broadcasts.
 	private func setupScreenLockObservers() {
 		screenDidLockObserver = DistributedNotificationCenter.default().addObserver(
@@ -260,6 +263,7 @@ class WallpaperManager: ObservableObject {
 			Task { @MainActor in
 				self.isScreenLocked = true
 				self.cancelPoolTopUp()
+				self.sanitizeWallpaperStoreForLockedSession()
 			}
 		}
 
@@ -272,6 +276,7 @@ class WallpaperManager: ObservableObject {
 
 			Task { @MainActor in
 				self.isScreenLocked = false
+				self.restoreWallpaperAfterUnlock()
 				self.requestPoolTopUp()
 			}
 		}
