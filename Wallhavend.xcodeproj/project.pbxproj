@@ -17,9 +17,7 @@
 		AA0000012F600000000PINT1 /* PinTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000PINT1 /* PinTests.swift */; };
 		AA0000012F600000000PRET1 /* PrefetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000PRET1 /* PrefetchTests.swift */; };
 		AA0000012F600000000ROTM1 /* RotationModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000ROTM1 /* RotationModeTests.swift */; };
-		AA0000012F600000000SANT1 /* WallpaperStoreSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000SANT1 /* WallpaperStoreSanitizerTests.swift */; };
 		AA0000012F600000000POOL1 /* WallpaperManager+Pool.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000POOL1 /* WallpaperManager+Pool.swift */; };
-		AA0000012F600000000SANI1 /* WallpaperStoreSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000SANI1 /* WallpaperStoreSanitizer.swift */; };
 		AA0000012F600000000WALL1 /* WallpaperManager+Wallpaper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000WALL1 /* WallpaperManager+Wallpaper.swift */; };
 		AA0000012F600000000PREF1 /* WallpaperManager+Prefetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000PREF1 /* WallpaperManager+Prefetch.swift */; };
 		D01707E62DCC4F3E00158EDD /* WallhavenAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01707E32DCC4F3E00158EDD /* WallhavenAPI.swift */; };
@@ -60,9 +58,7 @@
 		AA0000002F600000000PINT1 /* PinTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinTests.swift; sourceTree = "<group>"; };
 		AA0000002F600000000PRET1 /* PrefetchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefetchTests.swift; sourceTree = "<group>"; };
 		AA0000002F600000000ROTM1 /* RotationModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotationModeTests.swift; sourceTree = "<group>"; };
-		AA0000002F600000000SANT1 /* WallpaperStoreSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperStoreSanitizerTests.swift; sourceTree = "<group>"; };
 		AA0000002F600000000POOL1 /* WallpaperManager+Pool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WallpaperManager+Pool.swift"; sourceTree = "<group>"; };
-		AA0000002F600000000SANI1 /* WallpaperStoreSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperStoreSanitizer.swift; sourceTree = "<group>"; };
 		AA0000002F600000000WALL1 /* WallpaperManager+Wallpaper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WallpaperManager+Wallpaper.swift"; sourceTree = "<group>"; };
 		AA0000002F600000000PREF1 /* WallpaperManager+Prefetch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WallpaperManager+Prefetch.swift"; sourceTree = "<group>"; };
 		D01707E32DCC4F3E00158EDD /* WallhavenAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WallhavenAPI.swift; sourceTree = "<group>"; };
@@ -133,7 +129,6 @@
 				D01707E42DCC4F3E00158EDD /* WallpaperError.swift */,
 				D01707E52DCC4F3E00158EDD /* WallpaperManager.swift */,
 				AA0000002F600000000POOL1 /* WallpaperManager+Pool.swift */,
-				AA0000002F600000000SANI1 /* WallpaperStoreSanitizer.swift */,
 				AA0000002F600000000WALL1 /* WallpaperManager+Wallpaper.swift */,
 				AA0000002F600000000PREF1 /* WallpaperManager+Prefetch.swift */,
 				AA0000002F600000000ASPC1 /* AspectBucket.swift */,
@@ -169,7 +164,6 @@
 				AA0000002F600000000PINT1 /* PinTests.swift */,
 				AA0000002F600000000PRET1 /* PrefetchTests.swift */,
 				AA0000002F600000000ROTM1 /* RotationModeTests.swift */,
-				AA0000002F600000000SANT1 /* WallpaperStoreSanitizerTests.swift */,
 				D0ED74A92DCB72F90008C397 /* WallhavendTests.swift */,
 			);
 			path = WallhavendTests;
@@ -292,7 +286,6 @@
 				D0ED74982DCB72EE0008C397 /* WallhavendApp.swift in Sources */,
 				D01707E82DCC4F3E00158EDD /* WallpaperManager.swift in Sources */,
 				AA0000012F600000000POOL1 /* WallpaperManager+Pool.swift in Sources */,
-				AA0000012F600000000SANI1 /* WallpaperStoreSanitizer.swift in Sources */,
 				AA0000012F600000000WALL1 /* WallpaperManager+Wallpaper.swift in Sources */,
 				AA0000012F600000000PREF1 /* WallpaperManager+Prefetch.swift in Sources */,
 				AA0000012F600000000ASPC1 /* AspectBucket.swift in Sources */,
@@ -311,7 +304,6 @@
 				AA0000012F600000000PINT1 /* PinTests.swift in Sources */,
 				AA0000012F600000000PRET1 /* PrefetchTests.swift in Sources */,
 				AA0000012F600000000ROTM1 /* RotationModeTests.swift in Sources */,
-				AA0000012F600000000SANT1 /* WallpaperStoreSanitizerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
