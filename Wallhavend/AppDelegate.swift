@@ -2,7 +2,7 @@ import SwiftUI
 import Sparkle
 
 @MainActor
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
 	var statusBarController: StatusBarController?
 
 	private var settingsWindowController: NSWindowController?
@@ -17,7 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 		if !isRunningTests {
 			updaterController = SPUStandardUpdaterController(
 				startingUpdater: true,
-				updaterDelegate: nil,
+				updaterDelegate: self,
 				userDriverDelegate: nil
 			)
 		}
@@ -78,6 +78,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 	func checkForUpdates() {
 		updaterController?.checkForUpdates(nil)
+	}
+
+	// MARK: - SPUUpdaterDelegate
+
+	/// Installs a silently-downloaded automatic update immediately instead of letting Sparkle defer it to app quit.
+	///
+	/// Wallhavend is a menu-bar agent that users basically never quit, so Sparkle's default "install on quit" leaves a background-downloaded update staged forever: when no delegate handles this callback, the automatic driver aborts and waits for a termination that never comes (see SPUAutomaticUpdateDriver).
+	/// Invoking the block and returning true tells Sparkle to install and relaunch right away, which is what makes automatic updates actually land on a background app.
+	func updater(
+		_ updater: SPUUpdater,
+		willInstallUpdateOnQuit item: SUAppcastItem,
+		immediateInstallationBlock immediateInstallHandler: @escaping () -> Void
+	) -> Bool {
+		immediateInstallHandler()
+		return true
 	}
 }
 
