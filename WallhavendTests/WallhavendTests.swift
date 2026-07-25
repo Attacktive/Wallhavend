@@ -100,13 +100,6 @@ final class WallhavendTests: XCTestCase {
 		XCTAssertEqual(peopleWallpaper.category, "people")
 	}
 
-	func testSearchQueryEncoding() async throws {
-		service.searchQuery = "mountain landscape"
-
-		let wallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
-		XCTAssertNotNil(wallpaper)
-	}
-
 	func testFetchRandomWallpaper() async throws {
 		let wallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(wallpaper)

@@ -163,6 +163,16 @@ class WallhavenService: ObservableObject {
 		return (selected, filtered)
 	}
 
+	/// Splits the user search field into independent Wallhaven `q` values.
+	/// Delimiters are `,`, `;`, and `|` only — spaces are preserved for Wallhaven query syntax (e.g. `+tag1 +tag2`).
+	/// Returns an empty array when there is no query (caller omits `q`).
+	nonisolated static func keywords(from searchQuery: String) -> [String] {
+		searchQuery
+			.components(separatedBy: CharacterSet(charactersIn: ",;|"))
+			.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+			.filter { !$0.isEmpty }
+	}
+
 	var purityString: String {
 		var bits = [String]()
 		bits.append(includeSFW ? "1" : "0")
@@ -246,13 +256,8 @@ class WallhavenService: ObservableObject {
 		let categories = selectedCategories.isEmpty ? [.general] : selectedCategories
 		let categoriesString = buildCategoriesString(categories)
 
-		let keywords: [String?] = {
-			let parts = searchQuery
-				.components(separatedBy: CharacterSet(charactersIn: ",;| ").union(.whitespacesAndNewlines))
-				.filter { !$0.isEmpty }
-
-			return parts.isEmpty ? [nil] : parts.map { Optional($0) }
-		}()
+		let parts = Self.keywords(from: searchQuery)
+		let keywords: [String?] = parts.isEmpty ? [nil] : parts.map { Optional($0) }
 
 		let requests: [URLRequest] = try keywords.map { keyword in
 			var components = URLComponents(string: "\(baseURL)/search")!

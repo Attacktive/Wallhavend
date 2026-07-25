@@ -52,7 +52,7 @@ struct ContentTab: View {
 			Text("Search")
 				.font(.headline)
 
-			TextField("Search query (optional; delimit with a comma)", text: searchQueryBinding)
+			TextField("Search query (optional; delimit with , ; or |)", text: searchQueryBinding)
 				.textFieldStyle(.roundedBorder)
 		}
 
