@@ -106,6 +106,12 @@ private struct WallpaperThumbnailView: View {
 		wallhavenService.pinnedIds.contains(wallpaperManager.wallpaperId(for: url))
 	}
 
+	private var copyURLTitle: String {
+		let identity = WallpaperIdentity.parse(stem: wallpaperManager.wallpaperId(for: url))
+
+		return "Copy \(identity.source.displayName) URL"
+	}
+
 	var body: some View {
 		Group {
 			if let nsImage {
@@ -147,8 +153,8 @@ private struct WallpaperThumbnailView: View {
 				wallpaperManager.revealInFinder(url: url)
 			}
 
-			Button("Copy Wallhaven URL") {
-				wallpaperManager.copyWallhavenURL(for: url)
+			Button(copyURLTitle) {
+				wallpaperManager.copyPageURL(for: url)
 			}
 
 			Divider()

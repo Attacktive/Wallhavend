@@ -40,17 +40,9 @@ private struct BlockedRow: View {
 
 	@State private var revealed = false
 
-	// Reconstruct the Wallhaven thumbnail URL: th.wallhaven.cc/lg/<first two of id>/<id>.jpg
-	private var thumbnailURL: URL? {
-		guard id.count >= 2 else {
-			return nil
-		}
-
-		return URL(string: "https://th.wallhaven.cc/lg/\(id.prefix(2))/\(id).jpg")
-	}
-
-	private var wallpaperURL: URL? {
-		URL(string: "https://wallhaven.cc/w/\(id)")
+	/// The blocked id is a bare filename stem, so the source and its URLs come from parsing it rather than from any stored field.
+	private var identity: WallpaperIdentity {
+		WallpaperIdentity.parse(stem: id)
 	}
 
 	var body: some View {
@@ -63,8 +55,8 @@ private struct BlockedRow: View {
 					revealed = true
 				}
 
-			if let wallpaperURL {
-				Link(id, destination: wallpaperURL)
+			if let pageURL = identity.pageURL {
+				Link(id, destination: pageURL)
 					.font(.system(.body, design: .monospaced))
 			} else {
 				Text(id)
@@ -83,7 +75,7 @@ private struct BlockedRow: View {
 	@ViewBuilder
 	private var thumbnail: some View {
 		// Tap-to-reveal: blocking is often driven by revulsion, so never re-expose the image until the user explicitly asks for it.
-		if revealed, let thumbnailURL {
+		if revealed, let thumbnailURL = identity.thumbnailURL {
 			AsyncImage(url: thumbnailURL) { image in
 				image
 					.resizable()

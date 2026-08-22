@@ -209,11 +209,17 @@ extension WallpaperManager {
 		}
 	}
 
-	func copyWallhavenURL(for url: URL) {
-		let id = wallpaperId(for: url)
+	/// Copy the wallpaper's page on whichever site it came from.
+	/// A nil page URL leaves the pasteboard alone — better to no-op than to clear whatever the user had.
+	func copyPageURL(for url: URL) {
+		let identity = WallpaperIdentity.parse(stem: wallpaperId(for: url))
+		guard let pageURL = identity.pageURL else {
+			return
+		}
+
 		let pasteboard = NSPasteboard.general
 		pasteboard.clearContents()
-		pasteboard.setString("https://wallhaven.cc/w/\(id)", forType: .string)
+		pasteboard.setString(pageURL.absoluteString, forType: .string)
 	}
 
 	/// Flip a wallpaper's pinned state. Pinning protects it from pool eviction and adds it to the Pinned-only rotation set.
