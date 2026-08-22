@@ -201,8 +201,10 @@ extension WallpaperManager {
 			} catch is CancellationError {
 				return
 			} catch {
-				// Transient fetch/download failure (offline, no results, HTTP error). Stop this bucket quietly — prefetch
-				// is invisible, so it never touches the user-facing `error`; the next tick retries.
+				/*
+					Transient fetch/download failure (offline, no results, HTTP error).
+					Stop this bucket quietly — prefetch is invisible, so it never touches the user-facing `error`; the next tick retries.
+				*/
 				print("Prefetch stopped for \(bucket.rawValue): \(error)")
 				return
 			}

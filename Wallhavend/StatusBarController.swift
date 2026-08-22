@@ -71,7 +71,12 @@ class StatusBarController: NSObject, NSMenuDelegate {
 		pinItem.image = NSImage(systemSymbolName: pinSymbol, accessibilityDescription: nil)
 		menu.addItem(pinItem)
 
-		let autoUpdateTitle = wallpaperManager.isRunning ? "Stop Auto Update" : "Start Auto Update"
+		let autoUpdateTitle = if wallpaperManager.isRunning {
+			"Stop Auto Update"
+		} else {
+			"Start Auto Update"
+		}
+
 		let autoUpdateItem = NSMenuItem(title: autoUpdateTitle, action: #selector(toggleAutoUpdate), keyEquivalent: "")
 		autoUpdateItem.target = self
 

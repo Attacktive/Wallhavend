@@ -17,11 +17,13 @@ enum AspectBucket: String, CaseIterable {
 		}
 	}
 
-	// Snap boundaries are midpoints between adjacent ratios:
-	//   (16/9 + 21/9)/2 ≈ 2.06   →  16x9 / 21x9 split
-	//   (16/10 + 16/9)/2 ≈ 1.69  →  16x10 / 16x9 split
-	//   (4/3 + 16/10)/2 ≈ 1.47   →  4x3 / 16x10 split
-	//   1.0                       →  portrait / landscape split
+	/*
+		Snap boundaries are midpoints between adjacent ratios:
+		  (16/9 + 21/9)/2 ≈ 2.06   →  16x9 / 21x9 split
+		  (16/10 + 16/9)/2 ≈ 1.69  →  16x10 / 16x9 split
+		  (4/3 + 16/10)/2 ≈ 1.47   →  4x3 / 16x10 split
+		  1.0                      →  portrait / landscape split
+	*/
 	static func snap(aspectRatio: Double) -> AspectBucket {
 		if aspectRatio >= 2.06 {
 			return .ultrawide

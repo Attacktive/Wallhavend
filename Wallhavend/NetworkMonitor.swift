@@ -5,8 +5,7 @@ import Combine
 class NetworkMonitor: ObservableObject {
 	static let shared = NetworkMonitor()
 
-	@Published
-	private(set) var isOnline: Bool = true
+	@Published private(set) var isOnline: Bool = true
 
 	private let monitor = NWPathMonitor()
 	private let queue = DispatchQueue(label: "NetworkMonitor")
@@ -17,6 +16,7 @@ class NetworkMonitor: ObservableObject {
 				self?.isOnline = path.status == .satisfied
 			}
 		}
+
 		monitor.start(queue: queue)
 	}
 

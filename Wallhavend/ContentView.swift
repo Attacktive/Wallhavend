@@ -1,11 +1,8 @@
 import SwiftUI
 
 struct ContentView: View {
-	@EnvironmentObject
-	var wallpaperManager: WallpaperManager
-
-	@EnvironmentObject
-	var wallhavenService: WallhavenService
+	@EnvironmentObject var wallpaperManager: WallpaperManager
+	@EnvironmentObject var wallhavenService: WallhavenService
 
 	@AppStorage("updateInterval")
 	private var updateInterval: TimeInterval = 60

@@ -41,32 +41,7 @@ class WallpaperManager: ObservableObject {
 	private let networkMonitor = NetworkMonitor.shared
 	private var networkCancellable: AnyCancellable?
 
-	@Published
-	private(set) var isOnline: Bool = true
-
-	init() {
-		let stored = UserDefaults.standard.object(forKey: "poolSize") as? Int ?? 10
-		// "Current only" used to be 0; it's now 1 so the current wallpaper shows in the gallery. Migrate any persisted 0.
-		let migratedPoolSize = stored == 0 ? 1 : stored
-		if migratedPoolSize != stored {
-			UserDefaults.standard.set(migratedPoolSize, forKey: "poolSize")
-		}
-
-		_poolSize = Published(initialValue: migratedPoolSize)
-
-		let storedMode = UserDefaults.standard.string(forKey: "rotationMode")
-			.flatMap(RotationMode.init(rawValue:)) ?? .fresh
-
-		_rotationMode = Published(initialValue: storedMode)
-
-		_enabledSources = Published(initialValue: Self.decodeSources(UserDefaults.standard.string(forKey: "enabledSources")))
-
-		setupSessionObservers()
-		setupScreenLockObservers()
-		setupNetworkObserver()
-		loadPoolFromDisk()
-		setupSettingsObserver()
-	}
+	@Published private(set) var isOnline: Bool = true
 
 	private var autoUpdateTask: Task<Void, Never>?
 	private var timerInterval: TimeInterval = 60
@@ -99,32 +74,9 @@ class WallpaperManager: ObservableObject {
 		}
 	}
 
-	/// Comma-joined raw keys, sorted so the stored string doesn't churn on every write.
-	nonisolated static func encodeSources(_ sources: Set<WallpaperSource>) -> String {
-		sources.map { $0.rawValue }
-			.sorted()
-			.joined(separator: ",")
-	}
-
-	/// A missing, empty, or unrecognizable value falls back to Wallhaven.
-	/// Everything downstream assumes at least one source is enabled, and Wallhaven is the one that needs no opt-in.
-	nonisolated static func decodeSources(_ raw: String?) -> Set<WallpaperSource> {
-		let parsed = Set(
-			(raw ?? "").split(separator: ",")
-				.compactMap { WallpaperSource(rawValue: String($0)) }
-		)
-
-		return if parsed.isEmpty { [.wallhaven] } else { parsed }
-	}
-
-	@Published
-	var isRunning = false
-
-	@Published
-	var lastUpdated: Date?
-
-	@Published
-	var error: String?
+	@Published var isRunning = false
+	@Published var lastUpdated: Date?
+	@Published var error: String?
 
 	/// The in-flight background pool fill, if any. Held so settings changes, going offline, or stopping can cancel it.
 	var prefetchTask: Task<Void, Never>?
@@ -133,12 +85,10 @@ class WallpaperManager: ObservableObject {
 	var prefetchGeneration = 0
 
 	/// True while a background fill runs; drives the gallery's "Filling pool…" indicator.
-	@Published
-	var isPrefetching = false
+	@Published var isPrefetching = false
 
 	/// Best-effort count of wallpapers still to download in the current fill.
-	@Published
-	var prefetchRemaining = 0
+	@Published var prefetchRemaining = 0
 
 	/// Debounced observer of the search/pool settings that should refill the pool.
 	var topUpSettingsCancellable: AnyCancellable?
@@ -158,6 +108,48 @@ class WallpaperManager: ObservableObject {
 		}
 
 		return dateFormatter.string(from: lastUpdated)
+	}
+
+	init() {
+		let stored = UserDefaults.standard.object(forKey: "poolSize") as? Int ?? 10
+		// "Current only" used to be 0; it's now 1 so the current wallpaper shows in the gallery. Migrate any persisted 0.
+		let migratedPoolSize = if stored == 0 { 1 } else { stored }
+		if migratedPoolSize != stored {
+			UserDefaults.standard.set(migratedPoolSize, forKey: "poolSize")
+		}
+
+		_poolSize = Published(initialValue: migratedPoolSize)
+
+		let storedMode = UserDefaults.standard.string(forKey: "rotationMode")
+			.flatMap(RotationMode.init(rawValue:)) ?? .fresh
+
+		_rotationMode = Published(initialValue: storedMode)
+
+		_enabledSources = Published(initialValue: Self.decodeSources(UserDefaults.standard.string(forKey: "enabledSources")))
+
+		setupSessionObservers()
+		setupScreenLockObservers()
+		setupNetworkObserver()
+		loadPoolFromDisk()
+		setupSettingsObserver()
+	}
+
+	/// Comma-joined raw keys, sorted so the stored string doesn't churn on every write.
+	nonisolated static func encodeSources(_ sources: Set<WallpaperSource>) -> String {
+		sources.map { $0.rawValue }
+			.sorted()
+			.joined(separator: ",")
+	}
+
+	/// A missing, empty, or unrecognizable value falls back to Wallhaven.
+	/// Everything downstream assumes at least one source is enabled, and Wallhaven is the one that needs no opt-in.
+	nonisolated static func decodeSources(_ raw: String?) -> Set<WallpaperSource> {
+		let parsed = Set(
+			(raw ?? "").split(separator: ",")
+				.compactMap { WallpaperSource(rawValue: String($0)) }
+		)
+
+		return if parsed.isEmpty { [.wallhaven] } else { parsed }
 	}
 
 	func startAutoUpdate(interval: TimeInterval? = nil, tickImmediately: Bool = true) {

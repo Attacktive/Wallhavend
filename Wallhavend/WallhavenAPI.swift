@@ -80,26 +80,22 @@ class WallhavenService: ObservableObject {
 
 	var selectedCategories: Set<WallhavenCategory> {
 		get {
-			Set(selectedCategoriesRaw.split(separator: ",")
-				.compactMap {
-					WallhavenCategory(rawValue: String($0))
-				}
+			Set(
+				selectedCategoriesRaw.split(separator: ",")
+					.compactMap { WallhavenCategory(rawValue: String($0)) }
 			)
 		}
 		set {
-			selectedCategoriesRaw = newValue.map {
-					$0.rawValue
-				}
+			selectedCategoriesRaw = newValue.map { $0.rawValue }
 				.joined(separator: ",")
 		}
 	}
 
 	var blockedIds: Set<String> {
 		get {
-			Set(blockedIdsRaw.split(separator: ",")
-				.map {
-					String($0)
-				}
+			Set(
+				blockedIdsRaw.split(separator: ",")
+					.map { String($0) }
 			)
 		}
 		set {
@@ -124,10 +120,9 @@ class WallhavenService: ObservableObject {
 	/// Stored exactly like `blockedIds`: a comma-joined string-set keyed on the wallhaven id (the local filename stem).
 	var pinnedIds: Set<String> {
 		get {
-			Set(pinnedIdsRaw.split(separator: ",")
-				.map {
-					String($0)
-				}
+			Set(
+				pinnedIdsRaw.split(separator: ",")
+					.map { String($0) }
 			)
 		}
 		set {
@@ -253,11 +248,16 @@ class WallhavenService: ObservableObject {
 	}
 
 	private func rawFetch(ratios: String, atleast: String) async throws -> [Wallpaper] {
-		let categories = selectedCategories.isEmpty ? [.general] : selectedCategories
+		let categories: Set<WallhavenCategory> = if selectedCategories.isEmpty { [.general] } else { selectedCategories }
+
 		let categoriesString = buildCategoriesString(categories)
 
 		let parts = Self.keywords(from: searchQuery)
-		let keywords: [String?] = parts.isEmpty ? [nil] : parts.map { Optional($0) }
+		let keywords: [String?] = if parts.isEmpty {
+			[nil]
+		} else {
+			parts.map { Optional($0) }
+		}
 
 		let requests: [URLRequest] = try keywords.map { keyword in
 			var components = URLComponents(string: "\(baseURL)/search")!
@@ -299,10 +299,8 @@ class WallhavenService: ObservableObject {
 	}
 
 	private func buildCategoriesString(_ categories: Set<WallhavenCategory>) -> String {
-		WallhavenCategory.allCases.map {
-				categories.contains($0) ? "1" : "0"
-		}
-		.joined()
+		WallhavenCategory.allCases.map { categories.contains($0) ? "1" : "0" }
+			.joined()
 	}
 
 	private func buildQueryItems(keyword: String?, categoriesString: String, ratios: String, atleast: String) -> [URLQueryItem] {
