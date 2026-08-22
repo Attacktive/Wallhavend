@@ -33,7 +33,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
 			}
 		}
 
-		if startAutoUpdateOnLaunch {
+		// Auto-start additionally honors the user's last explicit Start/Stop: a Stop must survive relaunches, including the ones Sparkle performs on its own after a silent update.
+		if startAutoUpdateOnLaunch && wallpaperManager.autoUpdateUserIntent {
 			wallpaperManager.startAutoUpdate()
 		}
 	}

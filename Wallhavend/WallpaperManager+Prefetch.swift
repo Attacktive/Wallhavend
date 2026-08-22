@@ -63,9 +63,9 @@ extension WallpaperManager {
 		isRunning && isSessionActive && !isScreenLocked && isOnline && rotationMode == .fresh
 	}
 
-	/// Watch for search/pool settings changes that should refill the pool, debounced so per-keystroke typing coalesces
-	/// into a single restart. `UserDefaults.didChangeNotification` is the one signal that catches both the manager's
-	/// `@Published` settings and the service's `@AppStorage` ones; the snapshot compare filters out unrelated writes.
+	/// Watch for settings changes that should reshape running work, debounced so per-keystroke typing coalesces into a single restart.
+	/// `UserDefaults.didChangeNotification` is the one signal that catches both the manager's `@Published` settings and the service's `@AppStorage` ones; the snapshot compare filters out unrelated writes.
+	/// Besides refilling the pool, this is also what lets a new update interval take effect immediately instead of waiting out the current sleep.
 	func setupSettingsObserver() {
 		lastPrefetchInputs = currentPrefetchInputs()
 
@@ -74,6 +74,8 @@ extension WallpaperManager {
 			.debounce(for: .milliseconds(500), scheduler: RunLoop.main)
 			.sink { [weak self] _ in
 				guard let self else { return }
+
+				self.restartAutoUpdateIfIntervalChanged()
 
 				let snapshot = self.currentPrefetchInputs()
 				guard snapshot != self.lastPrefetchInputs else { return }

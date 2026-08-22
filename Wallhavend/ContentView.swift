@@ -65,9 +65,9 @@ struct ContentView: View {
 				HStack(spacing: 20) {
 					Button(wallpaperManager.isRunning ? "Stop Auto Update" : "Start Auto Update") {
 						if wallpaperManager.isRunning {
-							wallpaperManager.stopAutoUpdate()
+							wallpaperManager.stopAutoUpdateExplicitly()
 						} else {
-							wallpaperManager.startAutoUpdate(interval: updateInterval)
+							wallpaperManager.startAutoUpdateExplicitly(interval: updateInterval)
 						}
 					}
 					.buttonStyle(.borderedProminent)

@@ -132,7 +132,7 @@ class WallpaperManager: ObservableObject {
 		return dateFormatter.string(from: lastUpdated)
 	}
 
-	func startAutoUpdate(interval: TimeInterval? = nil) {
+	func startAutoUpdate(interval: TimeInterval? = nil, tickImmediately: Bool = true) {
 		timerInterval = interval ?? savedUpdateInterval
 
 		stopAutoUpdate()
@@ -144,7 +144,7 @@ class WallpaperManager: ObservableObject {
 		autoUpdateTask = Task { [weak self] in
 			guard let self else { return }
 
-			await self.runAutoUpdateLoop()
+			await self.runAutoUpdateLoop(tickImmediately: tickImmediately)
 		}
 	}
 
@@ -153,6 +153,45 @@ class WallpaperManager: ObservableObject {
 		autoUpdateTask = nil
 		isRunning = false
 		cancelPoolTopUp()
+	}
+
+	/// The user's last explicit Start/Stop choice, persisted so it survives relaunch.
+	/// Defaults to true, so "Start automatically on launch" works until the user explicitly stops.
+	/// `bool(forKey:)` rather than a `Bool` cast, so coercible values (e.g. `-autoUpdateUserIntent NO` launch arguments, which arrive as strings) are honored too.
+	var autoUpdateUserIntent: Bool {
+		let defaults = UserDefaults.standard
+
+		return if defaults.object(forKey: "autoUpdateUserIntent") == nil {
+			true
+		} else {
+			defaults.bool(forKey: "autoUpdateUserIntent")
+		}
+	}
+
+	/// User-facing Start: records the explicit intent, then starts.
+	func startAutoUpdateExplicitly(interval: TimeInterval? = nil) {
+		UserDefaults.standard.set(true, forKey: "autoUpdateUserIntent")
+		startAutoUpdate(interval: interval)
+	}
+
+	/// User-facing Stop: records the explicit intent, then stops.
+	/// Without the record, "start on launch" would resurrect auto-update on the next relaunch — and Sparkle's silent updates relaunch the app without the user asking.
+	func stopAutoUpdateExplicitly() {
+		UserDefaults.standard.set(false, forKey: "autoUpdateUserIntent")
+		stopAutoUpdate()
+	}
+
+	/// Restarts the tick loop when the user picks a new interval while it runs, so the change doesn't wait out the current (possibly hours-long) sleep.
+	/// Only the delay changes — restarting must not rotate the wallpaper on the spot, hence `tickImmediately: false`.
+	/// The restart cancels any in-flight pool fill along the way, so it re-requests one rather than leaving the pool short until the next tick.
+	func restartAutoUpdateIfIntervalChanged() {
+		guard isRunning else { return }
+
+		let interval = savedUpdateInterval
+		guard interval != timerInterval else { return }
+
+		startAutoUpdate(interval: interval, tickImmediately: false)
+		requestPoolTopUp()
 	}
 
 	private func setupNetworkObserver() {
@@ -176,8 +215,10 @@ class WallpaperManager: ObservableObject {
 			}
 	}
 
-	private func runAutoUpdateLoop() async {
-		await self.performAutoUpdateTick()
+	private func runAutoUpdateLoop(tickImmediately: Bool) async {
+		if tickImmediately {
+			await self.performAutoUpdateTick()
+		}
 
 		while !Task.isCancelled {
 			do {

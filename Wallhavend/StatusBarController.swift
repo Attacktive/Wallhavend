@@ -117,9 +117,9 @@ class StatusBarController: NSObject, NSMenuDelegate {
 	@objc
 	private func toggleAutoUpdate() {
 		if wallpaperManager.isRunning {
-			wallpaperManager.stopAutoUpdate()
+			wallpaperManager.stopAutoUpdateExplicitly()
 		} else {
-			wallpaperManager.startAutoUpdate()
+			wallpaperManager.startAutoUpdateExplicitly()
 		}
 	}
 
