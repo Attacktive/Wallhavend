@@ -58,6 +58,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
 		let contentView = ContentView()
 			.environmentObject(wallpaperManager)
 			.environmentObject(WallhavenService.shared)
+			.environmentObject(OpenverseService.shared)
 
 		let hostingView = NSHostingView(rootView: contentView)
 		hostingView.frame = NSRect(x: 0, y: 0, width: 500, height: 540)

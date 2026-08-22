@@ -99,4 +99,71 @@ final class SourceRoutingTests: XCTestCase {
 	func testUnknownKeysAreDroppedButKnownOnesSurvive() {
 		XCTAssertEqual(WallpaperManager.decodeSources("openverse,pexels"), [.openverse])
 	}
+
+	// MARK: - toggleKeepingOne: the only sets the UI is allowed to write
+
+	func testTogglingAnAbsentSourceAddsIt() {
+		XCTAssertEqual(
+			WallpaperSource.toggleKeepingOne(.openverse, in: [.wallhaven]),
+			[.wallhaven, .openverse]
+		)
+	}
+
+	func testTogglingOneOfTwoRemovesIt() {
+		XCTAssertEqual(
+			WallpaperSource.toggleKeepingOne(.wallhaven, in: [.wallhaven, .openverse]),
+			[.openverse]
+		)
+	}
+
+	func testTheLastSourceCannotBeTurnedOff() {
+		// An empty set would leave every tick quietly doing nothing, which from the outside is indistinguishable from a broken app.
+		for source in WallpaperSource.allCases {
+			XCTAssertEqual(WallpaperSource.toggleKeepingOne(source, in: [source]), [source])
+		}
+	}
+
+	func testTogglingStaysReversibleWhileTwoRemain() {
+		let both: Set<WallpaperSource> = [.wallhaven, .openverse]
+		let reduced = WallpaperSource.toggleKeepingOne(.openverse, in: both)
+
+		XCTAssertEqual(WallpaperSource.toggleKeepingOne(.openverse, in: reduced), both)
+	}
+
+	// MARK: - contentRatingCaption: which toggles the enabled sources actually read
+
+	func testNoCaptionWithoutOpenverse() {
+		// A Wallhaven-only install has to see exactly the screen it saw before sources existed.
+		XCTAssertNil(ContentTab.contentRatingCaption(enabled: [.wallhaven]))
+	}
+
+	func testCaptionSplitsTheTogglesWhenBothAreEnabled() {
+		let caption = ContentTab.contentRatingCaption(enabled: [.wallhaven, .openverse])
+
+		XCTAssertEqual(caption, "Wallhaven honors all three. Openverse reads only NSFW, which lets mature results through.")
+	}
+
+	func testCaptionNamesTheInertTogglesWhenOpenverseIsAlone() {
+		// SFW and Sketchy still render, and with Wallhaven off they do nothing — saying so is the whole point of the caption.
+		let caption = ContentTab.contentRatingCaption(enabled: [.openverse])
+
+		XCTAssertEqual(caption, "Openverse reads only NSFW, which lets mature results through — SFW and Sketchy apply to Wallhaven alone.")
+	}
+
+	// MARK: - source credits
+
+	func testEverySourceHasACreditAndSomewhereToLinkIt() {
+		for source in WallpaperSource.allCases {
+			XCTAssertFalse(source.attribution.isEmpty, "\(source.rawValue) has no credit line")
+			XCTAssertNotNil(source.homeURL, "\(source.rawValue) has no home URL")
+		}
+	}
+
+	func testOpenverseCreditCarriesTheWordingItsTermsRequire() {
+		// Openverse asks to be credited with a disclaimer of endorsement; paraphrasing it would break the terms its wallpapers arrive under.
+		XCTAssertEqual(
+			WallpaperSource.openverse.attribution,
+			"Made using Openverse — not endorsed or certified by Openverse"
+		)
+	}
 }

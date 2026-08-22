@@ -55,12 +55,19 @@ private struct BlockedRow: View {
 					revealed = true
 				}
 
-			if let pageURL = identity.pageURL {
-				Link(id, destination: pageURL)
-					.font(.system(.body, design: .monospaced))
-			} else {
-				Text(id)
-					.font(.system(.body, design: .monospaced))
+			// The bare id rather than the stored stem: `openverse_` in front of a 36-character UUID crowds the row and repeats what the source line already says.
+			VStack(alignment: .leading, spacing: 2) {
+				if let pageURL = identity.pageURL {
+					Link(identity.id, destination: pageURL)
+						.font(.system(.body, design: .monospaced))
+				} else {
+					Text(identity.id)
+						.font(.system(.body, design: .monospaced))
+				}
+
+				Text(identity.source.displayName)
+					.font(.caption)
+					.foregroundColor(.secondary)
 			}
 
 			Spacer()

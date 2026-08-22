@@ -17,6 +17,12 @@ struct ContentView: View {
 		wallpaperManager.isOnline || wallpaperManager.isRunning || wallpaperManager.rotationMode == .pinnedOnly
 	}
 
+	/// Credits for the sources wallpapers can currently arrive from, in a fixed order so they don't reshuffle as the set changes.
+	/// Openverse's terms require its line for as long as its wallpapers can show up, which is exactly while it's enabled.
+	private var attributedSources: [WallpaperSource] {
+		WallpaperSource.allCases.filter { wallpaperManager.enabledSources.contains($0) }
+	}
+
 	var body: some View {
 		VStack(spacing: 0) {
 			Picker("", selection: $selectedTab) {
@@ -90,6 +96,14 @@ struct ContentView: View {
 				if wallpaperManager.lastUpdated != nil {
 					Text("Last updated: \(wallpaperManager.formattedLastUpdated)")
 						.font(.caption)
+				}
+
+				ForEach(attributedSources, id: \.self) { source in
+					if let homeURL = source.homeURL {
+						Link(source.attribution, destination: homeURL)
+							.font(.caption)
+							.foregroundColor(.secondary)
+					}
 				}
 			}
 			.padding()

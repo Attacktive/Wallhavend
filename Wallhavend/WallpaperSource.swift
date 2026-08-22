@@ -14,6 +14,43 @@ enum WallpaperSource: String, CaseIterable {
 				return "Openverse"
 		}
 	}
+
+	/// What the source asks to be credited with wherever its wallpapers are used.
+	/// Openverse's terms require stating that the app is neither endorsed nor certified by them, so its line is an obligation rather than a courtesy — the wording is theirs and shouldn't be paraphrased.
+	var attribution: String {
+		switch self {
+			case .wallhaven:
+				return "Powered by wallhaven.cc"
+			case .openverse:
+				return "Made using Openverse — not endorsed or certified by Openverse"
+		}
+	}
+
+	/// Where the credit links to.
+	var homeURL: URL? {
+		switch self {
+			case .wallhaven:
+				return URL(string: "https://wallhaven.cc")
+			case .openverse:
+				return URL(string: "https://openverse.org")
+		}
+	}
+
+	/// Switch one source on or off, refusing to remove the last one left.
+	///
+	/// Rotation has to draw from somewhere, and an empty set would leave the app quietly doing nothing at every tick — indistinguishable, from the outside, from a broken app.
+	/// `WallpaperManager.decodeSources` already rescues an empty stored value; this keeps the UI from ever writing one in the first place.
+	nonisolated static func toggleKeepingOne(_ source: WallpaperSource, in enabled: Set<WallpaperSource>) -> Set<WallpaperSource> {
+		guard enabled.contains(source) else {
+			return enabled.union([source])
+		}
+
+		guard enabled.count > 1 else {
+			return enabled
+		}
+
+		return enabled.subtracting([source])
+	}
 }
 
 /// A wallpaper's source plus its id on that source, recovered from the local filename stem.

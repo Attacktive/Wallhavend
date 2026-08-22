@@ -22,6 +22,11 @@ struct AdvancedTab: View {
 		!wallhavenService.pinnedIds.isEmpty
 	}
 
+	/// The API key buys nothing while Wallhaven isn't being asked for wallpapers, so the field goes away with it. Rotation and the pool are cross-source and stay put.
+	private var isWallhavenEnabled: Bool {
+		wallpaperManager.enabledSources.contains(.wallhaven)
+	}
+
 	/// Shows the stored mode as-is; the setter still refuses to enter Pinned only while nothing is pinned (the radio option is disabled then, too).
 	private var rotationModeBinding: Binding<RotationMode> {
 		Binding(
@@ -89,13 +94,15 @@ struct AdvancedTab: View {
 				.foregroundColor(.secondary)
 		}
 
-		VStack(alignment: .leading, spacing: 6) {
-			Text("API Key")
-				.font(.headline)
+		if isWallhavenEnabled {
+			VStack(alignment: .leading, spacing: 6) {
+				Text("API Key")
+					.font(.headline)
 
-			SecureField("Your Wallhaven API key (optional)", text: apiKeyBinding)
-				.textFieldStyle(.roundedBorder)
-				.font(.system(.body, design: .monospaced))
+				SecureField("Your Wallhaven API key (optional)", text: apiKeyBinding)
+					.textFieldStyle(.roundedBorder)
+					.font(.system(.body, design: .monospaced))
+			}
 		}
 	}
 }
