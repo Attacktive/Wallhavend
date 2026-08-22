@@ -214,13 +214,13 @@ extension WallpaperManager {
 	private func prefetchOneForBucket(bucket: AspectBucket, atleast: String) async throws -> Bool {
 		let beforeCount = poolsByBucket[bucket.rawValue]?.count ?? 0
 
-		let (stem, data, fileExtension) = try await fetchAndDownload(bucket: bucket, atleast: atleast)
+		let downloaded = try await fetchAndDownload(bucket: bucket, atleast: atleast)
 
 		let wallpaperPath = try await Task.detached(priority: .utility) {
 			try self.saveWallpaper(
-				data: data,
-				id: stem,
-				fileExtension: fileExtension,
+				data: downloaded.data,
+				id: downloaded.stem,
+				fileExtension: downloaded.fileExtension,
 				bucket: bucket
 			)
 		}.value

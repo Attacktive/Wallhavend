@@ -1,11 +1,19 @@
 import Foundation
 
 extension WallpaperManager {
+	/// A wallpaper's bytes together with the filename stem to save them under.
+	///
+	/// The stem is bare for Wallhaven and `openverse_`-qualified otherwise, so `saveWallpaper` never needs to know which source produced it.
+	struct DownloadedWallpaper {
+		let stem: String
+		let data: Data
+		let fileExtension: String
+	}
+
 	/// Fetch a wallpaper from whichever enabled source produces one first, and bring its bytes back with it.
 	///
 	/// Fetch and download live together on purpose: an Openverse index entry can name a URL that no longer serves an image, and only a caller that sees both steps can fall through to Wallhaven when that happens.
-	/// The returned stem is what the file is saved under — bare for Wallhaven, `openverse_`-qualified otherwise — so `saveWallpaper` needs no idea which source it came from.
-	func fetchAndDownload(bucket: AspectBucket, atleast: String) async throws -> (stem: String, data: Data, fileExtension: String) {
+	func fetchAndDownload(bucket: AspectBucket, atleast: String) async throws -> DownloadedWallpaper {
 		let order = Self.sourceOrder(enabled: enabledSources, openverseCoolingDown: OpenverseService.shared.isCoolingDown)
 
 		guard !order.isEmpty else {
@@ -20,7 +28,7 @@ extension WallpaperManager {
 				let candidate = try await fetchCandidate(from: source, bucket: bucket, atleast: atleast)
 				let (data, fileExtension) = try await downloadWallpaper(from: candidate.directURL)
 
-				return (candidate.stem, data, fileExtension)
+				return DownloadedWallpaper(stem: candidate.stem, data: data, fileExtension: fileExtension)
 			} catch let error as CancellationError {
 				// Cancellation isn't a source failing; it's the whole fill being called off.
 				throw error

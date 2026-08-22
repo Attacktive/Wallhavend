@@ -102,13 +102,13 @@ extension WallpaperManager {
 	private func updateWallpaperForBucket(bucket: AspectBucket, screens: [NSScreen]) async {
 		do {
 			let atleast = AspectBucket.atleastString(for: screens)
-			let (stem, data, fileExtension) = try await fetchAndDownload(bucket: bucket, atleast: atleast)
+			let downloaded = try await fetchAndDownload(bucket: bucket, atleast: atleast)
 
 			let wallpaperPath = try await Task.detached(priority: .userInitiated) {
 				try self.saveWallpaper(
-					data: data,
-					id: stem,
-					fileExtension: fileExtension,
+					data: downloaded.data,
+					id: downloaded.stem,
+					fileExtension: downloaded.fileExtension,
 					bucket: bucket
 				)
 			}.value
