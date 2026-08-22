@@ -47,6 +47,23 @@ enum AspectBucket: String, CaseIterable {
 		return snap(aspectRatio: aspect)
 	}
 
+	/// The inverse of `atleastString(for:)`: the pixel floor that string encodes.
+	/// Openverse has to re-derive it because its own `size` filter is a coarse small/medium/large bucket, far too loose to keep a wallpaper sharp.
+	static func minimumDimensions(atleast: String) -> (width: Int, height: Int)? {
+		let parts = atleast.split(separator: "x")
+		guard
+			parts.count == 2,
+			let width = Int(parts[0]),
+			let height = Int(parts[1]),
+			width > 0,
+			height > 0
+		else {
+			return nil
+		}
+
+		return (width, height)
+	}
+
 	static func atleastString(for screens: [NSScreen]) -> String {
 		let dims = screens.map { screen -> (Int, Int) in
 			let scale = screen.backingScaleFactor

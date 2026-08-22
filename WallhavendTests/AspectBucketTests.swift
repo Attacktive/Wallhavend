@@ -47,4 +47,23 @@ final class AspectBucketTests: XCTestCase {
 		XCTAssertEqual(AspectBucket.landscape4x3.label, "Landscape (4:3)")
 		XCTAssertEqual(AspectBucket.portrait.label, "Portrait (9:16)")
 	}
+
+	func testMinimumDimensionsInvertsAtleastString() {
+		let parsed = AspectBucket.minimumDimensions(atleast: "3024x1964")
+
+		XCTAssertEqual(parsed?.width, 3024)
+		XCTAssertEqual(parsed?.height, 1964)
+	}
+
+	func testMinimumDimensionsRejectsMalformedStrings() {
+		XCTAssertNil(AspectBucket.minimumDimensions(atleast: "3024"))
+		XCTAssertNil(AspectBucket.minimumDimensions(atleast: "3024x1964x2"))
+		XCTAssertNil(AspectBucket.minimumDimensions(atleast: "wide x tall"))
+		XCTAssertNil(AspectBucket.minimumDimensions(atleast: ""))
+	}
+
+	func testMinimumDimensionsRejectsNonPositiveSizes() {
+		XCTAssertNil(AspectBucket.minimumDimensions(atleast: "0x1964"))
+		XCTAssertNil(AspectBucket.minimumDimensions(atleast: "3024x0"))
+	}
 }

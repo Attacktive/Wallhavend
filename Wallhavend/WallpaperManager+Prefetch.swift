@@ -41,6 +41,8 @@ extension WallpaperManager {
 		let apiKey: String
 		let poolSize: Int
 		let rotationMode: String
+		let enabledSources: String
+		let openverseLicense: String
 	}
 
 	private func currentPrefetchInputs() -> PrefetchInputs {
@@ -52,7 +54,9 @@ extension WallpaperManager {
 			purity: service.purityString,
 			apiKey: service.apiKey,
 			poolSize: poolSize,
-			rotationMode: rotationMode.rawValue
+			rotationMode: rotationMode.rawValue,
+			enabledSources: Self.encodeSources(enabledSources),
+			openverseLicense: OpenverseService.shared.licenseFilter.rawValue
 		)
 	}
 
@@ -210,12 +214,12 @@ extension WallpaperManager {
 	private func prefetchOneForBucket(bucket: AspectBucket, atleast: String) async throws -> Bool {
 		let beforeCount = poolsByBucket[bucket.rawValue]?.count ?? 0
 
-		let wallpaper = try await WallhavenService.shared.fetchRandomWallpaper(ratios: bucket.rawValue, atleast: atleast)
-		let (data, fileExtension) = try await downloadWallpaper(from: wallpaper.path)
+		let (stem, data, fileExtension) = try await fetchAndDownload(bucket: bucket, atleast: atleast)
+
 		let wallpaperPath = try await Task.detached(priority: .utility) {
 			try self.saveWallpaper(
 				data: data,
-				id: wallpaper.id,
+				id: stem,
 				fileExtension: fileExtension,
 				bucket: bucket
 			)

@@ -59,6 +59,8 @@ class WallpaperManager: ObservableObject {
 
 		_rotationMode = Published(initialValue: storedMode)
 
+		_enabledSources = Published(initialValue: Self.decodeSources(UserDefaults.standard.string(forKey: "enabledSources")))
+
 		setupSessionObservers()
 		setupScreenLockObservers()
 		setupNetworkObserver()
@@ -87,6 +89,32 @@ class WallpaperManager: ObservableObject {
 		didSet {
 			UserDefaults.standard.set(rotationMode.rawValue, forKey: "rotationMode")
 		}
+	}
+
+	/// Which sources automatic rotation and pool fills may draw from.
+	/// Defaults to Wallhaven alone, so an install that never opts in keeps exactly today's behavior and today's network traffic.
+	@Published var enabledSources: Set<WallpaperSource> = [.wallhaven] {
+		didSet {
+			UserDefaults.standard.set(Self.encodeSources(enabledSources), forKey: "enabledSources")
+		}
+	}
+
+	/// Comma-joined raw keys, sorted so the stored string doesn't churn on every write.
+	nonisolated static func encodeSources(_ sources: Set<WallpaperSource>) -> String {
+		sources.map { $0.rawValue }
+			.sorted()
+			.joined(separator: ",")
+	}
+
+	/// A missing, empty, or unrecognizable value falls back to Wallhaven.
+	/// Everything downstream assumes at least one source is enabled, and Wallhaven is the one that needs no opt-in.
+	nonisolated static func decodeSources(_ raw: String?) -> Set<WallpaperSource> {
+		let parsed = Set(
+			(raw ?? "").split(separator: ",")
+				.compactMap { WallpaperSource(rawValue: String($0)) }
+		)
+
+		return if parsed.isEmpty { [.wallhaven] } else { parsed }
 	}
 
 	@Published

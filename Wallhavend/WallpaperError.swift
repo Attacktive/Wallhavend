@@ -1,6 +1,6 @@
 import Foundation
 
-enum WallpaperError: LocalizedError {
+enum WallpaperError: LocalizedError, Equatable {
 	case invalidURL
 	case invalidResponse
 	case httpError(Int)
@@ -8,6 +8,7 @@ enum WallpaperError: LocalizedError {
 	case unsupportedImageType(String)
 	case invalidImage
 	case noResults
+	case rateLimited
 
 	var errorDescription: String? {
 		switch self {
@@ -25,6 +26,8 @@ enum WallpaperError: LocalizedError {
 				return "Failed to load downloaded image"
 			case .noResults:
 				return "No wallpapers found matching your search criteria"
+			case .rateLimited:
+				return "The image source is rate-limiting requests; it will be skipped for a while"
 		}
 	}
 }
