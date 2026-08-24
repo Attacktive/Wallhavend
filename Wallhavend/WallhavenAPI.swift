@@ -6,7 +6,7 @@ struct WallhavenResponse: Decodable {
 	let meta: Meta
 }
 
-struct Wallpaper: Decodable {
+struct Wallpaper: Decodable, Sendable {
 	let id: String
 	let url: String
 	let path: String
@@ -23,7 +23,7 @@ struct Wallpaper: Decodable {
 	}
 }
 
-struct Meta: Decodable {
+struct Meta: Decodable, Sendable {
 	let currentPage: Int
 	let lastPage: Int
 	let total: Int
@@ -56,6 +56,18 @@ class WallhavenService: ObservableObject {
 
 	@AppStorage("searchQuery")
 	var searchQuery: String = ""
+
+	@AppStorage("sorting")
+	var sorting: WallhavenSorting = .random
+
+	@AppStorage("toplistRange")
+	var toplistRange: WallhavenToplistRange = .oneMonth
+
+	@AppStorage("filterColor")
+	var filterColor: String = ""
+
+	@AppStorage("avoidBlurryWallpapers")
+	var avoidBlurryWallpapers: Bool = false
 
 	@AppStorage("selectedCategories")
 	private var selectedCategoriesRaw: String = "general"
@@ -181,6 +193,10 @@ class WallhavenService: ObservableObject {
 		let purity: String
 		let searchQuery: String
 		let apiKey: String
+		let sorting: WallhavenSorting
+		let toplistRange: WallhavenToplistRange
+		let filterColor: String
+		let avoidBlurryWallpapers: Bool
 	}
 
 	private var cachedWallpapers: [String: [Wallpaper]] = [:]
@@ -191,7 +207,11 @@ class WallhavenService: ObservableObject {
 			categories: selectedCategories,
 			purity: purityString,
 			searchQuery: searchQuery,
-			apiKey: apiKey
+			apiKey: apiKey,
+			sorting: sorting,
+			toplistRange: toplistRange,
+			filterColor: filterColor,
+			avoidBlurryWallpapers: avoidBlurryWallpapers
 		)
 
 		if lastGlobalParams != current {
@@ -201,10 +221,14 @@ class WallhavenService: ObservableObject {
 		}
 	}
 
+	private var currentPage = 1
+	private var lastPage = 1
+
 	func fetchRandomWallpaper(ratios: String, atleast: String) async throws -> Wallpaper {
 		clearCacheIfGlobalParamsChanged()
 
-		let key = cacheKey(ratios: ratios, atleast: atleast)
+		let resolvedAtleast = avoidBlurryWallpapers ? atleast : ""
+		let key = cacheKey(ratios: ratios, atleast: resolvedAtleast)
 		let cached = cachedWallpapers[key] ?? []
 		if let result = Self.selectWallpaper(from: cached, blocked: blockedIds) {
 			cachedWallpapers[key] = result.remaining
@@ -212,11 +236,11 @@ class WallhavenService: ObservableObject {
 			return result.selected
 		}
 
-		return try await fetchNewWallpapers(ratios: ratios, atleast: atleast, cacheKey: key)
+		return try await fetchNewWallpapers(ratios: ratios, atleast: resolvedAtleast, cacheKey: key)
 	}
 
 	private func cacheKey(ratios: String, atleast: String) -> String {
-		"\(ratios)|\(atleast)"
+		"\(ratios)|\(atleast)|\(sorting.rawValue)|\(toplistRange.rawValue)|\(filterColor)|\(avoidBlurryWallpapers)"
 	}
 
 	private static let maxReseedAttempts = 5
@@ -259,9 +283,21 @@ class WallhavenService: ObservableObject {
 			parts.map { Optional($0) }
 		}
 
+		let pageToFetch: Int
+		if sorting == .random {
+			pageToFetch = 1
+		} else {
+			if currentPage > lastPage {
+				currentPage = 1
+				pageToFetch = 1
+			} else {
+				pageToFetch = currentPage
+			}
+		}
+
 		let requests: [URLRequest] = try keywords.map { keyword in
 			var components = URLComponents(string: "\(baseURL)/search")!
-			components.queryItems = buildQueryItems(keyword: keyword, categoriesString: categoriesString, ratios: ratios, atleast: atleast)
+			components.queryItems = buildQueryItems(keyword: keyword, categoriesString: categoriesString, ratios: ratios, atleast: atleast, page: pageToFetch)
 
 			guard let url = components.url else {
 				throw WallpaperError.invalidURL
@@ -276,8 +312,9 @@ class WallhavenService: ObservableObject {
 		}
 
 		var allWallpapers: [Wallpaper] = []
+		struct TaskResult: Sendable { let data: [Wallpaper]; let meta: Meta }
 
-		try await withThrowingTaskGroup(of: [Wallpaper].self) { group in
+		try await withThrowingTaskGroup(of: TaskResult.self) { group in
 			for request in requests {
 				group.addTask {
 					let (data, response) = try await URLSession.shared.data(for: request)
@@ -286,13 +323,21 @@ class WallhavenService: ObservableObject {
 						throw WallpaperError.httpError(httpResponse.statusCode)
 					}
 
-					return try JSONDecoder().decode(WallhavenResponse.self, from: data).data
+					let decoder = JSONDecoder()
+					let wallhavenResponse = try decoder.decode(WallhavenResponse.self, from: data)
+
+					return TaskResult(data: wallhavenResponse.data, meta: wallhavenResponse.meta)
 				}
 			}
 
-			for try await wallpapers in group {
-				allWallpapers.append(contentsOf: wallpapers)
+			for try await result in group {
+				allWallpapers.append(contentsOf: result.data)
+				self.lastPage = result.meta.lastPage
 			}
+		}
+
+		if sorting != .random {
+			currentPage += 1
 		}
 
 		return allWallpapers
@@ -303,7 +348,7 @@ class WallhavenService: ObservableObject {
 			.joined()
 	}
 
-	private func buildQueryItems(keyword: String?, categoriesString: String, ratios: String, atleast: String) -> [URLQueryItem] {
+	private func buildQueryItems(keyword: String?, categoriesString: String, ratios: String, atleast: String, page: Int) -> [URLQueryItem] {
 		var items: [URLQueryItem] = []
 
 		if let keyword {
@@ -313,16 +358,74 @@ class WallhavenService: ObservableObject {
 		items.append(contentsOf: [
 			URLQueryItem(name: "categories", value: categoriesString),
 			URLQueryItem(name: "purity", value: purityString),
-			URLQueryItem(name: "sorting", value: "random"),
-			URLQueryItem(name: "seed", value: UUID().uuidString),
-			URLQueryItem(name: "atleast", value: atleast),
+			URLQueryItem(name: "sorting", value: sorting.rawValue),
+			URLQueryItem(name: "page", value: String(page)),
 			URLQueryItem(name: "ratios", value: ratios)
 		])
+
+		if sorting == .random {
+			items.append(URLQueryItem(name: "seed", value: UUID().uuidString))
+		}
+
+		if sorting == .toplist {
+			items.append(URLQueryItem(name: "topRange", value: toplistRange.rawValue))
+		}
+
+		if atleast != "" {
+			items.append(URLQueryItem(name: "atleast", value: atleast))
+		}
+
+		if filterColor != "" {
+			items.append(URLQueryItem(name: "colors", value: filterColor))
+		}
 
 		if !apiKey.isEmpty {
 			items.append(URLQueryItem(name: "apikey", value: apiKey))
 		}
 
 		return items
+	}
+}
+enum WallhavenSorting: String, CaseIterable, Identifiable {
+	case random
+	case date_added
+	case views
+	case favorites
+	case toplist
+
+	var id: String { rawValue }
+
+	var label: String {
+		switch self {
+			case .random: return "Random"
+			case .date_added: return "Date Added"
+			case .views: return "Views"
+			case .favorites: return "Favorites"
+			case .toplist: return "Toplist"
+		}
+	}
+}
+
+enum WallhavenToplistRange: String, CaseIterable, Identifiable {
+	case oneDay = "1d"
+	case threeDays = "3d"
+	case oneWeek = "1w"
+	case oneMonth = "1M"
+	case threeMonths = "3M"
+	case sixMonths = "6M"
+	case oneYear = "1y"
+
+	var id: String { rawValue }
+
+	var label: String {
+		switch self {
+			case .oneDay: return "1 Day"
+			case .threeDays: return "3 Days"
+			case .oneWeek: return "1 Week"
+			case .oneMonth: return "1 Month"
+			case .threeMonths: return "3 Months"
+			case .sixMonths: return "6 Months"
+			case .oneYear: return "1 Year"
+		}
 	}
 }

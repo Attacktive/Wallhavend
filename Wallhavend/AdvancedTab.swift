@@ -94,6 +94,18 @@ struct AdvancedTab: View {
 				.foregroundColor(.secondary)
 		}
 
+		VStack(alignment: .leading, spacing: 6) {
+			Text("Image Quality")
+				.font(.headline)
+			Toggle("Avoid blurry wallpapers", isOn: Binding(
+				get: { wallhavenService.avoidBlurryWallpapers },
+				set: { wallhavenService.avoidBlurryWallpapers = $0 }
+			))
+			Text("Requires larger downloads. If a requested wallpaper size isn't available, Wallhavend will fail instead of fetching smaller versions.")
+				.font(.caption)
+				.foregroundColor(.secondary)
+		}
+
 		if isWallhavenEnabled {
 			VStack(alignment: .leading, spacing: 6) {
 				Text("API Key")

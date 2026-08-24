@@ -178,6 +178,8 @@ final class OpenverseService: ObservableObject {
 	func fetchCandidate(bucket: AspectBucket, atleast: String, blockedStems: Set<String>) async throws -> (stem: String, directURL: String) {
 		clearCachesIfSearchKeyChanged()
 
+		let avoidBlurryWallpapers = WallhavenService.shared.avoidBlurryWallpapers
+
 		// `atleast` is produced by `AspectBucket.atleastString(for:)`, so this only fails if that contract breaks. Reporting no results lets the router fall through to Wallhaven instead of failing the whole tick.
 		guard let minimum = AspectBucket.minimumDimensions(atleast: atleast) else {
 			throw WallpaperError.noResults
@@ -186,8 +188,10 @@ final class OpenverseService: ObservableObject {
 		let aspect = Self.aspectParameter(for: bucket)
 		var refetches = 0
 
+		let resolvedMinimum = avoidBlurryWallpapers ? minimum : (width: 0, height: 0)
+
 		while refetches < Self.maximumRefetches {
-			if let candidate = drainCandidate(aspect: aspect, bucket: bucket, minimum: minimum, blockedStems: blockedStems) {
+			if let candidate = drainCandidate(aspect: aspect, bucket: bucket, minimum: resolvedMinimum, blockedStems: blockedStems) {
 				return candidate
 			}
 
@@ -296,11 +300,14 @@ final class OpenverseService: ObservableObject {
 			URLQueryItem(name: "license", value: licenseFilter.apiValue),
 			URLQueryItem(name: "extension", value: Self.extensions),
 			URLQueryItem(name: "aspect_ratio", value: aspect),
-			URLQueryItem(name: "size", value: "large"),
 			URLQueryItem(name: "source", value: source),
 			URLQueryItem(name: "page", value: String(page)),
 			URLQueryItem(name: "page_size", value: String(Self.pageSize))
 		]
+
+		if WallhavenService.shared.avoidBlurryWallpapers {
+			items.append(URLQueryItem(name: "size", value: "large"))
+		}
 
 		if let keyword {
 			items.append(URLQueryItem(name: "q", value: keyword))

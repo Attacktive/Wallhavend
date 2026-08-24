@@ -113,6 +113,43 @@ struct ContentTab: View {
 		}
 
 		if isWallhavenEnabled {
+			VStack(alignment: .leading, spacing: 6) {
+				Text("Sorting")
+					.font(.headline)
+
+				Picker("Sorting", selection: Binding(
+					get: { wallhavenService.sorting },
+					set: { wallhavenService.sorting = $0 }
+				)) {
+					ForEach(WallhavenSorting.allCases) { sorting in
+						Text(sorting.label).tag(sorting)
+					}
+				}
+				.labelsHidden()
+
+				if wallhavenService.sorting == .toplist {
+					Picker("Toplist Range", selection: Binding(
+						get: { wallhavenService.toplistRange },
+						set: { wallhavenService.toplistRange = $0 }
+					)) {
+						ForEach(WallhavenToplistRange.allCases) { range in
+							Text(range.label).tag(range)
+						}
+					}
+					.labelsHidden()
+				}
+			}
+
+			VStack(alignment: .leading, spacing: 6) {
+				Text("Filter Color")
+					.font(.headline)
+				TextField("Hex color (e.g. #000000, optional)", text: Binding(
+					get: { wallhavenService.filterColor },
+					set: { wallhavenService.filterColor = $0.replacingOccurrences(of: "#", with: "").lowercased() }
+				))
+				.textFieldStyle(.roundedBorder)
+			}
+
 			VStack(alignment: .leading, spacing: 8) {
 				Text("Categories")
 					.font(.headline)
