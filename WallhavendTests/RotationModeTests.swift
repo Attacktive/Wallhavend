@@ -43,4 +43,38 @@ final class RotationModeTests: XCTestCase {
 
 		XCTAssertEqual(result, "Pinned only never downloads, and nothing is pinned — automatic updates are paused. Pin a wallpaper or switch to Fresh. “Update Now” still fetches a fresh one.")
 	}
+
+	// MARK: - canUpdateNow: the manual fetch is gated on being online and on no update already holding the slot
+
+	func testCanUpdateNowWhenOnlineAndIdle() {
+		XCTAssertTrue(WallpaperManager.canUpdateNow(isOnline: true, isUpdating: false))
+	}
+
+	func testCannotUpdateNowWhileAnUpdateIsRunning() {
+		XCTAssertFalse(WallpaperManager.canUpdateNow(isOnline: true, isUpdating: true))
+	}
+
+	func testCannotUpdateNowWhileOffline() {
+		XCTAssertFalse(WallpaperManager.canUpdateNow(isOnline: false, isUpdating: false))
+	}
+
+	func testCannotUpdateNowWhileOfflineAndUpdating() {
+		XCTAssertFalse(WallpaperManager.canUpdateNow(isOnline: false, isUpdating: true))
+	}
+
+	// MARK: - delayAfterTick: a tick that couldn't take the slot comes back soon instead of waiting out the interval
+
+	func testHandledTickWaitsTheFullInterval() {
+		XCTAssertEqual(WallpaperManager.delayAfterTick(outcome: .handled, interval: 3600), 3600)
+	}
+
+	func testDeferredTickRetriesLongBeforeTheNextInterval() {
+		let result = WallpaperManager.delayAfterTick(outcome: .deferred, interval: 3600)
+
+		XCTAssertEqual(result, WallpaperManager.deferredTickRetryInterval)
+	}
+
+	func testDeferredTickNeverWaitsLongerThanTheIntervalItself() {
+		XCTAssertEqual(WallpaperManager.delayAfterTick(outcome: .deferred, interval: 10), 10)
+	}
 }

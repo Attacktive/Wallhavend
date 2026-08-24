@@ -77,14 +77,18 @@ class WallpaperManager: ObservableObject {
 	@Published var isRunning = false
 
 	/// The in-flight wallpaper update, if any. Held so a stalled download can be cancelled and so a second update can't start on top of one.
-	var updateTask: Task<Void, Never>? {
+	private(set) var updateTask: Task<Void, Never>? {
 		didSet {
 			isUpdating = updateTask != nil
 		}
 	}
 
+	/// Bumped on every update start/cancel so a superseded update's completion no-ops instead of clobbering a newer one.
+	private var updateGeneration = 0
+
 	/// Mirrors `updateTask`, so SwiftUI and the status-bar menu can observe it.
 	@Published private(set) var isUpdating = false
+
 	@Published var lastUpdated: Date?
 	@Published var error: String?
 
@@ -128,6 +132,28 @@ class WallpaperManager: ObservableObject {
 	/// Core logic for `canUpdateNow`, extracted for testing.
 	static func canUpdateNow(isOnline: Bool, isUpdating: Bool) -> Bool {
 		isOnline && !isUpdating
+	}
+
+	/// Why a tick ended, so the loop knows whether to wait a full interval or come back sooner.
+	enum TickOutcome {
+		/// The update ran, or the tick had nothing to do (paused, locked, switched away). Wait the full interval.
+		case handled
+
+		/// Another update held the slot. Retry shortly — this one is transient, and waiting out a possibly hours-long interval would drop the rotation entirely.
+		case deferred
+	}
+
+	/// How long a deferred tick waits before trying again.
+	static let deferredTickRetryInterval: TimeInterval = 30
+
+	/// Never longer than the interval itself, so a short interval isn't lengthened by the retry.
+	static func delayAfterTick(outcome: TickOutcome, interval: TimeInterval) -> TimeInterval {
+		return switch outcome {
+			case .handled:
+				interval
+			case .deferred:
+				min(interval, deferredTickRetryInterval)
+		}
 	}
 
 	init() {
@@ -195,8 +221,6 @@ class WallpaperManager: ObservableObject {
 		cancelPoolTopUp()
 	}
 
-	var updateGeneration = 0
-
 	/// Serializes the wallpaper-applying paths: at most one runs at a time, and a stalled one can be cancelled.
 	@discardableResult
 	func runExclusively(_ body: @escaping @MainActor () async -> Void) -> Bool {
@@ -211,10 +235,24 @@ class WallpaperManager: ObservableObject {
 					self?.updateTask = nil
 				}
 			}
+
 			await body()
 		}
 
 		return true
+	}
+
+	/// Like `runExclusively`, but waits for the current holder instead of dropping the request.
+	/// For one-shot user actions whose side effects have already landed — blocking evicts the file before the replacement runs, so the replacement must not be skipped.
+	/// `while`, not `if`: the slot can change owner across every wait, so it has to be re-checked until this call is the one holding it.
+	func runExclusivelyWaiting(_ body: @escaping @MainActor () async -> Void) async {
+		while let inFlight = updateTask {
+			await inFlight.value
+		}
+
+		runExclusively(body)
+
+		await updateTask?.value
 	}
 
 	/// Cancels any in-flight manual update, releasing the lock immediately and voiding the current task.
@@ -252,8 +290,10 @@ class WallpaperManager: ObservableObject {
 
 	/// User-facing Stop: records the explicit intent, then stops.
 	/// Without the record, "start on launch" would resurrect auto-update on the next relaunch — and Sparkle's silent updates relaunch the app without the user asking.
+	/// Cancelling here and not in `stopAutoUpdate()` keeps a manual fetch clear of the rotation lifecycle: `startAutoUpdate` uses `stopAutoUpdate` as its reset step, so cancelling there would abort a download every time the interval changed.
 	func stopAutoUpdateExplicitly() {
 		UserDefaults.standard.set(false, forKey: "autoUpdateUserIntent")
+		cancelUpdate()
 		stopAutoUpdate()
 	}
 
@@ -292,16 +332,20 @@ class WallpaperManager: ObservableObject {
 	}
 
 	private func runAutoUpdateLoop(tickImmediately: Bool) async {
+		var delay = timerInterval
+
 		if tickImmediately {
-			await self.performAutoUpdateTick()
+			let outcome = await self.performAutoUpdateTick()
+
+			delay = Self.delayAfterTick(outcome: outcome, interval: timerInterval)
 		}
 
 		while !Task.isCancelled {
 			do {
 				if #available(macOS 13.0, *) {
-					try await Task.sleep(for: .seconds(timerInterval))
+					try await Task.sleep(for: .seconds(delay))
 				} else {
-					try await Task.sleep(nanoseconds: UInt64(timerInterval * 1_000_000_000))
+					try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
 				}
 			} catch is CancellationError {
 				return
@@ -312,21 +356,23 @@ class WallpaperManager: ObservableObject {
 				return
 			}
 
-			await self.performAutoUpdateTick()
+			let outcome = await self.performAutoUpdateTick()
+
+			delay = Self.delayAfterTick(outcome: outcome, interval: timerInterval)
 		}
 	}
 
-	private func performAutoUpdateTick() async {
-		guard isRunning else { return }
+	private func performAutoUpdateTick() async -> TickOutcome {
+		guard isRunning else { return .handled }
 
 		guard isSessionActive else {
 			print("Session inactive (fast user switch). Skipping auto-update.")
-			return
+			return .handled
 		}
 
 		guard !isScreenLocked else {
 			print("Screen locked. Skipping auto-update.")
-			return
+			return .handled
 		}
 
 		let started = runExclusively { [weak self] in
@@ -335,9 +381,12 @@ class WallpaperManager: ObservableObject {
 			self?.requestPoolTopUp()
 		}
 
-		if !started {
-			print("Update already in progress. Skipping auto-update.")
+		guard started else {
+			print("Update already in progress. Deferring this tick.")
+			return .deferred
 		}
+
+		return .handled
 	}
 
 	private func setupSessionObservers() {
