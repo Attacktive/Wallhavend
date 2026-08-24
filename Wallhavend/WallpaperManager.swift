@@ -75,6 +75,16 @@ class WallpaperManager: ObservableObject {
 	}
 
 	@Published var isRunning = false
+
+	/// The in-flight wallpaper update, if any. Held so a stalled download can be cancelled and so a second update can't start on top of one.
+	var updateTask: Task<Void, Never>? {
+		didSet {
+			isUpdating = updateTask != nil
+		}
+	}
+
+	/// Mirrors `updateTask`, so SwiftUI and the status-bar menu can observe it.
+	@Published private(set) var isUpdating = false
 	@Published var lastUpdated: Date?
 	@Published var error: String?
 
@@ -108,6 +118,16 @@ class WallpaperManager: ObservableObject {
 		}
 
 		return dateFormatter.string(from: lastUpdated)
+	}
+
+	/// Determines if a manual update is allowed: true when online and no update is currently running.
+	var canUpdateNow: Bool {
+		Self.canUpdateNow(isOnline: isOnline, isUpdating: isUpdating)
+	}
+
+	/// Core logic for `canUpdateNow`, extracted for testing.
+	static func canUpdateNow(isOnline: Bool, isUpdating: Bool) -> Bool {
+		isOnline && !isUpdating
 	}
 
 	init() {
@@ -173,6 +193,42 @@ class WallpaperManager: ObservableObject {
 		autoUpdateTask = nil
 		isRunning = false
 		cancelPoolTopUp()
+	}
+
+	var updateGeneration = 0
+
+	/// Serializes the wallpaper-applying paths: at most one runs at a time, and a stalled one can be cancelled.
+	@discardableResult
+	func runExclusively(_ body: @escaping @MainActor () async -> Void) -> Bool {
+		guard updateTask == nil else { return false }
+
+		updateGeneration += 1
+		let generation = updateGeneration
+
+		updateTask = Task { @MainActor [weak self] in
+			defer {
+				if self?.updateGeneration == generation {
+					self?.updateTask = nil
+				}
+			}
+			await body()
+		}
+
+		return true
+	}
+
+	/// Cancels any in-flight manual update, releasing the lock immediately and voiding the current task.
+	func cancelUpdate() {
+		updateGeneration += 1
+		updateTask?.cancel()
+		updateTask = nil
+	}
+
+	/// Request a manual update from the UI.
+	func requestManualUpdate() {
+		runExclusively { [weak self] in
+			await self?.fetchFreshNow()
+		}
 	}
 
 	/// The user's last explicit Start/Stop choice, persisted so it survives relaunch.
@@ -273,9 +329,15 @@ class WallpaperManager: ObservableObject {
 			return
 		}
 
-		await updateWallpaper()
-		cleanupOldWallpapers()
-		requestPoolTopUp()
+		let started = runExclusively { [weak self] in
+			await self?.updateWallpaper()
+			self?.cleanupOldWallpapers()
+			self?.requestPoolTopUp()
+		}
+
+		if !started {
+			print("Update already in progress. Skipping auto-update.")
+		}
 	}
 
 	private func setupSessionObservers() {

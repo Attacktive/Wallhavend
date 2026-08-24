@@ -76,13 +76,20 @@ struct ContentView: View {
 					.buttonStyle(.borderedProminent)
 					.disabled(!canStartAutoUpdate)
 
-					Button("Update Wallpaper Now") {
-						Task {
-							await wallpaperManager.fetchFreshNow()
+					Button {
+						wallpaperManager.requestManualUpdate()
+					} label: {
+						if wallpaperManager.isUpdating {
+							HStack(spacing: 6) {
+								ProgressView().controlSize(.small)
+								Text("Updating…")
+							}
+						} else {
+							Text("Update Wallpaper Now")
 						}
 					}
 					.buttonStyle(.borderedProminent)
-					.disabled(!wallpaperManager.isOnline)
+					.disabled(!wallpaperManager.canUpdateNow)
 
 					Button("Show in Finder") {
 						wallpaperManager.openStorageDirectoryInFinder()

@@ -187,7 +187,10 @@ extension WallpaperManager {
 		}
 
 		print("Downloading image from \(wallpaperURL)")
-		let (data, response) = try await URLSession(configuration: .ephemeral)
+		let config = URLSessionConfiguration.ephemeral
+		config.timeoutIntervalForResource = 300
+
+		let (data, response) = try await URLSession(configuration: config)
 			.data(from: wallpaperURL)
 
 		guard let httpResponse = response as? HTTPURLResponse else {

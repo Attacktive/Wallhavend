@@ -140,8 +140,13 @@ private struct WallpaperThumbnailView: View {
 		}
 		.contentShape(Rectangle())
 		.onTapGesture {
-			Task { await wallpaperManager.applyFromPool(url: url, bucket: bucket) }
+			if wallpaperManager.canUpdateNow {
+				wallpaperManager.runExclusively { [weak wallpaperManager] in
+					await wallpaperManager?.applyFromPool(url: url, bucket: bucket)
+				}
+			}
 		}
+		.opacity(wallpaperManager.isUpdating ? 0.5 : 1.0)
 		.contextMenu {
 			Button(isPinned ? "Unpin" : "Pin") {
 				wallpaperManager.togglePin(url: url)
@@ -168,7 +173,7 @@ private struct WallpaperThumbnailView: View {
 			}
 		}
 		.task(id: url) {
-			let loadTask = Task.detached(priority: .userInitiated) {
+			let loadTask = Task.detached(priority: .userInitiated) { () -> CGImage? in
 				let options: [CFString: Any] = [
 					kCGImageSourceCreateThumbnailFromImageAlways: true,
 					kCGImageSourceThumbnailMaxPixelSize: 300,
@@ -179,13 +184,17 @@ private struct WallpaperThumbnailView: View {
 					let source = CGImageSourceCreateWithURL(url as CFURL, nil),
 					let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
 				else {
-					return nil as NSImage?
+					return nil
 				}
 
-				return NSImage(cgImage: cgImage, size: .zero)
+				return cgImage
 			}
 
-			nsImage = await loadTask.value
+			if let cgImage = await loadTask.value {
+				nsImage = NSImage(cgImage: cgImage, size: .zero)
+			} else {
+				nsImage = nil
+			}
 		}
 	}
 }

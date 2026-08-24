@@ -17,6 +17,7 @@ class StatusBarController: NSObject, NSMenuDelegate {
 
 		let menu = NSMenu()
 		menu.delegate = self
+		menu.autoenablesItems = false
 		statusItem.menu = menu
 
 		wallpaperManager.$isOnline
@@ -40,9 +41,15 @@ class StatusBarController: NSObject, NSMenuDelegate {
 			menu.addItem(.separator())
 		}
 
-		let updateNowItem = NSMenuItem(title: "Update Wallpaper Now", action: #selector(updateNow), keyEquivalent: "")
+		let updateNowTitle = if wallpaperManager.isUpdating {
+			"Updating Wallpaper..."
+		} else {
+			"Update Wallpaper Now"
+		}
+
+		let updateNowItem = NSMenuItem(title: updateNowTitle, action: #selector(updateNow), keyEquivalent: "")
 		updateNowItem.target = self
-		updateNowItem.isEnabled = wallpaperManager.isOnline
+		updateNowItem.isEnabled = wallpaperManager.canUpdateNow
 		menu.addItem(updateNowItem)
 
 		let pinAction = wallpaperManager.currentPinAction
@@ -109,9 +116,7 @@ class StatusBarController: NSObject, NSMenuDelegate {
 
 	@objc
 	private func updateNow() {
-		Task {
-			await wallpaperManager.fetchFreshNow()
-		}
+		wallpaperManager.requestManualUpdate()
 	}
 
 	@objc

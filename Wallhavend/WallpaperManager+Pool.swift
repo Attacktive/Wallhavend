@@ -347,9 +347,20 @@ extension WallpaperManager {
 		WallhavenService.shared.unpin(id)
 		evictFromPool(id: id)
 
-		for bucket in affectedBuckets {
-			await replaceBlockedCurrent(in: bucket)
+		// Wait for any running update to finish so the replacement isn't dropped and we don't start concurrently.
+		if let updateTask = updateTask {
+			_ = await updateTask.result
 		}
+
+		// Run replacement immediately, taking the lock so nothing else runs over us.
+		// This has to bypass `runExclusively`'s drop-if-busy because we just awaited the busy slot.
+		updateGeneration += 1
+		let generation = updateGeneration
+		updateTask = Task { @MainActor [weak self] in
+			defer { if self?.updateGeneration == generation { self?.updateTask = nil } }
+			for bucket in affectedBuckets { await self?.replaceBlockedCurrent(in: bucket) }
+		}
+		await updateTask?.value
 	}
 
 	/// Replace a bucket's just-blocked current wallpaper: prefer a remaining pool item, otherwise fall back to a normal update (fetch online, no-op offline with an empty pool).
