@@ -31,6 +31,14 @@ jobs:
           mkdir -p ./build/export
           cp -R ./build/Wallhavend.xcarchive/Products/Applications/Wallhavend.app ./build/export/
 
+      - name: 'Sign App'
+        run: |
+          # `CODE_SIGNING_ALLOWED=NO` above leaves the bundle with only a linker-signed executable and no `_CodeSignature`, which `SecCodeCopyDesignatedRequirement` reports as unsigned.
+          # Sparkle refuses to replace a code-signed app with an unsigned one, and its own error says ad-hoc signing is the minimum it accepts.
+          # Signing here also re-seals Sparkle.framework, whose signature the embed step invalidates by stripping the headers it covers.
+          codesign --force --deep --sign - ./build/export/Wallhavend.app
+          codesign --verify --deep --strict ./build/export/Wallhavend.app
+
       - name: 'Create DMG'
         run: |
           brew install create-dmg
