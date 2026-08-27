@@ -74,6 +74,16 @@ class WallpaperManager: ObservableObject {
 		}
 	}
 
+	/// Whether a wallpaper has to be at least as large as the screen it lands on.
+	///
+	/// Lives here rather than on either service because it constrains both: Wallhaven gets it as `atleast`, Openverse as `size=large` plus a client-side dimension floor.
+	/// Defaults on, unlike the Android sibling's default-off. That toggle preserved Android's prior behaviour, and so does this one — macOS has sent `atleast` unconditionally since the first release, so defaulting off would quietly start serving every existing user wallpapers smaller than their display.
+	@Published var avoidBlurryWallpapers: Bool = true {
+		didSet {
+			UserDefaults.standard.set(avoidBlurryWallpapers, forKey: "avoidBlurryWallpapers")
+		}
+	}
+
 	@Published var isRunning = false
 
 	/// The in-flight wallpaper update, if any. Held so a stalled download can be cancelled and so a second update can't start on top of one.
@@ -172,6 +182,9 @@ class WallpaperManager: ObservableObject {
 		_rotationMode = Published(initialValue: storedMode)
 
 		_enabledSources = Published(initialValue: Self.decodeSources(UserDefaults.standard.string(forKey: "enabledSources")))
+
+		// `object(forKey:)`, not `bool(forKey:)`: the latter reads an unset key as `false`, which is the opposite of this setting's default.
+		_avoidBlurryWallpapers = Published(initialValue: UserDefaults.standard.object(forKey: "avoidBlurryWallpapers") as? Bool ?? true)
 
 		setupSessionObservers()
 		setupScreenLockObservers()

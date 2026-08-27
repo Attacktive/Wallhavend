@@ -16,32 +16,32 @@ final class WallhavendTests: XCTestCase {
 	func testCategoryBitString() async throws {
 		// Test with no categories
 		service.selectedCategories = []
-		let wallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
+		let wallpaper = try await service.fetchWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(wallpaper)
 
 		// Test with general category
 		service.selectedCategories = [.general]
-		let generalWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
+		let generalWallpaper = try await service.fetchWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(generalWallpaper)
 
 		// Test with anime category
 		service.selectedCategories = [.anime]
-		let animeWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
+		let animeWallpaper = try await service.fetchWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(animeWallpaper)
 
 		// Test with people category
 		service.selectedCategories = [.people]
-		let peopleWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
+		let peopleWallpaper = try await service.fetchWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(peopleWallpaper)
 
 		// Test with multiple categories
 		service.selectedCategories = [.general, .anime]
-		let multipleWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
+		let multipleWallpaper = try await service.fetchWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(multipleWallpaper)
 
 		// Test with all categories
 		service.selectedCategories = [.general, .anime, .people]
-		let allWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
+		let allWallpaper = try await service.fetchWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(allWallpaper)
 	}
 
@@ -86,22 +86,22 @@ final class WallhavendTests: XCTestCase {
 	func testCategories() async throws {
 		// Test with general category
 		service.selectedCategories = [.general]
-		let generalWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
+		let generalWallpaper = try await service.fetchWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertEqual(generalWallpaper.category, "general")
 
 		// Test with anime category
 		service.selectedCategories = [.anime]
-		let animeWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
+		let animeWallpaper = try await service.fetchWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertEqual(animeWallpaper.category, "anime")
 
 		// Test with people category
 		service.selectedCategories = [.people]
-		let peopleWallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
+		let peopleWallpaper = try await service.fetchWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertEqual(peopleWallpaper.category, "people")
 	}
 
 	func testFetchRandomWallpaper() async throws {
-		let wallpaper = try await service.fetchRandomWallpaper(ratios: "16x9", atleast: "1920x1080")
+		let wallpaper = try await service.fetchWallpaper(ratios: "16x9", atleast: "1920x1080")
 		XCTAssertNotNil(wallpaper)
 		XCTAssertFalse(wallpaper.path.isEmpty)
 		XCTAssertFalse(wallpaper.url.isEmpty)

@@ -21,11 +21,14 @@ extension WallpaperManager {
 			throw WallpaperError.rateLimited
 		}
 
+		// Resolved once here so neither service has to reach into the other's settings for it. `nil` means the user turned off "Avoid blurry wallpapers" and each source drops its size filter accordingly.
+		let floor: String? = if avoidBlurryWallpapers { atleast } else { nil }
+
 		var failures: [Error] = []
 
 		for source in order {
 			do {
-				let candidate = try await fetchCandidate(from: source, bucket: bucket, atleast: atleast)
+				let candidate = try await fetchCandidate(from: source, bucket: bucket, atleast: floor)
 				let (data, fileExtension) = try await downloadWallpaper(from: candidate.directURL)
 
 				return DownloadedWallpaper(stem: candidate.stem, data: data, fileExtension: fileExtension)
@@ -41,10 +44,11 @@ extension WallpaperManager {
 		throw Self.mostInformative(failures)
 	}
 
-	private func fetchCandidate(from source: WallpaperSource, bucket: AspectBucket, atleast: String) async throws -> (stem: String, directURL: String) {
+	/// A `nil` `atleast` asks both sources to drop their size filter; see `avoidBlurryWallpapers`.
+	private func fetchCandidate(from source: WallpaperSource, bucket: AspectBucket, atleast: String?) async throws -> (stem: String, directURL: String) {
 		switch source {
 			case .wallhaven:
-				let wallpaper = try await WallhavenService.shared.fetchRandomWallpaper(ratios: bucket.rawValue, atleast: atleast)
+				let wallpaper = try await WallhavenService.shared.fetchWallpaper(ratios: bucket.rawValue, atleast: atleast)
 
 				// Wallhaven stems stay bare forever, so its id already is the stem (see `WallpaperIdentity`).
 				return (wallpaper.id, wallpaper.path)

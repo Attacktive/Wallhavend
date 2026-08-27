@@ -43,6 +43,10 @@ extension WallpaperManager {
 		let rotationMode: String
 		let enabledSources: String
 		let openverseLicense: String
+		let sorting: String
+		let toplistRange: String
+		let filterColor: String
+		let avoidBlurryWallpapers: Bool
 	}
 
 	private func currentPrefetchInputs() -> PrefetchInputs {
@@ -56,7 +60,11 @@ extension WallpaperManager {
 			poolSize: poolSize,
 			rotationMode: rotationMode.rawValue,
 			enabledSources: Self.encodeSources(enabledSources),
-			openverseLicense: OpenverseService.shared.licenseFilter.rawValue
+			openverseLicense: OpenverseService.shared.licenseFilter.rawValue,
+			sorting: service.sorting.rawValue,
+			toplistRange: service.toplistRange.rawValue,
+			filterColor: service.filterColor,
+			avoidBlurryWallpapers: avoidBlurryWallpapers
 		)
 	}
 

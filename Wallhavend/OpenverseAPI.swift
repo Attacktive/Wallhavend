@@ -75,9 +75,9 @@ final class OpenverseService: ObservableObject {
 
 	/// Anonymous requests may ask for 20 results at a time and reach 240 results deep.
 	/// An API key lifts only the first: authenticated callers face the same ceiling on total works per query and merely reach it in fewer round trips, so carrying one would buy no extra wallpapers.
-	private static let pageSize = 20
-	private static let maximumDepth = 240
-	private static let maximumPages = maximumDepth / pageSize
+	nonisolated static let pageSize = 20
+	nonisolated static let maximumDepth = 240
+	nonisolated static let maximumPages = maximumDepth / pageSize
 
 	/// A page can come back full and still admit nothing, so one `fetchCandidate` gets a bounded number of refetches before giving up and letting the router fall through.
 	private static let maximumRefetches = 5
@@ -109,6 +109,9 @@ final class OpenverseService: ObservableObject {
 		let keywords: [String]
 		let license: String
 		let mature: Bool
+
+		/// Whether `size=large` is in play. It belongs here because it is the reason two of the curated sources look dead — see `curatedSources`.
+		let sizeFiltered: Bool
 	}
 
 	/// The 240-result depth cap applies per query, so each keyword, source, and aspect pairing is its own window with its own depth.
@@ -135,63 +138,24 @@ final class OpenverseService: ObservableObject {
 		return coolDownUntil > Date()
 	}
 
-	/// Openverse's aspect filter is coarse: three buckets against our five.
-	/// `square` is never requested — no screen snaps to it — and all four landscape buckets have to share `wide`, which is the whole reason the client-side admit gate exists.
-	nonisolated static func aspectParameter(for bucket: AspectBucket) -> String {
-		switch bucket {
-			case .portrait:
-				return "tall"
-			case .ultrawide, .landscape16x9, .landscape16x10, .landscape4x3:
-				return "wide"
-		}
-	}
-
-	/// Whether a result may be saved under `bucket`.
-	///
-	/// Neither of Openverse's own filters is trustworthy here: `wide` covers four of our buckets, and `size` is a coarse small/medium/large bucket derived from filesize.
-	/// Wallpapers are filed by bucket, so the snap check is what makes the requested bucket equal the measured one — a stronger guarantee than Wallhaven's `ratios` filter gives today.
-	/// A result that never reported its dimensions can't prove it qualifies.
-	nonisolated static func admits(width: Int?, height: Int?, minimumWidth: Int, minimumHeight: Int, bucket: AspectBucket) -> Bool {
-		guard let width, let height, width > 0, height > 0 else {
-			return false
-		}
-
-		guard width >= minimumWidth, height >= minimumHeight else {
-			return false
-		}
-
-		return AspectBucket.snap(aspectRatio: Double(width) / Double(height)) == bucket
-	}
-
-	/// Openverse has no random sort, so variety comes from where in the result set a fetch lands.
-	/// The first fetch of a window has to be page 1 — nothing yet says how deep that window goes — and every one after it picks at random within reach.
-	nonisolated static func pageRange(knownPageCount: Int?) -> ClosedRange<Int> {
-		guard let knownPageCount else {
-			return 1...1
-		}
-
-		return 1...max(1, min(knownPageCount, maximumPages))
-	}
-
 	/// Find one Openverse image that fits `bucket`, downloading nothing.
 	/// Returns the filename stem to save it under and the direct image URL for the caller to download.
-	func fetchCandidate(bucket: AspectBucket, atleast: String, blockedStems: Set<String>) async throws -> (stem: String, directURL: String) {
-		clearCachesIfSearchKeyChanged()
+	///
+	/// A `nil` `atleast` means the user turned off "Avoid blurry wallpapers": `size=large` is dropped and any dimensions are admitted. See `WallpaperManager.avoidBlurryWallpapers`.
+	func fetchCandidate(bucket: AspectBucket, atleast: String?, blockedStems: Set<String>) async throws -> (stem: String, directURL: String) {
+		let sizeFiltered = atleast != nil
+		clearCachesIfSearchKeyChanged(sizeFiltered: sizeFiltered)
 
-		let avoidBlurryWallpapers = WallhavenService.shared.avoidBlurryWallpapers
-
-		// `atleast` is produced by `AspectBucket.atleastString(for:)`, so this only fails if that contract breaks. Reporting no results lets the router fall through to Wallhaven instead of failing the whole tick.
-		guard let minimum = AspectBucket.minimumDimensions(atleast: atleast) else {
+		// Reporting no results lets the router fall through to Wallhaven instead of failing the whole tick.
+		guard let minimum = Self.floor(atleast: atleast) else {
 			throw WallpaperError.noResults
 		}
 
 		let aspect = Self.aspectParameter(for: bucket)
 		var refetches = 0
 
-		let resolvedMinimum = avoidBlurryWallpapers ? minimum : (width: 0, height: 0)
-
 		while refetches < Self.maximumRefetches {
-			if let candidate = drainCandidate(aspect: aspect, bucket: bucket, minimum: resolvedMinimum, blockedStems: blockedStems) {
+			if let candidate = drainCandidate(aspect: aspect, bucket: bucket, minimum: minimum, blockedStems: blockedStems) {
 				return candidate
 			}
 
@@ -200,7 +164,7 @@ final class OpenverseService: ObservableObject {
 				break
 			}
 
-			let received = try await refill(aspect: aspect)
+			let received = try await refill(aspect: aspect, sizeFiltered: sizeFiltered)
 
 			// An empty source is struck off rather than charged to the budget — discovering a dead source shouldn't cost a real attempt.
 			if received > 0 {
@@ -248,7 +212,7 @@ final class OpenverseService: ObservableObject {
 
 	/// Fetch one page from one randomly chosen live source and add what it returns to the aspect's cache.
 	/// Returns how many results came back; zero means the source has nothing for the current search key and is struck from the live set.
-	private func refill(aspect: String) async throws -> Int {
+	private func refill(aspect: String, sizeFiltered: Bool) async throws -> Int {
 		guard let source = liveSources.randomElement() else {
 			return 0
 		}
@@ -261,7 +225,7 @@ final class OpenverseService: ObservableObject {
 		let window = PageWindow(keyword: keyword, source: source, aspect: aspect)
 		let page = Int.random(in: Self.pageRange(knownPageCount: pageCounts[window]))
 
-		let response = try await search(keyword: keyword, source: source, aspect: aspect, page: page)
+		let response = try await search(keyword: keyword, source: source, aspect: aspect, page: page, sizeFiltered: sizeFiltered)
 
 		pageCounts[window] = response.pageCount
 
@@ -290,7 +254,7 @@ final class OpenverseService: ObservableObject {
 		return response.results.count
 	}
 
-	private func search(keyword: String?, source: String, aspect: String, page: Int) async throws -> OpenverseSearchResponse {
+	private func search(keyword: String?, source: String, aspect: String, page: Int, sizeFiltered: Bool) async throws -> OpenverseSearchResponse {
 		guard !isCoolingDown else {
 			throw WallpaperError.rateLimited
 		}
@@ -305,7 +269,7 @@ final class OpenverseService: ObservableObject {
 			URLQueryItem(name: "page_size", value: String(Self.pageSize))
 		]
 
-		if WallhavenService.shared.avoidBlurryWallpapers {
+		if sizeFiltered {
 			items.append(URLQueryItem(name: "size", value: "large"))
 		}
 
@@ -387,13 +351,16 @@ final class OpenverseService: ObservableObject {
 	}
 
 	/// Mirrors `WallhavenService.clearCacheIfGlobalParamsChanged()`.
+	///
 	/// Resetting `liveSources` matters as much as clearing the cache: a source with nothing for one keyword may be the best one for the next.
-	private func clearCachesIfSearchKeyChanged() {
+	/// That is also why `sizeFiltered` belongs in the key — flickr and nasa are struck off *because* `size=large` hides them, so without it they would stay dead for the rest of the session after the user turned the filter off to get more results, not fewer.
+	private func clearCachesIfSearchKeyChanged(sizeFiltered: Bool) {
 		let service = WallhavenService.shared
 		let current = SearchKey(
 			keywords: WallhavenService.keywords(from: service.searchQuery),
 			license: licenseFilter.apiValue,
-			mature: service.includeNSFW
+			mature: service.includeNSFW,
+			sizeFiltered: sizeFiltered
 		)
 
 		if lastSearchKey != current {

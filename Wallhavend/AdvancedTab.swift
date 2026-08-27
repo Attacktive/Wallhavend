@@ -11,6 +11,13 @@ struct AdvancedTab: View {
 		)
 	}
 
+	private var avoidBlurryBinding: Binding<Bool> {
+		Binding(
+			get: { wallpaperManager.avoidBlurryWallpapers },
+			set: { wallpaperManager.avoidBlurryWallpapers = $0 }
+		)
+	}
+
 	private var apiKeyBinding: Binding<String> {
 		Binding(
 			get: { wallhavenService.apiKey },
@@ -97,11 +104,10 @@ struct AdvancedTab: View {
 		VStack(alignment: .leading, spacing: 6) {
 			Text("Image Quality")
 				.font(.headline)
-			Toggle("Avoid blurry wallpapers", isOn: Binding(
-				get: { wallhavenService.avoidBlurryWallpapers },
-				set: { wallhavenService.avoidBlurryWallpapers = $0 }
-			))
-			Text("Requires larger downloads. If a requested wallpaper size isn't available, Wallhavend will fail instead of fetching smaller versions.")
+
+			Toggle("Avoid blurry wallpapers", isOn: avoidBlurryBinding)
+
+			Text("Only fetch wallpapers at least as large as your screen. Turning it off widens the search, at the cost of letting macOS stretch wallpapers smaller than your display.")
 				.font(.caption)
 				.foregroundColor(.secondary)
 		}

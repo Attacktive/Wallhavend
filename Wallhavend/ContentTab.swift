@@ -12,6 +12,28 @@ struct ContentTab: View {
 		)
 	}
 
+	private var sortingBinding: Binding<WallhavenSorting> {
+		Binding(
+			get: { wallhavenService.sorting },
+			set: { wallhavenService.sorting = $0 }
+		)
+	}
+
+	private var toplistRangeBinding: Binding<WallhavenToplistRange> {
+		Binding(
+			get: { wallhavenService.toplistRange },
+			set: { wallhavenService.toplistRange = $0 }
+		)
+	}
+
+	/// Sanitises on the way in rather than validating: the palette picker below is what says which values Wallhaven actually matches.
+	private var filterColorBinding: Binding<String> {
+		Binding(
+			get: { wallhavenService.filterColor },
+			set: { wallhavenService.filterColor = WallhavenColor.sanitized($0) }
+		)
+	}
+
 	private var sfwBinding: Binding<Bool> {
 		Binding(
 			get: { wallhavenService.includeSFW },
@@ -74,6 +96,10 @@ struct ContentTab: View {
 		wallpaperManager.enabledSources.contains(.openverse)
 	}
 
+	private var selectedColors: Set<String> {
+		WallhavenColor.selection(from: wallhavenService.filterColor)
+	}
+
 	/// The caption under Content Rating.
 	///
 	/// The three toggles are Wallhaven's purity bits, and Openverse understands only the NSFW one, which it maps onto allowing mature results (`OpenverseAPI.swift`).
@@ -92,6 +118,34 @@ struct ContentTab: View {
 
 	private var contentRatingCaption: String? {
 		Self.contentRatingCaption(enabled: wallpaperManager.enabledSources)
+	}
+
+	/// One palette swatch. Tapping toggles it within the stored comma-joined list, so several colours can be active at once.
+	private func swatch(_ hex: String) -> some View {
+		let isSelected = selectedColors.contains(hex)
+		let borderColor = if isSelected { Color.accentColor } else { Color.secondary.opacity(0.4) }
+		let borderWidth: CGFloat = if isSelected { 3 } else { 1 }
+
+		return Circle()
+			.fill(Self.color(for: hex))
+			.frame(width: 22, height: 22)
+			.overlay(
+				Circle()
+					.strokeBorder(borderColor, lineWidth: borderWidth)
+			)
+			.contentShape(Circle())
+			.onTapGesture {
+				wallhavenService.filterColor = WallhavenColor.toggled(hex, in: wallhavenService.filterColor)
+			}
+			.help(hex)
+	}
+
+	private static func color(for hex: String) -> Color {
+		guard let channels = WallhavenColor.channels(hex) else {
+			return .clear
+		}
+
+		return Color(red: channels.red, green: channels.green, blue: channels.blue)
 	}
 
 	var body: some View {
@@ -117,23 +171,19 @@ struct ContentTab: View {
 				Text("Sorting")
 					.font(.headline)
 
-				Picker("Sorting", selection: Binding(
-					get: { wallhavenService.sorting },
-					set: { wallhavenService.sorting = $0 }
-				)) {
+				Picker("Sorting", selection: sortingBinding) {
 					ForEach(WallhavenSorting.allCases) { sorting in
-						Text(sorting.label).tag(sorting)
+						Text(sorting.label)
+							.tag(sorting)
 					}
 				}
 				.labelsHidden()
 
 				if wallhavenService.sorting == .toplist {
-					Picker("Toplist Range", selection: Binding(
-						get: { wallhavenService.toplistRange },
-						set: { wallhavenService.toplistRange = $0 }
-					)) {
+					Picker("Toplist Range", selection: toplistRangeBinding) {
 						ForEach(WallhavenToplistRange.allCases) { range in
-							Text(range.label).tag(range)
+							Text(range.label)
+								.tag(range)
 						}
 					}
 					.labelsHidden()
@@ -143,11 +193,19 @@ struct ContentTab: View {
 			VStack(alignment: .leading, spacing: 6) {
 				Text("Filter Color")
 					.font(.headline)
-				TextField("Hex color (e.g. #000000, optional)", text: Binding(
-					get: { wallhavenService.filterColor },
-					set: { wallhavenService.filterColor = $0.replacingOccurrences(of: "#", with: "").lowercased() }
-				))
-				.textFieldStyle(.roundedBorder)
+
+				LazyVGrid(columns: [GridItem(.adaptive(minimum: 26), spacing: 6)], alignment: .leading, spacing: 6) {
+					ForEach(WallhavenColor.palette, id: \.self) { hex in
+						swatch(hex)
+					}
+				}
+
+				TextField("e.g. 000000 or 0066cc,ffffff (optional)", text: filterColorBinding)
+					.textFieldStyle(.roundedBorder)
+
+				Text("Wallhaven matches its own palette only, so an off-palette color quietly returns nothing. Pick swatches, or leave this blank to skip color filtering.")
+					.font(.caption)
+					.foregroundColor(.secondary)
 			}
 
 			VStack(alignment: .leading, spacing: 8) {

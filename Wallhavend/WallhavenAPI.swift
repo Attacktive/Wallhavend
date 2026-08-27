@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-struct WallhavenResponse: Decodable {
+struct WallhavenResponse: Decodable, Sendable {
 	let data: [Wallpaper]
 	let meta: Meta
 }
@@ -58,16 +58,13 @@ class WallhavenService: ObservableObject {
 	var searchQuery: String = ""
 
 	@AppStorage("sorting")
-	var sorting: WallhavenSorting = .random
+	private var sortingRaw: String = WallhavenSorting.random.rawValue
 
 	@AppStorage("toplistRange")
-	var toplistRange: WallhavenToplistRange = .oneMonth
+	private var toplistRangeRaw: String = WallhavenToplistRange.oneMonth.rawValue
 
 	@AppStorage("filterColor")
-	var filterColor: String = ""
-
-	@AppStorage("avoidBlurryWallpapers")
-	var avoidBlurryWallpapers: Bool = false
+	private var filterColorRaw: String = ""
 
 	@AppStorage("selectedCategories")
 	private var selectedCategoriesRaw: String = "general"
@@ -89,6 +86,42 @@ class WallhavenService: ObservableObject {
 
 	@AppStorage("pinnedIds")
 	private var pinnedIdsRaw: String = ""
+
+	/*
+		The three settings below wrap their `@AppStorage` in a computed property that publishes, rather than being `@AppStorage` outright.
+		`@AppStorage` only drives re-renders when it's declared inside a `View` — on an `ObservableObject` it's a plain UserDefaults read/write with no `objectWillChange`.
+		Anything the UI *branches* on therefore has to announce itself by hand, the way `licenseFilter`, `blockedIds`, and `pinnedIds` already do: the Toplist Range picker appears only while sorting is `.toplist`, and the swatch grid draws its checkmarks from `filterColor`.
+	*/
+
+	var sorting: WallhavenSorting {
+		get {
+			WallhavenSorting(rawValue: sortingRaw) ?? .random
+		}
+		set {
+			objectWillChange.send()
+			sortingRaw = newValue.rawValue
+		}
+	}
+
+	var toplistRange: WallhavenToplistRange {
+		get {
+			WallhavenToplistRange(rawValue: toplistRangeRaw) ?? .oneMonth
+		}
+		set {
+			objectWillChange.send()
+			toplistRangeRaw = newValue.rawValue
+		}
+	}
+
+	var filterColor: String {
+		get {
+			filterColorRaw
+		}
+		set {
+			objectWillChange.send()
+			filterColorRaw = newValue
+		}
+	}
 
 	var selectedCategories: Set<WallhavenCategory> {
 		get {
@@ -196,11 +229,13 @@ class WallhavenService: ObservableObject {
 		let sorting: WallhavenSorting
 		let toplistRange: WallhavenToplistRange
 		let filterColor: String
-		let avoidBlurryWallpapers: Bool
 	}
 
 	private var cachedWallpapers: [String: [Wallpaper]] = [:]
 	private var lastGlobalParams: GlobalParams?
+
+	/// Where each cache key's deterministic sorting has walked to. See `PageCursor`.
+	private var pageCursors: [String: PageCursor] = [:]
 
 	private func clearCacheIfGlobalParamsChanged() {
 		let current = GlobalParams(
@@ -210,25 +245,27 @@ class WallhavenService: ObservableObject {
 			apiKey: apiKey,
 			sorting: sorting,
 			toplistRange: toplistRange,
-			filterColor: filterColor,
-			avoidBlurryWallpapers: avoidBlurryWallpapers
+			filterColor: filterColor
 		)
 
 		if lastGlobalParams != current {
 			cachedWallpapers.removeAll()
+
+			// The cursors go with the cache: a page-30 position in "most viewed" is meaningless in a five-page toplist, and resuming there would ask for a page that doesn't exist.
+			pageCursors.removeAll()
 			lastGlobalParams = current
 			print("Wallhaven cache invalidated (global params changed).")
 		}
 	}
 
-	private var currentPage = 1
-	private var lastPage = 1
-
-	func fetchRandomWallpaper(ratios: String, atleast: String) async throws -> Wallpaper {
+	/// One wallpaper for `ratios`, from the cache when it still holds a usable one and from the network otherwise.
+	///
+	/// Not "random" any more — only the `.random` sorting is; the other four walk their result list in order, page by page.
+	/// `atleast` is `nil` when the user has turned off "Avoid blurry wallpapers", which drops the size floor from the query entirely.
+	func fetchWallpaper(ratios: String, atleast: String?) async throws -> Wallpaper {
 		clearCacheIfGlobalParamsChanged()
 
-		let resolvedAtleast = avoidBlurryWallpapers ? atleast : ""
-		let key = cacheKey(ratios: ratios, atleast: resolvedAtleast)
+		let key = cacheKey(ratios: ratios, atleast: atleast)
 		let cached = cachedWallpapers[key] ?? []
 		if let result = Self.selectWallpaper(from: cached, blocked: blockedIds) {
 			cachedWallpapers[key] = result.remaining
@@ -236,29 +273,33 @@ class WallhavenService: ObservableObject {
 			return result.selected
 		}
 
-		return try await fetchNewWallpapers(ratios: ratios, atleast: resolvedAtleast, cacheKey: key)
+		return try await fetchNewWallpapers(ratios: ratios, atleast: atleast, cacheKey: key)
 	}
 
-	private func cacheKey(ratios: String, atleast: String) -> String {
-		"\(ratios)|\(atleast)|\(sorting.rawValue)|\(toplistRange.rawValue)|\(filterColor)|\(avoidBlurryWallpapers)"
+	/// Everything else that shapes a query is covered by `clearCacheIfGlobalParamsChanged`, which wipes the whole cache, so only the per-call arguments need to be keyed on.
+	private func cacheKey(ratios: String, atleast: String?) -> String {
+		"\(ratios)|\(atleast ?? "any")"
 	}
 
 	private static let maxReseedAttempts = 5
 
-	private func fetchNewWallpapers(ratios: String, atleast: String, cacheKey: String) async throws -> Wallpaper {
+	private func fetchNewWallpapers(ratios: String, atleast: String?, cacheKey: String) async throws -> Wallpaper {
 		/*
 			Blocked wallpapers are filtered out *after* the fetch, so an entire page can come back fully blocked.
-			Re-seed with a fresh seed a bounded number of times before giving up.
+			Re-seed with a fresh seed a bounded number of times before giving up. For the deterministic sortings each attempt also walks a page further, which is what gets past a blocked stretch.
 		*/
 		for _ in 0..<Self.maxReseedAttempts {
-			var fetched = try await rawFetch(ratios: ratios, atleast: atleast)
+			var fetched = try await rawFetch(ratios: ratios, atleast: atleast, cacheKey: cacheKey)
 
 			// A raw fetch returning nothing is the genuine empty case — surface it immediately rather than burning re-seed attempts.
 			if fetched.isEmpty {
 				throw WallpaperError.noResults
 			}
 
-			fetched.shuffle()
+			// Random sorting has no order worth preserving; every other sorting was picked precisely for its order, so shuffling would undo the setting.
+			if sorting == .random {
+				fetched.shuffle()
+			}
 
 			if let result = Self.selectWallpaper(from: fetched, blocked: blockedIds) {
 				cachedWallpapers[cacheKey] = result.remaining
@@ -271,50 +312,48 @@ class WallhavenService: ObservableObject {
 		throw WallpaperError.noResults
 	}
 
-	private func rawFetch(ratios: String, atleast: String) async throws -> [Wallpaper] {
-		let categories: Set<WallhavenCategory> = if selectedCategories.isEmpty { [.general] } else { selectedCategories }
+	private func rawFetch(ratios: String, atleast: String?, cacheKey: String) async throws -> [Wallpaper] {
+		let cursor = pageCursors[cacheKey] ?? PageCursor()
+		let page = Self.pageToFetch(sorting: sorting, cursor: cursor)
+		let requests = try buildRequests(ratios: ratios, atleast: atleast, page: page)
 
-		let categoriesString = buildCategoriesString(categories)
+		/*
+			Claim the page before the first suspension point.
+			This method is `@MainActor` but awaits the network, and an update tick can be in flight while a pool fill works the same bucket — same cache key, so without claiming both read the same cursor, download the same page, and then advance it twice.
+		*/
+		let claimed = Self.claiming(cursor, page: page)
+		pageCursors[cacheKey] = claimed
 
-		let parts = Self.keywords(from: searchQuery)
-		let keywords: [String?] = if parts.isEmpty {
-			[nil]
-		} else {
-			parts.map { Optional($0) }
-		}
+		do {
+			let responses = try await fetchAll(requests)
 
-		let pageToFetch: Int
-		if sorting == .random {
-			pageToFetch = 1
-		} else {
-			if currentPage > lastPage {
-				currentPage = 1
-				pageToFetch = 1
+			// Re-read rather than building on `cursor`: another fetch may have claimed a page in the meantime, and only the depth is this one's to report.
+			pageCursors[cacheKey] = Self.learning(pageCursors[cacheKey] ?? claimed, lastPages: responses.map { $0.meta.lastPage })
+
+			let wallpapers = responses.flatMap { $0.data }
+
+			/*
+				Several keywords means several separate result lists arriving back to back, in whatever order the task group finished them.
+				Interleaving them keeps one keyword from owning the front of the pool; a single keyword's list is left exactly as the sorting returned it.
+			*/
+			return if requests.count > 1 {
+				wallpapers.shuffled()
 			} else {
-				pageToFetch = currentPage
+				wallpapers
 			}
+		} catch {
+			// The page taught us nothing, so hand it back — but only while the claim still stands, or the rollback would deal a concurrent fetch's page out a second time.
+			if pageCursors[cacheKey] == claimed {
+				pageCursors[cacheKey] = cursor
+			}
+
+			throw error
 		}
+	}
 
-		let requests: [URLRequest] = try keywords.map { keyword in
-			var components = URLComponents(string: "\(baseURL)/search")!
-			components.queryItems = buildQueryItems(keyword: keyword, categoriesString: categoriesString, ratios: ratios, atleast: atleast, page: pageToFetch)
-
-			guard let url = components.url else {
-				throw WallpaperError.invalidURL
-			}
-
-			var request = URLRequest(url: url)
-			if !apiKey.isEmpty {
-				request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
-			}
-
-			return request
-		}
-
-		var allWallpapers: [Wallpaper] = []
-		struct TaskResult: Sendable { let data: [Wallpaper]; let meta: Meta }
-
-		try await withThrowingTaskGroup(of: TaskResult.self) { group in
+	/// Run every keyword's request at once and hand back what each one decoded to.
+	private func fetchAll(_ requests: [URLRequest]) async throws -> [WallhavenResponse] {
+		try await withThrowingTaskGroup(of: WallhavenResponse.self) { group in
 			for request in requests {
 				group.addTask {
 					let (data, response) = try await URLSession.shared.data(for: request)
@@ -323,109 +362,16 @@ class WallhavenService: ObservableObject {
 						throw WallpaperError.httpError(httpResponse.statusCode)
 					}
 
-					let decoder = JSONDecoder()
-					let wallhavenResponse = try decoder.decode(WallhavenResponse.self, from: data)
-
-					return TaskResult(data: wallhavenResponse.data, meta: wallhavenResponse.meta)
+					return try JSONDecoder().decode(WallhavenResponse.self, from: data)
 				}
 			}
 
-			for try await result in group {
-				allWallpapers.append(contentsOf: result.data)
-				self.lastPage = result.meta.lastPage
+			var responses: [WallhavenResponse] = []
+			for try await response in group {
+				responses.append(response)
 			}
-		}
 
-		if sorting != .random {
-			currentPage += 1
-		}
-
-		return allWallpapers
-	}
-
-	private func buildCategoriesString(_ categories: Set<WallhavenCategory>) -> String {
-		WallhavenCategory.allCases.map { categories.contains($0) ? "1" : "0" }
-			.joined()
-	}
-
-	private func buildQueryItems(keyword: String?, categoriesString: String, ratios: String, atleast: String, page: Int) -> [URLQueryItem] {
-		var items: [URLQueryItem] = []
-
-		if let keyword {
-			items.append(URLQueryItem(name: "q", value: keyword))
-		}
-
-		items.append(contentsOf: [
-			URLQueryItem(name: "categories", value: categoriesString),
-			URLQueryItem(name: "purity", value: purityString),
-			URLQueryItem(name: "sorting", value: sorting.rawValue),
-			URLQueryItem(name: "page", value: String(page)),
-			URLQueryItem(name: "ratios", value: ratios)
-		])
-
-		if sorting == .random {
-			items.append(URLQueryItem(name: "seed", value: UUID().uuidString))
-		}
-
-		if sorting == .toplist {
-			items.append(URLQueryItem(name: "topRange", value: toplistRange.rawValue))
-		}
-
-		if atleast != "" {
-			items.append(URLQueryItem(name: "atleast", value: atleast))
-		}
-
-		if filterColor != "" {
-			items.append(URLQueryItem(name: "colors", value: filterColor))
-		}
-
-		if !apiKey.isEmpty {
-			items.append(URLQueryItem(name: "apikey", value: apiKey))
-		}
-
-		return items
-	}
-}
-enum WallhavenSorting: String, CaseIterable, Identifiable {
-	case random
-	case date_added
-	case views
-	case favorites
-	case toplist
-
-	var id: String { rawValue }
-
-	var label: String {
-		switch self {
-			case .random: return "Random"
-			case .date_added: return "Date Added"
-			case .views: return "Views"
-			case .favorites: return "Favorites"
-			case .toplist: return "Toplist"
-		}
-	}
-}
-
-enum WallhavenToplistRange: String, CaseIterable, Identifiable {
-	case oneDay = "1d"
-	case threeDays = "3d"
-	case oneWeek = "1w"
-	case oneMonth = "1M"
-	case threeMonths = "3M"
-	case sixMonths = "6M"
-	case oneYear = "1y"
-
-	var id: String { rawValue }
-
-	var label: String {
-		switch self {
-			case .oneDay: return "1 Day"
-			case .threeDays: return "3 Days"
-			case .oneWeek: return "1 Week"
-			case .oneMonth: return "1 Month"
-			case .threeMonths: return "3 Months"
-			case .sixMonths: return "6 Months"
-			case .oneYear: return "1 Year"
+			return responses
 		}
 	}
 }
