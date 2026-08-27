@@ -60,7 +60,8 @@ jobs:
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
-          curl -L -o /tmp/Sparkle.tar.xz https://github.com/sparkle-project/Sparkle/releases/download/2.9.0/Sparkle-2.9.0.tar.xz
+          # Keep this in step with the Sparkle version resolved in Package.resolved.
+          curl -L -o /tmp/Sparkle.tar.xz https://github.com/sparkle-project/Sparkle/releases/download/2.9.6/Sparkle-2.9.6.tar.xz
           tar -xf /tmp/Sparkle.tar.xz -C /tmp
           echo "$SPARKLE_PRIVATE_KEY" | /tmp/bin/sign_update --ed-key-file - -p ./build/Wallhavend.zip > ./build/Wallhavend.zip.sig
 
