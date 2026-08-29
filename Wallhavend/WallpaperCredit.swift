@@ -63,34 +63,41 @@ extension WallpaperCredit {
 	}
 
 	/// The XMP packet, deliberately unindented — every byte of it rides along on every wallpaper, and no reader cares how it looks.
+	///
+	/// Assembled from named parts rather than one multiline literal: a packet has to open with a byte-order mark inside a quoted attribute, and that combination reads as an unterminated string to at least one analyzer, which then charges the rest of the file to this function.
 	static func xmpPacket(for credit: WallpaperCredit) -> Data {
-		let creatorElement = if let creator = credit.creator, !creator.isEmpty {
-			"<dc:creator><rdf:Seq><rdf:li>\(escapedForXML(creator))</rdf:li></rdf:Seq></dc:creator>"
-		} else {
-			""
+		let byteOrderMark = "\u{FEFF}"
+		let lines = [
+			"<?xpacket begin=\"\(byteOrderMark)\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?>",
+			"<x:xmpmeta xmlns:x=\"adobe:ns:meta/\">",
+			"<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">",
+			"<rdf:Description rdf:about=\"\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:xmpRights=\"http://ns.adobe.com/xap/1.0/rights/\">",
+			describing(credit),
+			"</rdf:Description>",
+			"</rdf:RDF>",
+			"</x:xmpmeta>",
+			"<?xpacket end=\"w\"?>"
+		]
+
+		return Data(lines.joined(separator: "\n").utf8)
+	}
+
+	/// The elements that carry the credit itself.
+	/// The creator and the license URL are both routinely absent, and an empty element would claim the index holds a blank name rather than none.
+	private static func describing(_ credit: WallpaperCredit) -> String {
+		var elements = ""
+
+		if let creator = credit.creator, !creator.isEmpty {
+			elements += "<dc:creator><rdf:Seq><rdf:li>\(escapedForXML(creator))</rdf:li></rdf:Seq></dc:creator>"
 		}
 
-		let webStatement = if let licenseURL = credit.licenseURL, !licenseURL.isEmpty {
-			"<xmpRights:WebStatement>\(escapedForXML(licenseURL))</xmpRights:WebStatement>"
-		} else {
-			""
+		elements += "<dc:rights><rdf:Alt><rdf:li xml:lang=\"x-default\">\(escapedForXML(credit.statement))</rdf:li></rdf:Alt></dc:rights>"
+
+		if let licenseURL = credit.licenseURL, !licenseURL.isEmpty {
+			elements += "<xmpRights:WebStatement>\(escapedForXML(licenseURL))</xmpRights:WebStatement>"
 		}
 
-		let rights = "<dc:rights><rdf:Alt><rdf:li xml:lang=\"x-default\">\(escapedForXML(credit.statement))</rdf:li></rdf:Alt></dc:rights>"
-
-		let xml = """
-		<?xpacket begin="\u{FEFF}" id="W5M0MpCehiHzreSzNTczkc9d"?>
-		<x:xmpmeta xmlns:x="adobe:ns:meta/">
-		<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-		<rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xmpRights="http://ns.adobe.com/xap/1.0/rights/">
-		\(creatorElement)\(rights)\(webStatement)
-		</rdf:Description>
-		</rdf:RDF>
-		</x:xmpmeta>
-		<?xpacket end="w"?>
-		"""
-
-		return Data(xml.utf8)
+		return elements
 	}
 
 	/// An APP1 XMP segment inserted immediately after the SOI marker, leaving every following byte exactly where it was.
