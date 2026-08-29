@@ -8,11 +8,7 @@ final class BlocklistTests: XCTestCase {
 			id: id,
 			url: "https://wallhaven.cc/w/\(id)",
 			path: "https://w.wallhaven.cc/full/\(id.prefix(2))/wallhaven-\(id).jpg",
-			resolution: "1920x1080",
-			fileSize: 1024,
-			fileType: "image/jpeg",
-			category: "general",
-			purity: "sfw"
+			category: "general"
 		)
 	}
 

@@ -6,21 +6,13 @@ struct WallhavenResponse: Decodable, Sendable {
 	let meta: Meta
 }
 
+/// Deliberately narrower than Wallhaven's response, which also carries `resolution`, `file_size`, `file_type` and `purity`; `Decodable` ignores a key with no matching property, so leaving them out costs nothing.
+/// `category` looks just as unused from the app's side, but `WallhavendTests.testCategories` reads it to prove the category filter reached the API — don't sweep it away with the others.
 struct Wallpaper: Decodable, Sendable {
 	let id: String
 	let url: String
 	let path: String
-	let resolution: String
-	let fileSize: Int
-	let fileType: String
 	let category: String
-	let purity: String
-
-	enum CodingKeys: String, CodingKey {
-		case id, url, path, resolution, category, purity
-		case fileSize = "file_size"
-		case fileType = "file_type"
-	}
 }
 
 struct Meta: Decodable, Sendable {
