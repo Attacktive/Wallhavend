@@ -16,6 +16,26 @@ struct OpenverseImage: Decodable {
 	let url: String?
 	let width: Int?
 	let height: Int?
+	let creator: String?
+	let attribution: String?
+	let licenseURL: String?
+
+	enum CodingKeys: String, CodingKey {
+		case id, url, width, height, creator, attribution
+		case licenseURL = "license_url"
+	}
+
+	/// What this result has to be credited with, or `nil` when the index holds nothing to say about it.
+	///
+	/// Built on `attribution` rather than assembled from `creator` and the license, because Openverse writes the sentence correctly for exactly the cases we would get wrong.
+	/// Sampled 2026-08-29 across 60 results, `creator` was absent for 11 of 20 from rawpixel while `attribution` was never absent — it simply drops the "by …" clause.
+	var credit: WallpaperCredit? {
+		guard let attribution, !attribution.isEmpty else {
+			return nil
+		}
+
+		return WallpaperCredit(creator: creator, statement: attribution, licenseURL: licenseURL)
+	}
 }
 
 /// How permissive an Openverse result's license may be, narrowest first.
@@ -139,10 +159,10 @@ final class OpenverseService: ObservableObject {
 	}
 
 	/// Find one Openverse image that fits `bucket`, downloading nothing.
-	/// Returns the filename stem to save it under and the direct image URL for the caller to download.
+	/// Returns the filename stem to save it under, the direct image URL for the caller to download, and whatever the index says it must be credited with.
 	///
 	/// A `nil` `atleast` means the user turned off "Avoid blurry wallpapers": `size=large` is dropped and any dimensions are admitted. See `WallpaperManager.avoidBlurryWallpapers`.
-	func fetchCandidate(bucket: AspectBucket, atleast: String?, blockedStems: Set<String>) async throws -> (stem: String, directURL: String) {
+	func fetchCandidate(bucket: AspectBucket, atleast: String?, blockedStems: Set<String>) async throws -> (stem: String, directURL: String, credit: WallpaperCredit?) {
 		let sizeFiltered = atleast != nil
 		clearCachesIfSearchKeyChanged(sizeFiltered: sizeFiltered)
 
@@ -182,7 +202,7 @@ final class OpenverseService: ObservableObject {
 		bucket: AspectBucket,
 		minimum: (width: Int, height: Int),
 		blockedStems: Set<String>
-	) -> (stem: String, directURL: String)? {
+	) -> (stem: String, directURL: String, credit: WallpaperCredit?)? {
 		guard var cached = candidatesByAspect[aspect] else {
 			return nil
 		}
@@ -204,7 +224,7 @@ final class OpenverseService: ObservableObject {
 			cached.remove(at: index)
 			candidatesByAspect[aspect] = cached
 
-			return (stem, directURL)
+			return (stem, directURL, image.credit)
 		}
 
 		return nil

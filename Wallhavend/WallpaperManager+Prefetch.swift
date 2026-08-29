@@ -231,7 +231,8 @@ extension WallpaperManager {
 				data: downloaded.data,
 				id: downloaded.stem,
 				fileExtension: downloaded.fileExtension,
-				bucket: bucket
+				bucket: bucket,
+				credit: downloaded.credit
 			)
 		}.value
 

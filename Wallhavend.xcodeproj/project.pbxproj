@@ -25,9 +25,11 @@
 		AA0000012F600000000WSRC1 /* WallpaperSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000WSRC1 /* WallpaperSource.swift */; };
 		AA0000012F600000000OVSR2 /* SourceRoutingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000OVSR2 /* SourceRoutingTests.swift */; };
 		AA0000012F600000000OVAP2 /* OpenverseMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000OVAP2 /* OpenverseMappingTests.swift */; };
+		AA0000012F600000000CRDT2 /* WallpaperCreditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000CRDT2 /* WallpaperCreditTests.swift */; };
 		AA0000012F600000000OVSR1 /* WallpaperManager+Sources.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000OVSR1 /* WallpaperManager+Sources.swift */; };
 		AA0000012F600000000OVAP1 /* OpenverseAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000OVAP1 /* OpenverseAPI.swift */; };
 		AA0000012F600000000OVMP1 /* OpenverseAPI+Mapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000OVMP1 /* OpenverseAPI+Mapping.swift */; };
+		AA0000012F600000000CRDT1 /* WallpaperCredit.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000CRDT1 /* WallpaperCredit.swift */; };
 		AA0000012F600000000WHQT1 /* WallhavenQueryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000WHQT1 /* WallhavenQueryTests.swift */; };
 		AA0000012F600000000WHAQ1 /* WallhavenAPI+Query.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000WHAQ1 /* WallhavenAPI+Query.swift */; };
 		AA0000012F600000000WHQR1 /* WallhavenQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000002F600000000WHQR1 /* WallhavenQuery.swift */; };
@@ -77,9 +79,11 @@
 		AA0000002F600000000WSRC1 /* WallpaperSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperSource.swift; sourceTree = "<group>"; };
 		AA0000002F600000000OVSR2 /* SourceRoutingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceRoutingTests.swift; sourceTree = "<group>"; };
 		AA0000002F600000000OVAP2 /* OpenverseMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenverseMappingTests.swift; sourceTree = "<group>"; };
+		AA0000002F600000000CRDT2 /* WallpaperCreditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperCreditTests.swift; sourceTree = "<group>"; };
 		AA0000002F600000000OVSR1 /* WallpaperManager+Sources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WallpaperManager+Sources.swift"; sourceTree = "<group>"; };
 		AA0000002F600000000OVAP1 /* OpenverseAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenverseAPI.swift; sourceTree = "<group>"; };
 		AA0000002F600000000OVMP1 /* OpenverseAPI+Mapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OpenverseAPI+Mapping.swift"; sourceTree = "<group>"; };
+		AA0000002F600000000CRDT1 /* WallpaperCredit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperCredit.swift; sourceTree = "<group>"; };
 		AA0000002F600000000WHQT1 /* WallhavenQueryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavenQueryTests.swift; sourceTree = "<group>"; };
 		AA0000002F600000000WHAQ1 /* WallhavenAPI+Query.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WallhavenAPI+Query.swift"; sourceTree = "<group>"; };
 		AA0000002F600000000WHQR1 /* WallhavenQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallhavenQuery.swift; sourceTree = "<group>"; };
@@ -158,6 +162,7 @@
 				AA0000002F600000000OVSR1 /* WallpaperManager+Sources.swift */,
 				AA0000002F600000000OVAP1 /* OpenverseAPI.swift */,
 				AA0000002F600000000OVMP1 /* OpenverseAPI+Mapping.swift */,
+				AA0000002F600000000CRDT1 /* WallpaperCredit.swift */,
 				AA0000002F600000000WHAQ1 /* WallhavenAPI+Query.swift */,
 				AA0000002F600000000WHQR1 /* WallhavenQuery.swift */,
 				D0ED74972DCB72EE0008C397 /* WallhavendApp.swift */,
@@ -196,6 +201,7 @@
 				AA0000002F600000000WSRC2 /* WallpaperIdentityTests.swift */,
 				AA0000002F600000000OVSR2 /* SourceRoutingTests.swift */,
 				AA0000002F600000000OVAP2 /* OpenverseMappingTests.swift */,
+				AA0000002F600000000CRDT2 /* WallpaperCreditTests.swift */,
 				AA0000002F600000000WHQT1 /* WallhavenQueryTests.swift */,
 				D0ED74A92DCB72F90008C397 /* WallhavendTests.swift */,
 			);
@@ -326,6 +332,7 @@
 				AA0000012F600000000OVSR1 /* WallpaperManager+Sources.swift in Sources */,
 				AA0000012F600000000OVAP1 /* OpenverseAPI.swift in Sources */,
 				AA0000012F600000000OVMP1 /* OpenverseAPI+Mapping.swift in Sources */,
+				AA0000012F600000000CRDT1 /* WallpaperCredit.swift in Sources */,
 				AA0000012F600000000WHAQ1 /* WallhavenAPI+Query.swift in Sources */,
 				AA0000012F600000000WHQR1 /* WallhavenQuery.swift in Sources */,
 			);
@@ -347,6 +354,7 @@
 				AA0000012F600000000WSRC2 /* WallpaperIdentityTests.swift in Sources */,
 				AA0000012F600000000OVSR2 /* SourceRoutingTests.swift in Sources */,
 				AA0000012F600000000OVAP2 /* OpenverseMappingTests.swift in Sources */,
+				AA0000012F600000000CRDT2 /* WallpaperCreditTests.swift in Sources */,
 				AA0000012F600000000WHQT1 /* WallhavenQueryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

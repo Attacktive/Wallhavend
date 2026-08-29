@@ -101,9 +101,15 @@ private struct WallpaperThumbnailView: View {
 	let isCurrent: Bool
 
 	@State private var nsImage: NSImage?
+	@State private var credit: WallpaperCredit?
 
 	private var isPinned: Bool {
 		wallhavenService.pinnedIds.contains(wallpaperManager.wallpaperId(for: url))
+	}
+
+	/// Empty for a wallpaper carrying no credit — every Wallhaven file, and everything saved before credits existed — which is how SwiftUI is told to show no tooltip at all.
+	private var creditTooltip: String {
+		credit?.statement ?? ""
 	}
 
 	private var copyURLTitle: String {
@@ -147,6 +153,7 @@ private struct WallpaperThumbnailView: View {
 			}
 		}
 		.opacity(wallpaperManager.isUpdating ? 0.5 : 1.0)
+		.help(creditTooltip)
 		.contextMenu {
 			Button(isPinned ? "Unpin" : "Pin") {
 				wallpaperManager.togglePin(url: url)
@@ -162,6 +169,12 @@ private struct WallpaperThumbnailView: View {
 				wallpaperManager.copyPageURL(for: url)
 			}
 
+			if let credit {
+				Button("Copy credit") {
+					wallpaperManager.copyCredit(credit)
+				}
+			}
+
 			Divider()
 
 			Button("Block this wallpaper", role: .destructive) {
@@ -173,28 +186,35 @@ private struct WallpaperThumbnailView: View {
 			}
 		}
 		.task(id: url) {
-			let loadTask = Task.detached(priority: .userInitiated) { () -> CGImage? in
+			let loadTask = Task.detached(priority: .userInitiated) { () -> (thumbnail: CGImage?, credit: WallpaperCredit?) in
 				let options: [CFString: Any] = [
 					kCGImageSourceCreateThumbnailFromImageAlways: true,
 					kCGImageSourceThumbnailMaxPixelSize: 300,
 					kCGImageSourceCreateThumbnailWithTransform: true
 				]
 
+				// Read on the same pass as the thumbnail: both come out of the one file this view is already opening, and an unreadable image can still have a readable credit.
+				let fileCredit = WallpaperCredit.read(from: url)
+
 				guard
 					let source = CGImageSourceCreateWithURL(url as CFURL, nil),
 					let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
 				else {
-					return nil
+					return (nil, fileCredit)
 				}
 
-				return cgImage
+				return (cgImage, fileCredit)
 			}
 
-			if let cgImage = await loadTask.value {
-				nsImage = NSImage(cgImage: cgImage, size: .zero)
+			let loaded = await loadTask.value
+
+			if let thumbnail = loaded.thumbnail {
+				nsImage = NSImage(cgImage: thumbnail, size: .zero)
 			} else {
 				nsImage = nil
 			}
+
+			credit = loaded.credit
 		}
 	}
 }

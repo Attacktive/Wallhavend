@@ -8,6 +8,7 @@ extension WallpaperManager {
 		let stem: String
 		let data: Data
 		let fileExtension: String
+		let credit: WallpaperCredit?
 	}
 
 	/// Fetch a wallpaper from whichever enabled source produces one first, and bring its bytes back with it.
@@ -31,7 +32,7 @@ extension WallpaperManager {
 				let candidate = try await fetchCandidate(from: source, bucket: bucket, atleast: floor)
 				let (data, fileExtension) = try await downloadWallpaper(from: candidate.directURL)
 
-				return DownloadedWallpaper(stem: candidate.stem, data: data, fileExtension: fileExtension)
+				return DownloadedWallpaper(stem: candidate.stem, data: data, fileExtension: fileExtension, credit: candidate.credit)
 			} catch let error as CancellationError {
 				// Cancellation isn't a source failing; it's the whole fill being called off.
 				throw error
@@ -45,13 +46,16 @@ extension WallpaperManager {
 	}
 
 	/// A `nil` `atleast` asks both sources to drop their size filter; see `avoidBlurryWallpapers`.
-	private func fetchCandidate(from source: WallpaperSource, bucket: AspectBucket, atleast: String?) async throws -> (stem: String, directURL: String) {
+	private func fetchCandidate(from source: WallpaperSource, bucket: AspectBucket, atleast: String?) async throws -> (stem: String, directURL: String, credit: WallpaperCredit?) {
 		switch source {
 			case .wallhaven:
 				let wallpaper = try await WallhavenService.shared.fetchWallpaper(ratios: bucket.rawValue, atleast: atleast)
 
-				// Wallhaven stems stay bare forever, so its id already is the stem (see `WallpaperIdentity`).
-				return (wallpaper.id, wallpaper.path)
+				/*
+					Wallhaven stems stay bare forever, so its id already is the stem (see `WallpaperIdentity`).
+					No credit either: the search endpoint names no uploader, and asking `/w/{id}` for one would double the request count for a source whose wallpapers aren't openly licensed anyway.
+				*/
+				return (wallpaper.id, wallpaper.path, nil)
 			case .openverse:
 				return try await OpenverseService.shared.fetchCandidate(
 					bucket: bucket,

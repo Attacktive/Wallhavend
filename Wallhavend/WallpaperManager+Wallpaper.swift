@@ -109,7 +109,8 @@ extension WallpaperManager {
 					data: downloaded.data,
 					id: downloaded.stem,
 					fileExtension: downloaded.fileExtension,
-					bucket: bucket
+					bucket: bucket,
+					credit: downloaded.credit
 				)
 			}.value
 
@@ -239,14 +240,17 @@ extension WallpaperManager {
 		return desktopPicturesURL
 	}
 
-	nonisolated func saveWallpaper(data: Data, id: String, fileExtension: String, bucket: AspectBucket) throws -> URL {
+	nonisolated func saveWallpaper(data: Data, id: String, fileExtension: String, bucket: AspectBucket, credit: WallpaperCredit?) throws -> URL {
 		let storageURL = try getWallpaperStorageDirectory()
 		let bucketDir = storageURL.appendingPathComponent(bucket.rawValue, isDirectory: true)
 		try FileManager.default.createDirectory(at: bucketDir, withIntermediateDirectories: true)
 
 		let wallpaperPath = bucketDir.appendingPathComponent("\(id).\(fileExtension)")
 		print("Saving wallpaper to: \(wallpaperPath.path)")
-		try data.write(to: wallpaperPath)
+
+		// Stamped before the write rather than after it, so the file is only ever on disk in its final form and the validation below covers the bytes actually kept.
+		let stamped = credit?.embedded(in: data, fileExtension: fileExtension) ?? data
+		try stamped.write(to: wallpaperPath)
 
 		guard NSImage(contentsOf: wallpaperPath) != nil else {
 			try? FileManager.default.removeItem(at: wallpaperPath)

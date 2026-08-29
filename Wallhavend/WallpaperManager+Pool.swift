@@ -222,6 +222,14 @@ extension WallpaperManager {
 		pasteboard.setString(pageURL.absoluteString, forType: .string)
 	}
 
+	/// Copy a wallpaper's credit, worded the way its source words it.
+	/// Openverse's own sentence goes on the pasteboard, so what the user pastes is already license-correct without them having to compose it.
+	func copyCredit(_ credit: WallpaperCredit) {
+		let pasteboard = NSPasteboard.general
+		pasteboard.clearContents()
+		pasteboard.setString(credit.statement, forType: .string)
+	}
+
 	/// Flip a wallpaper's pinned state. Pinning protects it from pool eviction and adds it to the Pinned-only rotation set.
 	func togglePin(url: URL) {
 		let id = wallpaperId(for: url)
